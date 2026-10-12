@@ -14,7 +14,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#F2F3EE">
+<meta name="theme-color" content="#1F3D30">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -23,6 +23,7 @@
 <link rel="preload" as="image" href="img/logo-mark.png">
 <link rel="preload" as="image" href="img/arko-hero.webp" fetchpriority="high">
 <meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#1F3D30">
 <meta name="description" content="매장·기관·기업 크리스마스트리 대여와 설치, 1월 말 철거까지. 2026 1차 얼리버드 예약 15% 할인.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,7 +63,8 @@ section{padding-block:72px}
 .sec-head p{color:var(--muted)}
 
 /* header */
-.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hdr{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--pine);color:var(--on-pine)}
+.hdr::before{content:"";position:absolute;left:0;right:0;bottom:100%;height:env(safe-area-inset-top,0px);background:var(--pine)}
 .hdr .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;min-height:53px;padding-block:0}
 .logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:.14em}
 .logo svg{width:18px;height:22px;flex:none}
@@ -70,6 +72,7 @@ section{padding-block:72px}
 .nav a{text-decoration:none;font-size:15px;color:var(--muted)}
 .nav a:hover{color:var(--ink)}
 a.hdr-ico{text-decoration:none}
+.nav a.hdr-ico,.nav a.hdr-ico:hover{color:var(--on-pine)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 20px;border:1px solid var(--ink);border-radius:2px;text-decoration:none;font-weight:600;font-size:15px;cursor:pointer;background:transparent}
 .btn-kakao{background:var(--kakao);color:var(--kakao-ink);border-color:var(--kakao)}
 .btn-sm{min-height:40px;padding:8px 14px;font-size:14px}
@@ -494,11 +497,11 @@ footer .wrap{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px
 .bar.is-off{transform:translateY(110%)}
 .logo img{display:block;height:38px;width:auto}
 @media (max-width:640px){.logo img{height:32px}}
-.ft-brand img{display:block;height:54px;width:auto;margin-bottom:8px}
+.ft-brand img{display:block;height:54px;width:auto}
 .nav .btn-kakao{transition:opacity .3s ease,transform .3s ease}
 .hdr.on-hero .nav .btn-kakao{opacity:0;transform:translateY(-6px);pointer-events:none}
 @media (max-width:640px){.nav .btn-kakao{display:none}}
-.hdr-call{display:inline-flex;align-items:center;gap:8px;min-height:44px;min-width:44px;justify-content:center;padding:0 6px;color:var(--pine);text-decoration:none;font-size:14px;font-weight:600}
+.hdr-call{display:inline-flex;align-items:center;gap:8px;min-height:44px;min-width:44px;justify-content:center;padding:0 6px;color:var(--on-pine);text-decoration:none;font-size:14px;font-weight:600}
 .hdr-call svg{width:22px;height:22px}
 .hdr-call-num{display:none}
 @media (min-width:901px){.hdr-call-num{display:inline}.hdr-call svg{width:18px;height:18px}}
@@ -534,9 +537,9 @@ button.hero-kakao{border:0}
 #barBtn{cursor:pointer}
 /* header icons + contact cards */
 .hdr-icons{display:flex;align-items:center;gap:2px;margin-right:4px}
-.hdr-ico{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:var(--pine);cursor:pointer;border-radius:50%;transition:background-color .2s}
+.hdr-ico{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:var(--on-pine);cursor:pointer;border-radius:50%;transition:background-color .2s}
 .hdr-ico svg{width:22px;height:22px}
-.hdr-ico:hover,.hdr-ico[aria-expanded="true"]{background:color-mix(in srgb,var(--pine) 8%,transparent)}
+.hdr-ico:hover,.hdr-ico[aria-expanded="true"]{background:rgba(238,241,234,.12)}
 @media (max-width:640px){.hdr-icons{margin-right:-10px}.hdr-ico{width:42px}.hdr-ico svg{width:21px;height:21px}}
 dialog.cc{border:0;padding:0;margin:auto auto 0;width:100%;max-width:100%;background:transparent;color:var(--ink);overflow:visible}
 dialog.cc::backdrop{background:rgba(8,12,10,.4)}
@@ -819,7 +822,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 
 <header class="hdr">
   <div class="wrap">
-    <a class="logo" href="#top" aria-label="트리랜드 처음으로"><img src="img/logo-head.png" width="671" height="180" alt="TREELAND 트리랜드"></a>
+    <a class="logo" href="#top" aria-label="트리랜드 처음으로"><img src="img/logo-head-light.png" width="671" height="180" alt="TREELAND 트리랜드"></a>
     <nav class="nav" aria-label="주요 메뉴">
       <div class="hdr-icons"><button type="button" class="hdr-ico" data-card="call" aria-label="전화 상담" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 3.5h2.6l1.4 4.1-2 1.5a12.5 12.5 0 0 0 6.3 6.3l1.5-2 4.1 1.4v2.6a2 2 0 0 1-2.2 2A16.5 16.5 0 0 1 4.6 5.7a2 2 0 0 1 2-2.2z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button><button type="button" class="hdr-ico" data-card="mail" aria-label="메일 문의" aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5.5" width="17" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M4 6.5l8 6.2 8-6.2" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></button><a class="hdr-ico" href="https://www.instagram.com/treeland.official/" target="_blank" rel="noopener noreferrer" aria-label="인스타그램 @treeland.official"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="4.6" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="12" r="3.9" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="16.9" cy="7.1" r="1" fill="currentColor"/></svg></a></div>
       <button type="button" data-sheet class="btn btn-kakao btn-sm">카카오톡 상담</button>
@@ -1236,7 +1239,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 
 <footer>
   <div class="wrap">
-    <div class="ft-brand"><img src="img/logo-full.png" width="671" height="180" alt="TREELAND 트리랜드" loading="lazy"><span>크리스마스트리 대여 · 설치 · 철거</span></div>
+    <div class="ft-brand"><img src="img/logo-full.png" width="671" height="180" alt="TREELAND 트리랜드" loading="lazy"></div>
     <div class="ft-info"><span>전화 1599-0000</span><span>이메일 treeland@naver.com</span><span>www.treeland.kr</span></div>
     <p class="ft-biz"><span>상호 트리랜드</span><span>대표 홍준서</span><span>사업자등록번호 360-69-00592</span><span>주소 서울 성북구 아리랑로19길 87</span></p>
     <span class="ft-copy">© 2026 TREELAND</span>
