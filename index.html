@@ -209,7 +209,7 @@ dialog.doc-dlg::backdrop{background:rgba(8,12,10,.6)}
 .ch-copy.dark{border-color:var(--ink);color:var(--ink)}
 
 /* table of contents */
-.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 54px);z-index:19;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--hdr-h,54px) - 1px);z-index:19;background:color-mix(in srgb,var(--paper) 94%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
 .toc ul{list-style:none;margin:0;padding:0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:none}
 .toc ul::-webkit-scrollbar{display:none}
 .toc li{flex:none}
@@ -706,6 +706,9 @@ dialog.lb::backdrop{background:rgba(8,12,10,.85)}
 .hero-bg{position:absolute;inset:-40px;z-index:-3;background:url(img/arko-hero.webp) center 30%/cover no-repeat;filter:blur(30px) brightness(.5) saturate(1.05);opacity:.35}
 .hero-fig{position:absolute;inset:0;margin:0;z-index:-2}
 .hero-fig img{display:block;width:100%;height:100%;aspect-ratio:auto;object-fit:cover;object-position:56% 100%}
+.hero-tw,.hero-snow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;transition:opacity 1.8s ease}
+.hero-snow{z-index:-1}
+.hero-tw.on,.hero-snow.on{opacity:1}
 .hero-fig figcaption{position:absolute;right:16px;bottom:12px;margin:0;font-size:12px;color:rgba(244,241,234,.75);text-shadow:0 1px 4px rgba(0,0,0,.6)}
 .hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(22,39,31,.55) 0%,rgba(22,39,31,.35) 38%,rgba(22,39,31,.05) 60%,rgba(22,39,31,0) 70%,rgba(14,26,20,.65) 100%)}
 .hero .wrap{position:relative;display:flex;flex-direction:column;min-height:min(calc(100svh - 72px),780px);padding-block:20px 14px}
@@ -814,13 +817,35 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 @keyframes spGrow{to{clip-path:inset(0 0 0 0)}}
 @keyframes spLine{to{transform:scaleX(1)}}
 @keyframes spOut{to{opacity:0;visibility:hidden}}
+
+/* header: see-through gradient over the hero, solid once the menu bar docks under it */
+:root{--hdr-h:54px}
+.hdr{transition:background-color .45s ease}
+.hdr::after{content:"";position:absolute;left:0;right:0;top:0;bottom:-26px;z-index:-1;pointer-events:none;background:linear-gradient(180deg,rgba(31,61,48,.9) 0%,rgba(31,61,48,.55) 62%,rgba(31,61,48,0) 100%);opacity:0;transition:opacity .45s ease}
+.hdr.clear{background-color:transparent}
+.hdr.clear::after{opacity:1}
+.hero{margin-top:calc(-1 * var(--hdr-h))}
+.hero .wrap{padding-top:calc(20px + var(--hdr-h));min-height:min(calc(100svh - 72px + var(--hdr-h)),calc(780px + var(--hdr-h)))}
+@media (min-width:901px){.hero .wrap{min-height:calc(680px + var(--hdr-h));padding-top:calc(72px + var(--hdr-h))}}
+.nw{white-space:nowrap}
+.slots{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.slot .ph.has-img{background:color-mix(in srgb,var(--pine) 7%,#F8F8F4);overflow:hidden}
+.slot .ph.has-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;transform:scale(1.18)}
+.slot,.slot .ph{min-width:0}
+.slot .ph-t{white-space:normal;text-align:center;word-break:keep-all;padding-inline:4px}
+.slot figcaption small{display:block;font-size:.85em;font-weight:500;color:var(--berry)}
+.slot{align-content:start}
+@media (max-width:900px){.set-card .slot.up .ph-n::before{content:"30% UP"}.set-card .slot figcaption{font-size:12.5px}.set-card .ph-t{font-size:10px;line-height:1.3;padding-top:22px}}
+.slot .ph.has-img .ph-n{position:absolute;z-index:1}
+.set-up{margin:12px 0 0;padding:12px 14px;border-left:3px solid var(--berry);background:color-mix(in srgb,var(--berry) 6%,#FFFDF8);font-size:14px;line-height:1.6}
+.set-up b{display:block;font-size:16px;color:var(--berry);margin-bottom:2px}
 </style>
 </head>
 <body>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
 
-<header class="hdr">
+<header class="hdr clear">
   <div class="wrap">
     <a class="logo" href="#top" aria-label="트리랜드 처음으로"><img src="img/logo-head-light.png" width="671" height="180" alt="TREELAND 트리랜드"></a>
     <nav class="nav" aria-label="주요 메뉴">
@@ -833,21 +858,23 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 <main id="top">
   <section class="hero">
     <div class="hero-bg" aria-hidden="true"></div>
+    <canvas class="hero-snow" aria-hidden="true"></canvas>
     <figure class="hero-fig">
         <img src="img/arko-hero.webp" width="1086" height="1448" alt="대학로 아르코예술극장 로비에 설치한 2.9m 크리스마스트리" fetchpriority="high">
+        <canvas class="hero-tw" aria-hidden="true"></canvas>
         <figcaption>아르코예술극장 로비 · 2.9m</figcaption>
       </figure>
     <div class="wrap">
       <div class="hero-text">
         <p class="season">2026 시즌 · 1차 얼리버드 예약 중</p>
-        <h1>크리스마스트리 대여 · 설치 · 철거</h1>
-        <p class="lead">매장부터 학교, 가정까지 어디든 공간에 맞는 크기로<br class="d-br"> 세워드리고, 1월 말에 <strong>정리해 드립니다</strong>.<br>올해는 장식을 더 풍성하게 구성했습니다.</p>
+        <h1>크리스마스트리 대여 · 설치</h1>
+        <p class="lead">트리 렌탈의 관행, <strong>디자인 비용부터 없앴습니다</strong>.<br>여러 현장을 거치며 검증된 구성을, <span class="nw">올해 더 풍성하게 바꿨습니다.</span></p>
         <div class="tag" role="note" aria-label="1차 얼리버드 예약 15% 할인">
           <span>1차 얼리버드 예약 15% 할인 · 부가세 별도</span>
           <b class="num">1.35m 289,000원부터<s class="tag-was" aria-label="정가 340,000원">340,000원</s></b>
           <span>10월 30일 예약 마감 · 11월부터 설치</span>
         </div>
-        <p class="hero-note">1월 말 회수까지 포함된 가격입니다. 기간에 따른 추가요금은 없습니다.</p>
+        <p class="hero-note">1월 말 회수까지 포함된 가격입니다. 기간에 따른 추가요금은 없습니다.<br>디자인 비용 없음은 기본 구성 기준입니다.</p>
         <div class="hero-acts">
           <a class="hero-cue" href="#cases" aria-label="설치 사례로 내려가기"><span><span class="m-only">아래로 내려 </span>설치 사례 보기</span><svg viewBox="0 0 16 24" aria-hidden="true"><path d="M8 3v16M3 14l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           <button type="button" data-sheet class="hero-kakao">카카오톡 상담</button>
@@ -879,13 +906,13 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <div class="sec-head">
             <p class="eyebrow">2026 SEASON</p>
             <h2>2026 시즌 구성</h2>
-            <p>2026 시즌부터 기본 구성에 <strong>포인세티아, 솔방울, 레드베리 장식</strong>이 새로 포함됩니다.</p>
+            <p>2026 시즌부터 기본 구성에 <strong>포인세티아, 솔방울, 레드베리 장식</strong>이 새로 포함됩니다. 디올 느낌이 나는 투알 드 주이 패턴의 트리랜드 시그니처 상자는, 올해 <strong>크기를 30% 키워 자체 제작</strong>했습니다.</p>
           </div>
           <dl>
             <div><dt>트리</dt><dd>입체 성형 PE 잎, LED 조명 내장</dd></div>
             <div><dt>장식</dt><dd>오너먼트, 가랜드·리본, 상단 별</dd></div>
-            <div><dt>하단 연출</dt><dd>선물상자 5개, 받침대 가리개</dd></div>
-            <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>포인세티아, 솔방울, 레드베리</dd></div>
+            <div><dt>하단 연출</dt><dd>시그니처 상자 5개, 받침대 가리개</dd></div>
+            <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>포인세티아, 솔방울, 레드베리, 시그니처 상자 30% 확대</dd></div>
             <div><dt>안전</dt><dd>KC 인증 전기안정기(SMPS) 설치</dd></div>
             <div><dt>서비스</dt><dd>방문 설치, 1월 말 철거·회수</dd></div>
           </dl>
@@ -894,6 +921,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <figure class="slot"><div class="ph"><span class="ph-n">01</span><span class="ph-t">이미지 준비 중</span></div><figcaption>포인세티아</figcaption></figure>
           <figure class="slot"><div class="ph"><span class="ph-n">02</span><span class="ph-t">이미지 준비 중</span></div><figcaption>솔방울</figcaption></figure>
           <figure class="slot"><div class="ph"><span class="ph-n">03</span><span class="ph-t">이미지 준비 중</span></div><figcaption>레드베리</figcaption></figure>
+          <figure class="slot up"><div class="ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="투알 드 주이 패턴에 네이비·샴페인 골드·와인 리본을 묶은 트리랜드 시그니처 상자"><span class="ph-n">04</span></div><figcaption>시그니처 상자<small>30% 확대</small></figcaption></figure>
         </div>
         <button type="button" class="set-more" id="setMore">구성 전체 보기 <span aria-hidden="true">›</span></button>
       </div>
@@ -1129,7 +1157,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
               <label class="check"><input type="checkbox" id="x2" value="25cm 하단 장식 3개" data-price="35000">25cm 하단 장식 3개<em class="num">+35,000원</em></label>
               <label class="check"><input type="checkbox" id="x3" value="인형 오너먼트 6개" data-price="25000">인형 오너먼트 6개<em class="num">+25,000원</em></label>
               <label class="check"><input type="checkbox" id="x4" value="라탄 바스켓 받침대" data-price="20000">라탄 바스켓 받침대로 변경<em class="num">+20,000원</em></label>
-              <div class="stepper"><span>선물상자 추가<small class="gift-base">기본 5개 포함</small></span><button type="button" id="giftMinus" aria-label="선물상자 한 개 빼기">−</button><output id="giftNum" aria-live="polite">0</output><button type="button" id="giftPlus" aria-label="선물상자 한 개 더하기">+</button><em class="num">개당 5,000원</em></div>
+              <div class="stepper"><span>시그니처 상자 추가<small class="gift-base">기본 5개 포함</small></span><button type="button" id="giftMinus" aria-label="시그니처 상자 한 개 빼기">−</button><output id="giftNum" aria-live="polite">0</output><button type="button" id="giftPlus" aria-label="시그니처 상자 한 개 더하기">+</button><em class="num">개당 5,000원</em></div>
             </div>
           </fieldset>
           <fieldset>
@@ -1459,6 +1487,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
       const card = document.querySelector('.set-card');
       show('<p class="cc-k">2026 SEASON</p><p class="ic-title">2026 시즌 구성</p>' +
         '<p class="cc-d">2026 시즌부터 기본 구성에 포인세티아, 솔방울, 레드베리 장식이 새로 포함됩니다.</p>' +
+        '<p class="set-up"><b>시그니처 상자, 30% 더 크게 자체 제작했습니다.</b>디올 느낌이 나는 투알 드 주이 패턴은 그대로, 크기만 트리에 맞춰 키웠습니다.</p>' +
         '<div class="set-pop">' + card.querySelector('.inc dl').outerHTML + '<p class="ic-h" style="margin-top:14px">2026 추가 장식</p>' + card.querySelector('.slots').outerHTML + '</div>' +
         '<div class="cc-b"><button type="button" class="cc-main" data-close>닫기</button></div>', setMore);
       body.querySelector('[data-close]').addEventListener('click', () => dlg.close());
@@ -1698,7 +1727,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     const size = items.map(i => i.name + ' ' + i.n + '개').join(', ');
     const adds = [...form.querySelectorAll('.checks input[type=checkbox]:checked')];
     let add = adds.reduce((s, c) => s + +c.dataset.price, 0) + gifts * 5000;
-    const names = adds.map(c => c.value); if (gifts) names.push('선물상자 ' + gifts + '개 추가');
+    const names = adds.map(c => c.value); if (gifts) names.push('시그니처 상자 ' + gifts + '개 추가');
     const smin = +reg.dataset.min, smax = +reg.dataset.max;
     let tmin = base - disc - multi + add + smin, tmax = base - disc - multi + add + smax;
     if (!count) { tmin = 0; tmax = 0; }
@@ -1784,6 +1813,80 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     dd.textContent = '1차 얼리버드 마감 · 2차 얼리버드는 상담 시 안내';
     if (barTxt) barTxt.innerHTML = '<b>2차 얼리버드 진행 중</b>할인율은 상담 시 안내';
   }
+})();
+</script>
+<script>
+/* hero: twinkle on the tree's real LED spots + light snow */
+(function(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var hero=document.querySelector('.hero'), img=hero&&hero.querySelector('.hero-fig img');
+  var tw=hero&&hero.querySelector('.hero-tw'), sn=hero&&hero.querySelector('.hero-snow');
+  if(!hero||!img||!tw||!sn||!tw.getContext) return;
+  var LED=[[0.3904,0.7224],[0.5018,0.7493],[0.4751,0.7652],[0.3517,0.8336],[0.4622,0.7099],[0.5525,0.8336],[0.5451,0.6595],[0.5368,0.7894],[0.5893,0.8115],[0.5516,0.7148],[0.489,0.549],[0.5313,0.6285],[0.3195,0.8087],[0.361,0.6423],[0.5064,0.5801],[0.4015,0.6533],[0.4033,0.5325],[0.5985,0.6312],[0.4825,0.7811],[0.4659,0.3488],[0.489,0.4254],[0.4742,0.4572],[0.3821,0.817],[0.5028,0.364],[0.4512,0.4434],[0.6105,0.6644],[0.4825,0.6789],[0.628,0.6878],[0.4512,0.3653],[0.4871,0.4834],[0.4098,0.5566],[0.3969,0.6043],[0.4871,0.6402],[0.5875,0.6057],[0.5414,0.4572],[0.4724,0.567],[0.4429,0.5711],[0.5378,0.5994],[0.3112,0.6975],[0.361,0.7258],[0.4567,0.384],[0.4401,0.4793],[0.3775,0.6685],[0.4328,0.605],[0.5064,0.4434],[0.3656,0.616],[0.4411,0.6637],[0.3987,0.7852],[0.326,0.7293],[0.4595,0.7818],[0.4079,0.4517],[0.3867,0.5552],[0.3913,0.683],[0.5101,0.7106],[0.616,0.7562],[0.3775,0.7707],[0.5028,0.7949],[0.2661,0.8149],[0.5948,0.8315],[0.4908,0.5028],[0.5212,0.5539],[0.4236,0.7818],[0.4862,0.3971],[0.4383,0.4019],[0.5331,0.6885],[0.337,0.7072],[0.6197,0.7127],[0.5626,0.7355],[0.6206,0.7376],[0.2873,0.8011],[0.5166,0.8301],[0.3085,0.8294],[0.4006,0.4744],[0.3379,0.6333],[0.3821,0.7417],[0.6271,0.8122],[0.3849,0.8343],[0.4429,0.6312],[0.4788,0.3798],[0.3287,0.6609],[0.4273,0.7141],[0.3039,0.739],[0.3904,0.4917],[0.5368,0.5028],[0.5285,0.732],[0.5912,0.5891],[0.4659,0.4931],[0.3904,0.5808],[0.395,0.703],[0.4512,0.7327],[0.6252,0.7735],[0.4788,0.817],[0.3499,0.6775],[0.384,0.634],[0.4208,0.6388],[0.5433,0.7452],[0.4254,0.5055],[0.582,0.7624],[0.5497,0.8149],[0.6004,0.7293],[0.3241,0.77],[0.3646,0.7548],[0.4411,0.4268],[0.5562,0.5235],[0.5534,0.5801],[0.4484,0.8273],[0.4282,0.4599],[0.4125,0.7314],[0.3315,0.826],[0.5727,0.6878],[0.4622,0.6906],[0.558,0.7624],[0.5829,0.5601],[0.4834,0.7175],[0.4705,0.3128],[0.4687,0.3322],[0.5433,0.4834],[0.4604,0.5104],[0.4576,0.5891],[0.5884,0.654]];
+  var IW=1086, IH=1448, dpr=Math.min(window.devicePixelRatio||1,2);
+  var tc=tw.getContext('2d'), sc=sn.getContext('2d'), pts=[], flakes=[], W=0, H=0, FW=0, FH=0;
+  function rnd(a,b){return a+Math.random()*(b-a)}
+  LED.forEach(function(p){pts.push({u:p[0],v:p[1],ph:rnd(0,6.28),w:rnd(.9,2.2),pk:rnd(.75,1),x:0,y:0})});
+  function layout(){
+    var r=tw.getBoundingClientRect(); FW=r.width; FH=r.height;
+    tw.width=Math.round(FW*dpr); tw.height=Math.round(FH*dpr);
+    var cs=getComputedStyle(img).objectPosition.split(' '), px=parseFloat(cs[0])/100, py=parseFloat(cs[1]||'50')/100;
+    if(isNaN(px))px=.5; if(isNaN(py))py=.5;
+    var k=Math.max(FW/IW,FH/IH), dw=IW*k, dh=IH*k, ox=(FW-dw)*px, oy=(FH-dh)*py;
+    pts.forEach(function(p){p.x=ox+p.u*dw; p.y=oy+p.v*dh});
+    var h=hero.getBoundingClientRect(); W=h.width; H=h.height;
+    sn.width=Math.round(W*dpr); sn.height=Math.round(H*dpr);
+    var n=Math.min(56,Math.round(W*H/11000));
+    while(flakes.length<n) flakes.push(newFlake(true));
+    flakes.length=n;
+  }
+  function newFlake(any){
+    var r=rnd(.6,1.9);
+    return {x:rnd(0,W||400),y:any?rnd(0,H||700):rnd(-20,-4),r:r,a:.18+r*.2,vy:rnd(10,22)+r*5,amp:rnd(4,14),f:rnd(.2,.5),ph:rnd(0,6.28)};
+  }
+  var run=false, vis=true, last=0, t0=performance.now();
+  function frame(now){
+    if(!run) return;
+    requestAnimationFrame(frame);
+    if(now-last<33) return;
+    var dt=Math.min(.1,(now-last)/1000); last=now; var t=(now-t0)/1000;
+    tc.setTransform(dpr,0,0,dpr,0,0); tc.clearRect(0,0,FW,FH);
+    tc.globalCompositeOperation='lighter';
+    for(var i=0;i<pts.length;i++){
+      var p=pts[i], s=Math.sin(t*p.w+p.ph); if(s<=0) continue;
+      var a=Math.pow(s,3)*p.pk; if(a<.02) continue;
+      var g=tc.createRadialGradient(p.x,p.y,0,p.x,p.y,10);
+      g.addColorStop(0,'rgba(255,246,214,'+a+')'); g.addColorStop(.3,'rgba(255,220,150,'+(a*.6)+')'); g.addColorStop(1,'rgba(255,200,120,0)');
+      tc.fillStyle=g; tc.beginPath(); tc.arc(p.x,p.y,10,0,6.283); tc.fill();
+    }
+    tc.globalCompositeOperation='source-over';
+    sc.setTransform(dpr,0,0,dpr,0,0); sc.clearRect(0,0,W,H); sc.fillStyle='#fff';
+    for(var j=0;j<flakes.length;j++){
+      var f=flakes[j]; f.y+=f.vy*dt; f.ph+=f.f*dt*6.283*.25;
+      if(f.y>H+6){flakes[j]=f=newFlake(false);}
+      sc.globalAlpha=f.a; sc.beginPath(); sc.arc(f.x+Math.sin(f.ph)*f.amp,f.y,f.r,0,6.283); sc.fill();
+    }
+    sc.globalAlpha=1;
+  }
+  function update(){var want=vis&&!document.hidden; if(want&&!run){run=true;last=performance.now();requestAnimationFrame(frame);} else if(!want) run=false;}
+  function start(){
+    layout(); tw.classList.add('on'); sn.classList.add('on'); update();
+    var rt; addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(layout,150)});
+    if('IntersectionObserver' in window) new IntersectionObserver(function(e){vis=e[0].isIntersecting;update()}).observe(hero);
+    document.addEventListener('visibilitychange',update);
+  }
+  function go(){ setTimeout(start, 1900); }
+  if(img.complete) go(); else img.addEventListener('load',go,{once:true});
+})();
+</script>
+<script>
+(function(){
+  var h=document.querySelector('.hdr'), t=document.getElementById('toc'); if(!h||!t) return;
+  function size(){document.documentElement.style.setProperty('--hdr-h',h.offsetHeight+'px')}
+  function upd(){h.classList.toggle('clear', t.getBoundingClientRect().top > h.getBoundingClientRect().bottom + 1)}
+  size(); upd();
+  addEventListener('scroll',upd,{passive:true});
+  addEventListener('resize',function(){size();upd()});
 })();
 </script>
 
