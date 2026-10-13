@@ -974,6 +974,7 @@ dialog.lb{z-index:50}
 .pc-ph:not(.xo-car) .xc-track{overflow:hidden}
 .pc-z,.pc-z img{display:block}
 .ft-copy{display:grid;gap:2px;margin:6px 0 0;padding-top:10px;border-top:1px solid var(--line);font-size:12px;line-height:1.55}
+.xc-ex{position:absolute;left:6px;top:6px;z-index:2;padding:2px 6px;border-radius:2px;background:rgba(18,26,21,.62);color:#F4F1EA;font-size:10.5px;font-weight:600;pointer-events:none;transition:opacity .2s}
 </style>
 </head>
 <body>
@@ -1299,6 +1300,8 @@ dialog.lb{z-index:50}
               <div class="xo xo-box"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xPlain" value="단색 상자 12합 세트" data-price="45000"><span class="xo-top"><b>단색 상자 12합 세트</b><em class="num">+45,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-plain-1.webp" width="800" height="800" loading="lazy" alt="빨간 벨벳 리본을 두른 흰색 상자 12합"><img src="img/opt-plain-2.webp" width="800" height="800" loading="lazy" alt="빨간 벨벳 리본을 두른 골드 상자 12합"><img src="img/opt-plain-3.webp" width="800" height="800" loading="lazy" alt="벨벳 리본을 두른 레드 상자 12합"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button><button type="button" aria-label="3번 사진"></button></span></label>
                 <div class="xo-shape xo-3" role="radiogroup" aria-label="상자 색상"><label><input type="radio" name="boxColor" value="흰색" data-slide="0" checked><span>흰색</span></label><label><input type="radio" name="boxColor" value="골드" data-slide="1"><span>골드</span></label><label><input type="radio" name="boxColor" value="레드" data-slide="2"><span>레드</span></label></div>
                 <div class="xo-shape" role="radiogroup" aria-label="상자 모양"><label><input type="radio" name="boxShape" value="사각" checked><span>사각</span></label><label><input type="radio" name="boxShape" value="원형"><span>원형</span></label></div></div>
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xGift" value="하단 소품상자 대체" data-price="0"><span class="xo-top"><b>하단 소품상자 대체</b><em class="num">무료</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-gift-ex.webp" width="800" height="800" loading="lazy" alt="대학로 예술극장 트리 아래에 소품상자를 놓은 설치 예시"><img src="img/opt-gift-snow.webp" width="800" height="800" loading="lazy" alt="금색·빨간색·초록색 눈꽃 소품상자"><img src="img/opt-gift-shine.webp" width="800" height="800" loading="lazy" alt="Merry Christmas 장식이 달린 빨간색·금색 반짝이 소품상자"></span><span class="xc-ex">설치 예시</span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="설치 예시"></button><button type="button" aria-label="눈꽃 상자"></button><button type="button" aria-label="반짝이 상자"></button></span></label>
+                <div class="xo-shape" role="radiogroup" aria-label="소품상자 종류"><label><input type="radio" name="giftType" value="눈꽃" data-slide="1" checked><span>눈꽃</span></label><label><input type="radio" name="giftType" value="반짝이" data-slide="2"><span>반짝이</span></label></div></div>
               <div class="xo xo-sig"><div class="xo-hit"><span class="xo-top"><b>시그니처 상자 추가</b><em class="num">개당 5,000원</em></span><span class="xo-ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="트리랜드 시그니처 상자"></span></div>
                 <div class="stepper"><button type="button" id="giftMinus" aria-label="시그니처 상자 한 개 빼기">−</button><output id="giftNum" aria-live="polite">0</output><button type="button" id="giftPlus" aria-label="시그니처 상자 한 개 더하기">+</button></div><small class="xo-sub xo-gb" id="giftBase">기본 포함 개수는 크기마다 다릅니다</small></div>
             </div>
@@ -1905,7 +1908,7 @@ dialog.lb{z-index:50}
     $('#rMultiRow').hidden = !s.multi;
     $('#rMultiK').textContent = s.count + '개 추가 ' + Math.round(s.mRate * 100) + '%';
     $('#rMultiD').textContent = '−' + won(s.multi);
-    $('#rAdd').textContent = s.add ? won(s.add) : '없음';
+    $('#rAdd').textContent = s.add ? won(s.add) : (s.names.length ? '0원' : '없음');
     $('#giftBase').textContent = !s.count ? '기본 포함 개수는 크기마다 다릅니다' : s.boxBase ? '고른 트리에 기본 ' + s.boxBase + '개 포함' : '';
     document.querySelectorAll('.xo').forEach(x => { const c = x.querySelector('.xo-in'); if (c) x.classList.toggle('on', c.checked); });
     $('#rShip').textContent = s.smax === 0 ? s.region + ' · 무료' : s.region + ' · ' + range(s.smin, s.smax);
@@ -2063,7 +2066,7 @@ window.__initCar=function(root){(root||document).querySelectorAll('.xo-car:not([
   var t=car.querySelector('.xc-track'),n=t.children.length,card=car.closest('.xo,.pc'),dots=card?[].slice.call(card.querySelectorAll('.xc-dots button')):[],pv=car.querySelector('.xc-prev'),nx=car.querySelector('.xc-next');
   function cur(){return Math.round(t.scrollLeft/Math.max(1,t.clientWidth))}
   function go(i,e){if(e){e.preventDefault();e.stopPropagation()}i=Math.max(0,Math.min(n-1,i));t.scrollTo({left:i*t.clientWidth,behavior:'smooth'})}
-  function sync(){var i=cur();dots.forEach(function(d,k){d.classList.toggle('on',k===i)});pv.disabled=i<=0;nx.disabled=i>=n-1}
+  function sync(){var i=cur();var ex=car.querySelector('.xc-ex');if(ex)ex.style.opacity=i===0?1:0;dots.forEach(function(d,k){d.classList.toggle('on',k===i)});pv.disabled=i<=0;nx.disabled=i>=n-1}
   pv.addEventListener('click',function(e){go(cur()-1,e)});nx.addEventListener('click',function(e){go(cur()+1,e)});
   dots.forEach(function(d,k){d.addEventListener('click',function(e){go(k,e)})});
   t.addEventListener('scroll',sync,{passive:true});sync();
