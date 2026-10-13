@@ -839,6 +839,11 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 .slot .ph.has-img .ph-n{position:absolute;z-index:1}
 .set-up{margin:12px 0 0;padding:12px 14px;border-left:3px solid var(--berry);background:color-mix(in srgb,var(--berry) 6%,#FFFDF8);font-size:14px;line-height:1.6}
 .set-up b{display:block;font-size:16px;color:var(--berry);margin-bottom:2px}
+
+/* tablet: place names 2x2 so they don't break mid-word */
+@media (min-width:641px) and (max-width:900px){.clients{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 0}.clients li:nth-child(odd){border-left:0;padding-left:0}}
+/* phones: case filter stays on one line and scrolls sideways */
+@media (max-width:640px){.case-filter{flex-wrap:nowrap;overflow-x:auto;margin-inline:calc(var(--gutter)*-1);padding-inline:var(--gutter);scrollbar-width:none;-webkit-overflow-scrolling:touch}.case-filter::-webkit-scrollbar{display:none}.case-filter button{flex:none}}
 </style>
 </head>
 <body>
@@ -1066,7 +1071,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
   <section class="why">
     <div class="wrap">
       <div>
-        <h2>일 년에 두 달 사용하려고 열 달을 보관할 필요는 없습니다.</h2>
+        <h2>일 년에 두 달 사용하려고 <span class="nw">열 달을</span> 보관할 필요는 없습니다.</h2>
         <div class="months num" aria-hidden="true">
           <div class="m2"><b>2</b><span>개월 사용</span></div>
           <div><b>10</b><span>개월 보관</span></div>
