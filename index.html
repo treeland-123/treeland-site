@@ -845,6 +845,8 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 /* phones: smaller filter buttons so all six fit on one line */
 @media (max-width:640px){.case-filter{gap:4px}.case-filter button{flex:1 1 auto;min-height:38px;padding:7px 4px;font-size:clamp(11.5px,3.3vw,13px);letter-spacing:-.02em;white-space:nowrap}}
 @media (max-width:350px){.case-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:900px){.set-card .slot:not(.up) .ph.has-img img{height:66%;bottom:5%;transform:none}}
+.set-pop .slot:not(.up) .ph.has-img img{height:66%;bottom:5%;transform:none}
 </style>
 </head>
 <body>
@@ -912,21 +914,21 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <div class="sec-head">
             <p class="eyebrow">2026 SEASON</p>
             <h2>2026 시즌 구성</h2>
-            <p>올해부터 <strong>포인세티아·솔방울·레드베리 장식</strong>이 기본으로 들어갑니다.<br>디올 느낌이 나는 투알 드 주이 패턴의 <strong class="nw">시그니처 상자</strong>도, 크기를 키워 자체 제작해 트리와 더 잘 어우러집니다.</p>
+            <p>올해부터 <strong>벨벳 리본·솔방울·베리 장식</strong>이 기본으로 들어갑니다.<br>디올 느낌이 나는 투알 드 주이 패턴의 <strong class="nw">시그니처 상자</strong>도, 크기를 키워 자체 제작해 트리와 더 잘 어우러집니다.</p>
           </div>
           <dl>
             <div><dt>트리</dt><dd>입체 성형 PE 잎, LED 조명 내장</dd></div>
             <div><dt>장식</dt><dd>오너먼트, 가랜드·리본, 상단 별</dd></div>
             <div><dt>하단 연출</dt><dd>시그니처 상자 5개, 받침대 가리개</dd></div>
-            <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>포인세티아, 솔방울, 레드베리, 자체 제작 시그니처 상자</dd></div>
+            <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>벨벳 리본, 솔방울, 레드·화이트 베리, 자체 제작 시그니처 상자</dd></div>
             <div><dt>안전</dt><dd>KC 인증 전기안정기(SMPS) 설치</dd></div>
             <div><dt>서비스</dt><dd>방문 설치, 1월 말 철거·회수</dd></div>
           </dl>
         </div>
         <div class="slots" aria-label="2026 추가 장식">
-          <figure class="slot"><div class="ph"><span class="ph-n">01</span><span class="ph-t">이미지 준비 중</span></div><figcaption>포인세티아</figcaption></figure>
-          <figure class="slot"><div class="ph"><span class="ph-n">02</span><span class="ph-t">이미지 준비 중</span></div><figcaption>솔방울</figcaption></figure>
-          <figure class="slot"><div class="ph"><span class="ph-n">03</span><span class="ph-t">이미지 준비 중</span></div><figcaption>레드베리</figcaption></figure>
+          <figure class="slot"><div class="ph has-img"><img src="img/set-ribbon.webp" width="479" height="720" loading="lazy" alt="레드, 아이보리, 그레이 벨벳 리본"><span class="ph-n">01</span></div><figcaption>벨벳 리본</figcaption></figure>
+          <figure class="slot"><div class="ph has-img"><img src="img/set-pinecone.webp" width="596" height="720" loading="lazy" alt="자연색 솔방울과 눈 덮인 솔방울"><span class="ph-n">02</span></div><figcaption>솔방울</figcaption></figure>
+          <figure class="slot"><div class="ph has-img"><img src="img/set-berry.webp" width="579" height="720" loading="lazy" alt="레드 베리와 화이트 베리 가지"><span class="ph-n">03</span></div><figcaption><span class="d-only">레드·화이트 </span>베리</figcaption></figure>
           <figure class="slot up"><div class="ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="투알 드 주이 패턴에 네이비·샴페인 골드·와인 리본을 묶은 트리랜드 시그니처 상자"><span class="ph-n">04</span></div><figcaption>시그니처 상자</figcaption></figure>
         </div>
         <button type="button" class="set-more" id="setMore">구성 전체 보기 <span aria-hidden="true">›</span></button>
@@ -1492,7 +1494,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     if (setMore) setMore.addEventListener('click', () => {
       const card = document.querySelector('.set-card');
       show('<p class="cc-k">2026 SEASON</p><p class="ic-title">2026 시즌 구성</p>' +
-        '<p class="cc-d">올해부터 포인세티아·솔방울·레드베리 장식이 기본으로 들어갑니다.</p>' +
+        '<p class="cc-d">올해부터 벨벳 리본·솔방울·베리 장식이 기본으로 들어갑니다.</p>' +
         '<p class="set-up"><b>시그니처 상자, 30% 더 크게 자체 제작했습니다.</b>디올 느낌이 나는 투알 드 주이 패턴은 그대로, 크기만 트리에 맞춰 키웠습니다.</p>' +
         '<div class="set-pop">' + card.querySelector('.inc dl').outerHTML + '<p class="ic-h" style="margin-top:14px">2026 추가 장식</p>' + card.querySelector('.slots').outerHTML + '</div>' +
         '<div class="cc-b"><button type="button" class="cc-main" data-close>닫기</button></div>', setMore);
