@@ -824,8 +824,94 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 /* phones: smaller filter buttons so all six fit on one line */
 @media (max-width:640px){.case-filter{gap:4px}.case-filter button{flex:1 1 auto;min-height:38px;padding:7px 4px;font-size:clamp(11.5px,3.3vw,13px);letter-spacing:-.02em;white-space:nowrap}}
 @media (max-width:350px){.case-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:900px){.set-card .slot:not(.up) .ph.has-img img{height:66%;bottom:5%;transform:none}}
-.set-pop .slot:not(.up) .ph.has-img img{height:66%;bottom:5%;transform:none}
+@media (max-width:900px){.set-card .slot:not(.up) .ph.has-img img{height:78%;bottom:4%;transform:none}}
+.set-pop .slot:not(.up) .ph.has-img img{height:72%;bottom:4%;transform:none}
+@media (max-width:900px){.set-card .ph-n{left:5px;top:5px}.set-card .ph-n::before{font-size:7.5px!important;padding:1px 4px!important;letter-spacing:.05em!important;line-height:1.35}.set-card .slot.up .ph-n::before{font-size:7px!important;padding:1px 3px!important;letter-spacing:0!important}}
+.slot .ph.has-img img[src*="set-ribbon"]{height:60%!important;bottom:7%!important;transform:none!important}
+@media (max-width:900px){.set-card .slot .ph.has-img img[src*="set-ribbon"]{height:66%!important;bottom:4%!important}}
+/* 2026 slots: warm ivory ground + soft floor shadow */
+.slot .ph,.slot .ph.has-img{background:#F1ECE3}
+.slot:not(.up) .ph.has-img::after{content:"";position:absolute;left:20%;right:20%;bottom:3%;height:9%;border-radius:50%;background:radial-gradient(ellipse at center,rgba(70,50,30,.24) 0%,rgba(70,50,30,.10) 45%,transparent 72%);z-index:0;pointer-events:none}
+.slot:not(.up) .ph.has-img img{z-index:1;filter:drop-shadow(0 3px 3px rgba(60,40,20,.16))}
+/* 2026 card: gold double frame, warm ground, frame draws in once */
+.set-card{background:#FAF7F0;border-color:#D8C8A2}
+.set-card::before{border-color:color-mix(in srgb,#B89A5E 62%,transparent)}
+@media (prefers-reduced-motion: no-preference){
+  .set-card.fx::before{clip-path:inset(0 100% 100% 0);transition:clip-path 1.4s cubic-bezier(.6,0,.2,1) .15s}
+  .set-card.fx.on::before{clip-path:inset(0 0 0 0)}
+  .set-card.fx .set-mark{opacity:0;transform:translateY(8px);transition:opacity 1.2s ease 1.1s,transform 1.2s ease 1.1s}
+  .set-card.fx.on .set-mark{opacity:.06;transform:none}
+}
+/* add-on option cards */
+.xo-hint{margin:-4px 0 10px;font-size:12px;color:var(--muted)}
+.xopts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+@media (min-width:700px){.xopts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.xo{position:relative;display:grid;gap:8px;align-content:start;padding:10px;border:1px solid var(--line);background:var(--paper);border-radius:2px;min-width:0;transition:border-color .2s,background-color .2s}
+.xo-hit{display:grid;gap:6px;align-content:start;cursor:pointer;min-width:0}
+.xo-sig .xo-hit{cursor:default}
+.xo-in{position:absolute;opacity:0;width:1px;height:1px}
+.xo-top{display:grid;gap:2px;padding-right:22px}
+.xo-top b{font-size:14px;font-weight:600;line-height:1.4}
+.xo-top em{font-style:normal;font-size:13px;font-weight:600;color:var(--pine)}
+.xo-sub{font-size:11.5px;line-height:1.45;color:var(--muted)}
+.xo-ph{position:relative;display:grid;place-items:center;aspect-ratio:1/1;background:#F1ECE3;color:var(--muted);font-size:12px;overflow:hidden}
+.xo-ph img{position:absolute;inset:8%;width:84%;height:84%;object-fit:contain}
+.xo:not(.xo-sig)::after{content:"";position:absolute;top:10px;right:10px;width:18px;height:18px;border:1px solid var(--line);border-radius:50%;background:var(--paper)}
+.xo.on{border-color:var(--pine);background:#E9EDE7;box-shadow:inset 0 0 0 .5px var(--pine)}
+.xo.on::after{border-color:var(--pine);background:var(--pine) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='m4 8.2 2.6 2.6L12 5.4' fill='none' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/12px no-repeat}
+.xo:has(.xo-in:focus-visible){outline:2px solid var(--berry);outline-offset:2px}
+.xo-shape{display:none;gap:6px}
+.xo.on .xo-shape{display:flex}
+.xo-shape label{flex:1}
+.xo-shape input{position:absolute;opacity:0;width:1px;height:1px}
+.xo-shape span{display:flex;justify-content:center;align-items:center;min-height:34px;border:1px solid var(--line);background:var(--paper);font-size:13px;font-weight:600;cursor:pointer;border-radius:2px}
+.xo-shape input:checked+span{border-color:var(--pine);background:var(--pine);color:#F4F1EA}
+.xo-shape input:focus-visible+span{outline:2px solid var(--berry);outline-offset:2px}
+.xo-sig .stepper{justify-content:center;gap:14px}
+.xo-sig .stepper button{width:36px;height:36px}
+.sz .sz-box{display:block;font-size:12px;color:#8A6E3E}
+@media (max-width:640px){.xo{padding:8px}.xo-top b{font-size:13px}.xo-top{padding-right:20px}.xo:not(.xo-sig)::after{top:8px;right:8px;width:16px;height:16px}}
+.cc-x{z-index:3}
+.xo{grid-template-rows:auto auto}.xo-hit{display:flex;flex-direction:column;gap:6px}.xo-hit .xo-ph{margin-top:auto;width:100%}
+/* phones: option cards 3 per row */
+@media (max-width:699px){
+  .xopts{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .xo{padding:7px;gap:6px}
+  .xo-hit{gap:4px}
+  .xo-top{padding-right:0}
+  .xo-top b{font-size:12px;line-height:1.35;letter-spacing:-.02em;padding-right:16px}
+  .xo-top em{font-size:11.5px}
+  .xo-sub{font-size:10.5px;line-height:1.4;letter-spacing:-.02em}
+  .xo-box .xo-sub .xs-long{display:none}
+  .xo-ph{font-size:10.5px}
+  .xo:not(.xo-sig)::after{top:6px;right:6px;width:14px;height:14px}
+  .xo.on::after{background-size:10px}
+  .xo-shape{gap:4px}.xo-shape span{min-height:28px;font-size:12px}
+  .xo-sig .stepper{gap:6px}.xo-sig .stepper button{width:26px;height:26px;font-size:15px}.xo-sig .stepper output{min-width:14px;font-size:13px}
+}
+#giftBase:empty{display:none}
+/* option photo carousel */
+.xo-car{display:block;place-items:initial}
+.xc-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.xc-track::-webkit-scrollbar{display:none}
+.xo-ph .xc-track img{position:static;inset:auto;flex:0 0 100%;width:100%;height:100%;object-fit:cover;scroll-snap-align:start}
+.xc-nav{position:absolute;top:50%;z-index:2;width:24px;height:24px;margin-top:-12px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(250,247,240,.88);color:var(--ink);box-shadow:0 1px 4px rgba(0,0,0,.2);cursor:pointer;transition:opacity .2s}
+.xc-nav svg{width:11px;height:11px}
+.xc-prev{left:5px}.xc-next{right:5px}
+.xc-nav[disabled]{opacity:.35;cursor:default}
+.xc-dots{display:flex;justify-content:center;gap:6px;margin-top:-1px}
+.xc-dots button{width:6px;height:6px;padding:0;border:0;border-radius:50%;background:#CFC6B2;cursor:pointer;position:relative}
+.xc-dots button::before{content:"";position:absolute;inset:-8px}
+.xc-dots button.on{background:var(--pine);width:14px;border-radius:3px;transition:width .2s}
+@media (max-width:699px){.xc-nav{width:18px;height:18px;margin-top:-9px}.xc-nav svg{width:9px;height:9px}.xc-prev{left:3px}.xc-next{right:3px}}
+.xo-ph.xo-photo img{inset:0;width:100%;height:100%;object-fit:cover}
+/* align photos across cards: equal header height */
+.xo-hit .xo-ph{margin-top:0}
+.xo-top{min-height:64px;align-content:start}
+.xo-gb{text-align:center}
+@media (max-width:699px){.xo-top{min-height:72px}}
+.xo.on .xo-shape+.xo-shape{margin-top:-2px}
+@media (max-width:699px){.xo-3{gap:3px}.xo-3 span{font-size:11px;letter-spacing:-.03em}}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -896,14 +982,14 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <dl>
             <div><dt>트리</dt><dd>입체 성형 PE 잎, LED 조명 내장</dd></div>
             <div><dt>장식</dt><dd>오너먼트, 가랜드·리본, 상단 별</dd></div>
-            <div><dt>하단 연출</dt><dd>시그니처 상자 5개, 받침대 가리개</dd></div>
+            <div><dt>하단 연출</dt><dd>시그니처 상자(1.95m 3개 · 2.3m 5개 · 2.9m 8개, 1.35m 미포함), 받침대 가리개</dd></div>
             <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>벨벳 리본, 솔방울, 레드·화이트 베리, 자체 제작 시그니처 상자</dd></div>
             <div><dt>안전</dt><dd>KC 인증 전기안정기(SMPS) 설치</dd></div>
             <div><dt>서비스</dt><dd>방문 설치, 1월 말 철거·회수</dd></div>
           </dl>
         </div>
         <div class="slots" aria-label="2026 추가 장식">
-          <figure class="slot"><div class="ph has-img"><img src="img/set-ribbon.webp" width="479" height="720" loading="lazy" alt="레드, 아이보리, 그레이 벨벳 리본"><span class="ph-n">01</span></div><figcaption>벨벳 리본</figcaption></figure>
+          <figure class="slot"><div class="ph has-img"><img src="img/set-ribbon.webp" width="720" height="716" loading="lazy" alt="레드, 아이보리, 그레이 벨벳 리본"><span class="ph-n">01</span></div><figcaption>벨벳 리본</figcaption></figure>
           <figure class="slot"><div class="ph has-img"><img src="img/set-pinecone.webp" width="596" height="720" loading="lazy" alt="자연색 솔방울과 눈 덮인 솔방울"><span class="ph-n">02</span></div><figcaption>솔방울</figcaption></figure>
           <figure class="slot"><div class="ph has-img"><img src="img/set-berry.webp" width="579" height="720" loading="lazy" alt="레드 베리와 화이트 베리 가지"><span class="ph-n">03</span></div><figcaption><span class="d-only">레드·화이트 </span>베리</figcaption></figure>
           <figure class="slot up"><div class="ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="투알 드 주이 패턴에 네이비·샴페인 골드·와인 리본을 묶은 트리랜드 시그니처 상자"><span class="ph-n">04</span></div><figcaption>시그니처 상자</figcaption></figure>
@@ -1075,10 +1161,10 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
       <div class="sheet-title"><h3>크기별 가격</h3><p>트리 구성 1식 · 1차 얼리버드 15% 할인가</p></div>
       <div class="sheet" role="table" aria-label="크기별 가격">
         <div class="sheet-row sheet-head" role="row"><span role="columnheader">사진</span><span role="columnheader">크기</span><span role="columnheader">정가</span><span role="columnheader">얼리버드가</span></div>
-        <div class="sheet-row" role="row" data-size-card="135" tabindex="0" aria-label="1.35m 자세히 보기"><img role="cell" src="img/size-135.webp" width="600" height="800" loading="lazy" alt="1.35m 설치 예"><div class="sz" role="cell"><b class="num">1.35m</b><span>하단 지름 81cm · 작은 공간, 입구 옆</span></div><span class="list-price num" role="cell">340,000원</span><span class="pre-price num" role="cell">289,000원<small class="save">51,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
-        <div class="sheet-row" role="row" data-size-card="195" tabindex="0" aria-label="1.95m 슬림 자세히 보기"><img role="cell" src="img/size-195.webp" width="600" height="800" loading="lazy" alt="1.95m 슬림 설치 예"><div class="sz" role="cell"><b class="num">1.95m 슬림</b><span>하단 지름 100cm · 폭이 좁은 자리</span></div><span class="list-price num" role="cell">590,000원</span><span class="pre-price num" role="cell">500,000원<small class="save">90,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
-        <div class="sheet-row is-pop" role="row" data-size-card="230" tabindex="0" aria-label="2.3m 자세히 보기"><img role="cell" src="img/size-230.webp" width="600" height="801" loading="lazy" alt="2.3m 설치 예"><div class="sz" role="cell"><b class="num">2.3m<span class="pop">인기</span></b><span>하단 지름 140cm · 카페, 사무실, 가정</span></div><span class="list-price num" role="cell">800,000원</span><span class="pre-price num" role="cell">680,000원<small class="save">120,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
-        <div class="sheet-row" role="row" data-size-card="290" tabindex="0" aria-label="2.9m 자세히 보기"><img role="cell" src="img/size-290.webp" width="600" height="800" loading="lazy" alt="2.9m 설치 예"><div class="sz" role="cell"><b class="num">2.9m</b><span>하단 지름 155cm · 천장이 높은 로비</span></div><span class="list-price num" role="cell">1,500,000원</span><span class="pre-price num" role="cell">1,275,000원<small class="save">225,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row" role="row" data-size-card="135" tabindex="0" aria-label="1.35m 자세히 보기"><img role="cell" src="img/size-135.webp" width="600" height="800" loading="lazy" alt="1.35m 설치 예"><div class="sz" role="cell"><b class="num">1.35m</b><span>하단 지름 81cm · 작은 공간, 입구 옆</span><span class="sz-box">시그니처 상자 미포함</span></div><span class="list-price num" role="cell">340,000원</span><span class="pre-price num" role="cell">289,000원<small class="save">51,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row" role="row" data-size-card="195" tabindex="0" aria-label="1.95m 슬림 자세히 보기"><img role="cell" src="img/size-195.webp" width="600" height="800" loading="lazy" alt="1.95m 슬림 설치 예"><div class="sz" role="cell"><b class="num">1.95m 슬림</b><span>하단 지름 100cm · 폭이 좁은 자리</span><span class="sz-box">시그니처 상자 3개 포함</span></div><span class="list-price num" role="cell">590,000원</span><span class="pre-price num" role="cell">500,000원<small class="save">90,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row is-pop" role="row" data-size-card="230" tabindex="0" aria-label="2.3m 자세히 보기"><img role="cell" src="img/size-230.webp" width="600" height="801" loading="lazy" alt="2.3m 설치 예"><div class="sz" role="cell"><b class="num">2.3m<span class="pop">인기</span></b><span>하단 지름 140cm · 카페, 사무실, 가정</span><span class="sz-box">시그니처 상자 5개 포함</span></div><span class="list-price num" role="cell">800,000원</span><span class="pre-price num" role="cell">680,000원<small class="save">120,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row" role="row" data-size-card="290" tabindex="0" aria-label="2.9m 자세히 보기"><img role="cell" src="img/size-290.webp" width="600" height="800" loading="lazy" alt="2.9m 설치 예"><div class="sz" role="cell"><b class="num">2.9m</b><span>하단 지름 155cm · 천장이 높은 로비</span><span class="sz-box">시그니처 상자 8개 포함</span></div><span class="list-price num" role="cell">1,500,000원</span><span class="pre-price num" role="cell">1,275,000원<small class="save">225,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
       </div>
       <p class="sheet-note">부가세 별도 · 세금계산서 발행, 카드 결제 가능</p>
       <p class="safe-note"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 2.5 3.6v4c0 3.3 2.3 5.8 5.5 6.9 3.2-1.1 5.5-3.6 5.5-6.9v-4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="m5.6 8 1.7 1.7L10.6 6.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>모든 트리에는 화재 예방을 위해 KC 인증 전기안정기(SMPS)를 설치합니다.</p>
@@ -1137,17 +1223,24 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           </fieldset>
           <fieldset>
             <legend>추가 장식 (선택)</legend>
-            <div class="checks">
-              <label class="check"><input type="checkbox" id="x1" value="10cm 큰 오너먼트 9개" data-price="20000">10cm 큰 오너먼트 9개<em class="num">+20,000원</em></label>
-              <label class="check"><input type="checkbox" id="x2" value="25cm 하단 장식 3개" data-price="35000">25cm 하단 장식 3개<em class="num">+35,000원</em></label>
-              <label class="check"><input type="checkbox" id="x3" value="인형 오너먼트 6개" data-price="25000">인형 오너먼트 6개<em class="num">+25,000원</em></label>
-              <label class="check"><input type="checkbox" id="x4" value="라탄 바스켓 받침대" data-price="20000">라탄 바스켓 받침대로 변경<em class="num">+20,000원</em></label>
-              <div class="stepper"><span>시그니처 상자 추가<small class="gift-base">기본 5개 포함</small></span><button type="button" id="giftMinus" aria-label="시그니처 상자 한 개 빼기">−</button><output id="giftNum" aria-live="polite">0</output><button type="button" id="giftPlus" aria-label="시그니처 상자 한 개 더하기">+</button><em class="num">개당 5,000원</em></div>
+            <p class="xo-hint">금액은 트리 1개 기준이며, 고른 트리 개수만큼 더해집니다.</p>
+            <div class="xopts" id="xopts">
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xDoll" value="인형 오너먼트 6개 추가" data-price="25000"><span class="xo-top"><b>인형 오너먼트 6개 추가</b><em class="num">+25,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-doll-1.webp" width="800" height="800" loading="lazy" alt="곰 인형 오너먼트 6개 세트"><img src="img/opt-doll-2.webp" width="800" height="800" loading="lazy" alt="펭귄, 산타, 순록 등 인형 오너먼트 6개 세트"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label></div>
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xRattan" value="라탄 바스켓 받침대로 변경" data-price="20000"><span class="xo-top"><b>라탄 바스켓 받침대로 변경</b><em class="num">+20,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-rattan-1.webp" width="640" height="640" loading="lazy" alt="짙은 갈색 라탄 바스켓 받침대"><img src="img/opt-rattan-2.webp" width="640" height="640" loading="lazy" alt="흰색 라탄 바스켓 받침대"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label>
+                <div class="xo-shape" role="radiogroup" aria-label="받침대 색상"><label><input type="radio" name="rattanColor" value="브라운" data-slide="0" checked><span>브라운</span></label><label><input type="radio" name="rattanColor" value="흰색" data-slide="1"><span>흰색</span></label></div></div>
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xSnow" value="하단 눈사람 인형 3종 세트 추가" data-price="24000"><span class="xo-top"><b>하단 눈사람 인형 3종 세트 추가</b><em class="num">+24,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-snow-1.webp" width="800" height="800" loading="lazy" alt="트리 아래 시그니처 상자 사이에 놓은 눈사람 인형 3종"><img src="img/opt-snow-2.webp" width="800" height="800" loading="lazy" alt="회색 털모자를 쓴 눈사람 인형 3종"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label>
+                <div class="xo-shape" role="radiogroup" aria-label="눈사람 인형 색상"><label><input type="radio" name="snowColor" value="레드" data-slide="0" checked><span>레드</span></label><label><input type="radio" name="snowColor" value="그레이" data-slide="1"><span>그레이</span></label></div></div>
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xMetal" value="메탈 LED 상자 3종 세트 추가" data-price="70000"><span class="xo-top"><b>메탈 LED 상자 3종 세트 추가</b><em class="num">+70,000원</em></span><span class="xo-ph xo-photo"><img src="img/opt-metal.webp" width="796" height="796" loading="lazy" alt="골드 리본을 두른 빨간 메탈 LED 상자 3종"></span></label></div>
+              <div class="xo xo-box"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xPlain" value="단색 상자 12합 세트" data-price="45000"><span class="xo-top"><b>단색 상자 12합 세트</b><em class="num">+45,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-plain-1.webp" width="800" height="800" loading="lazy" alt="빨간 벨벳 리본을 두른 흰색 상자 12합"><img src="img/opt-plain-2.webp" width="800" height="800" loading="lazy" alt="빨간 벨벳 리본을 두른 골드 상자 12합"><img src="img/opt-plain-3.webp" width="800" height="800" loading="lazy" alt="벨벳 리본을 두른 레드 상자 12합"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button><button type="button" aria-label="3번 사진"></button></span></label>
+                <div class="xo-shape xo-3" role="radiogroup" aria-label="상자 색상"><label><input type="radio" name="boxColor" value="흰색" data-slide="0" checked><span>흰색</span></label><label><input type="radio" name="boxColor" value="골드" data-slide="1"><span>골드</span></label><label><input type="radio" name="boxColor" value="레드" data-slide="2"><span>레드</span></label></div>
+                <div class="xo-shape" role="radiogroup" aria-label="상자 모양"><label><input type="radio" name="boxShape" value="사각" checked><span>사각</span></label><label><input type="radio" name="boxShape" value="원형"><span>원형</span></label></div></div>
+              <div class="xo xo-sig"><div class="xo-hit"><span class="xo-top"><b>시그니처 상자 추가</b><em class="num">개당 5,000원</em></span><span class="xo-ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="트리랜드 시그니처 상자"></span></div>
+                <div class="stepper"><button type="button" id="giftMinus" aria-label="시그니처 상자 한 개 빼기">−</button><output id="giftNum" aria-live="polite">0</output><button type="button" id="giftPlus" aria-label="시그니처 상자 한 개 더하기">+</button></div><small class="xo-sub xo-gb" id="giftBase">기본 포함 개수는 크기마다 다릅니다</small></div>
             </div>
           </fieldset>
           <fieldset>
             <legend>추가 소품</legend>
-            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-wreath-red.webp" alt="" width="392" height="382" loading="lazy"><img src="img/prop-snowman.webp" alt="" width="1099" height="824" loading="lazy"><img src="img/prop-dolls.webp" alt="" width="894" height="475" loading="lazy"></span><span class="pl-t">리스, 눈사람 등 소품 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
+            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-wreath-red.webp" alt="" width="392" height="382" loading="lazy"><img src="img/prop-snowman.webp" alt="" width="1099" height="824" loading="lazy"></span><span class="pl-t">리스, 눈사람 등 소품 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
           </fieldset>
         </form>
 
@@ -1427,10 +1520,10 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
       gold: ['img/asan-gold.webp', '아산 솔그림 베이커리카페', '2.9m']
     };
     const SIZES = {
-      '135': { t: '1.35m', d: '81cm', img: 'img/size-135.webp', fit: '매장 입구, 카운터 옆, 작은 스터디카페처럼 자리가 넉넉하지 않은 곳', cases: ['study'], chip: 's135' },
-      '195': { t: '1.95m 슬림', d: '100cm', img: 'img/size-195.webp', fit: '병원 대기실이나 복도처럼 폭은 좁고 높이를 살리고 싶은 자리', cases: ['guro'], chip: 's195' },
-      '230': { t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['petit', 'salon', 'bath'], chip: 's230', pop: true },
-      '290': { t: '2.9m', d: '155cm', img: 'img/size-290.webp', fit: '천장이 높은 로비, 대형 카페, 극장처럼 멀리서도 보여야 하는 곳', cases: ['asan', 'biz', 'arko'], chip: 's290' }
+      '135': { box: 0, t: '1.35m', d: '81cm', img: 'img/size-135.webp', fit: '매장 입구, 카운터 옆, 작은 스터디카페처럼 자리가 넉넉하지 않은 곳', cases: ['study'], chip: 's135' },
+      '195': { box: 3, t: '1.95m 슬림', d: '100cm', img: 'img/size-195.webp', fit: '병원 대기실이나 복도처럼 폭은 좁고 높이를 살리고 싶은 자리', cases: ['guro'], chip: 's195' },
+      '230': { box: 5, t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['petit', 'salon', 'bath'], chip: 's230', pop: true },
+      '290': { box: 8, t: '2.9m', d: '155cm', img: 'img/size-290.webp', fit: '천장이 높은 로비, 대형 카페, 극장처럼 멀리서도 보여야 하는 곳', cases: ['asan', 'biz', 'arko'], chip: 's290' }
     };
     const COLORS = {
       red: { t: '레드 & 골드', img: 'img/ornament-red-set.webp', d: '붉은 볼과 금빛 장식. 나무 가구나 벽돌 벽이 있는 공간에 잘 맞습니다.', cases: ['asan'], radio: 'cRed' },
@@ -1450,22 +1543,14 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     function pick(id) { if (/^s\d{3}$/.test(id) && window.__estPick) return window.__estPick(id); const r = document.getElementById(id); if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); } }
     const propsBtn = document.getElementById('propsBtn');
     if (propsBtn) propsBtn.addEventListener('click', () => {
-      const x3 = document.getElementById('x3');
       show('<p class="cc-k">추가 소품</p><p class="ic-title">크리스마스 소품 대여</p>' +
         '<p class="cc-d">트리와 함께 크리스마스 소품도 대여합니다.</p>' +
         '<div class="pr-list">' +
         '<figure class="pr"><div class="pr-pair"><img src="img/prop-wreath-red.webp" alt="레드 리스 장식" loading="lazy"><img src="img/prop-wreath-green.webp" alt="그린 리스 장식" loading="lazy"></div><figcaption><b>60cm 리스 장식</b><span>개별 문의</span></figcaption></figure>' +
         '<figure class="pr"><img src="img/prop-snowman.webp" alt="LED 눈사람 장식" loading="lazy"><figcaption><b>2.7m LED 눈사람 장식</b><small>실내용</small><span>개별 문의</span></figcaption></figure>' +
-        '<figure class="pr"><img src="img/prop-dolls.webp" alt="인형 오너먼트" loading="lazy"><figcaption><b>인형 오너먼트 6개</b><span>+25,000원</span></figcaption>' +
-        '<button type="button" class="pr-add" aria-pressed="' + (x3 && x3.checked) + '">' + (x3 && x3.checked ? '견적에 담김 ✓' : '견적에 담기') + '</button></figure>' +
         '</div><p class="pr-note">소품 가격은 개별로 안내해 드립니다. 상담하실 때 필요한 소품을 함께 말씀해 주세요.</p>' +
         '<div class="cc-b"><button type="button" class="cc-main" data-close>닫기</button></div>', propsBtn);
       body.querySelector('[data-close]').addEventListener('click', () => dlg.close());
-      const add = body.querySelector('.pr-add');
-      add.addEventListener('click', () => {
-        if (!x3) return; x3.checked = !x3.checked; x3.dispatchEvent(new Event('change', { bubbles: true }));
-        add.setAttribute('aria-pressed', String(x3.checked)); add.textContent = x3.checked ? '견적에 담김 ✓' : '견적에 담기';
-      });
     });
     const setMore = document.getElementById('setMore');
     if (setMore) setMore.addEventListener('click', () => {
@@ -1481,7 +1566,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
       const z = SIZES[key], pr = priceOf(z.chip);
       show('<p class="cc-k">크기 · 하단 지름 ' + z.d + '</p><p class="ic-title">' + esc(z.t) + (z.pop ? '<small>인기</small>' : '') + '</p>' +
         '<img class="ic-img tall" src="' + z.img + '" alt="' + esc(z.t) + ' 설치 예">' +
-        '<p class="ic-meta"><span>정가 <s>' + won(pr[0]) + '</s></span><span><b style="color:var(--berry)">1차 얼리버드 ' + won(pr[1]) + '</b></span></p>' +
+        '<p class="ic-meta"><span>' + (z.box ? '시그니처 상자 ' + z.box + '개 포함' : '시그니처 상자 미포함') + '</span><span>정가 <s>' + won(pr[0]) + '</s></span><span><b style="color:var(--berry)">1차 얼리버드 ' + won(pr[1]) + '</b></span></p>' +
         '<p class="cc-d">' + esc(z.fit) + '</p>' + caseRow(z.cases) +
         '<div class="cc-b"><button type="button" class="cc-main" data-go>이 크기로 견적 내기</button></div>', from);
       body.querySelector('[data-go]').addEventListener('click', () => goEstimate(() => pick(z.chip)));
@@ -1710,13 +1795,16 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     const disc = base - earlySum;
     const mRate = MULTI[count] || 0, multi = Math.round(earlySum * mRate);
     const size = items.map(i => i.name + ' ' + i.n + '개').join(', ');
-    const adds = [...form.querySelectorAll('.checks input[type=checkbox]:checked')];
-    let add = adds.reduce((s, c) => s + +c.dataset.price, 0) + gifts * 5000;
-    const names = adds.map(c => c.value); if (gifts) names.push('시그니처 상자 ' + gifts + '개 추가');
+    const adds = [...form.querySelectorAll('.xo-in:checked')];
+    const shapeEl = form.querySelector('input[name=boxShape]:checked'), shape = shapeEl ? shapeEl.value : '사각';
+    let add = adds.reduce((a, c) => a + +c.dataset.price, 0) * count + gifts * 5000;
+    const names = adds.map(c => { const o = [...c.closest('.xo').querySelectorAll('.xo-shape input:checked')].map(x => x.value).join('·'); return c.value + (o ? '(' + o + ')' : '') + (count > 1 ? ' ×' + count : ''); }); if (gifts) names.push('시그니처 상자 ' + gifts + '개 추가');
+    const BOX = { '1.35m': 0, '1.95m 슬림': 3, '2.3m': 5, '2.9m': 8 };
+    const boxBase = items.reduce((a, i) => a + (BOX[i.name] || 0) * i.n, 0);
     const smin = +reg.dataset.min, smax = +reg.dataset.max;
     let tmin = base - disc - multi + add + smin, tmax = base - disc - multi + add + smax;
     if (!count) { tmin = 0; tmax = 0; }
-    return { size: size || '선택 안 함', count, color: color.value, region: reg.value, base, disc, mRate, multi, add, names, smin, smax, tmin, tmax };
+    return { size: size || '선택 안 함', boxBase, count, color: color.value, region: reg.value, base, disc, mRate, multi, add, names, smin, smax, tmin, tmax };
   }
   const range = (a, b) => a === b ? won(a) : won(a) + ' ~ ' + won(b);
   function paint() {
@@ -1728,6 +1816,8 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     $('#rMultiK').textContent = s.count + '개 추가 ' + Math.round(s.mRate * 100) + '%';
     $('#rMultiD').textContent = '−' + won(s.multi);
     $('#rAdd').textContent = s.add ? won(s.add) : '없음';
+    $('#giftBase').textContent = !s.count ? '기본 포함 개수는 크기마다 다릅니다' : s.boxBase ? '고른 트리에 기본 ' + s.boxBase + '개 포함' : '';
+    document.querySelectorAll('.xo').forEach(x => { const c = x.querySelector('.xo-in'); if (c) x.classList.toggle('on', c.checked); });
     $('#rShip').textContent = s.smax === 0 ? s.region + ' · 무료' : s.region + ' · ' + range(s.smin, s.smax);
     $('#rTotal').textContent = range(s.tmin, s.tmax);
     $('#barTotal').textContent = range(s.tmin, s.tmax);
@@ -1748,7 +1838,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
   }
   function quoteText() {
     const s = state();
-    return ['[트리랜드 예상 견적]', '크기: ' + s.size, '색상: ' + s.color, '추가 장식: ' + (s.names.join(', ') || '없음'),
+    return ['[트리랜드 예상 견적]', '크기: ' + s.size, '색상: ' + s.color, '시그니처 상자: ' + (s.count ? (s.boxBase ? '기본 ' + s.boxBase + '개 포함' : '기본 미포함') : '-'), '추가 장식: ' + (s.names.join(', ') || '없음'),
       '설치 지역: ' + s.region, '예상 합계: ' + range(s.tmin, s.tmax) + ' (1차 얼리버드 15%' + (s.multi ? ' + ' + s.count + '개 추가 ' + Math.round(s.mRate * 100) + '%' : '') + ' 할인 적용, 부가세 별도)'].concat(s.count >= 4 ? ['트리 ' + s.count + '개 · 4개 이상 추가 할인 별도 견적 요청'] : [], ['', '공간 사진을 함께 보내드립니다.']).join('\n');
   }
   const bar = $('#bar'), barBtn = $('#barBtn');
@@ -1873,4 +1963,22 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
   addEventListener('scroll',upd,{passive:true});
   addEventListener('resize',function(){size();upd()});
 })();
+</script>
+<script>
+(function(){var c=document.querySelector('.set-card');if(!c||!('IntersectionObserver' in window)||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+c.classList.add('fx');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){c.classList.add('on');o.disconnect()}},{threshold:.25}).observe(c)})();
+</script>
+<script>
+document.querySelectorAll('.xo-car').forEach(function(car){
+  var t=car.querySelector('.xc-track'),n=t.children.length,card=car.closest('.xo'),dots=card?[].slice.call(card.querySelectorAll('.xc-dots button')):[],pv=car.querySelector('.xc-prev'),nx=car.querySelector('.xc-next');
+  function cur(){return Math.round(t.scrollLeft/Math.max(1,t.clientWidth))}
+  function go(i,e){if(e){e.preventDefault();e.stopPropagation()}i=Math.max(0,Math.min(n-1,i));t.scrollTo({left:i*t.clientWidth,behavior:'smooth'})}
+  function sync(){var i=cur();dots.forEach(function(d,k){d.classList.toggle('on',k===i)});pv.disabled=i<=0;nx.disabled=i>=n-1}
+  pv.addEventListener('click',function(e){go(cur()-1,e)});nx.addEventListener('click',function(e){go(cur()+1,e)});
+  dots.forEach(function(d,k){d.addEventListener('click',function(e){go(k,e)})});
+  t.addEventListener('scroll',sync,{passive:true});sync();
+});
+</script>
+<script>
+document.querySelectorAll('.xo-shape input[data-slide]').forEach(function(r){r.addEventListener('change',function(){var t=r.closest('.xo').querySelector('.xc-track');if(t)t.scrollTo({left:+r.dataset.slide*t.clientWidth,behavior:'smooth'})})});
 </script>
