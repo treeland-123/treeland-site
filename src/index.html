@@ -821,8 +821,9 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 
 /* tablet: place names 2x2 so they don't break mid-word */
 @media (min-width:641px) and (max-width:900px){.clients{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 0}.clients li:nth-child(odd){border-left:0;padding-left:0}}
-/* phones: case filter stays on one line and scrolls sideways */
-@media (max-width:640px){.case-filter{flex-wrap:nowrap;overflow-x:auto;margin-inline:calc(var(--gutter)*-1);padding-inline:var(--gutter);scrollbar-width:none;-webkit-overflow-scrolling:touch}.case-filter::-webkit-scrollbar{display:none}.case-filter button{flex:none}}
+/* phones: smaller filter buttons so all six fit on one line */
+@media (max-width:640px){.case-filter{gap:4px}.case-filter button{flex:1 1 auto;min-height:38px;padding:7px 4px;font-size:clamp(11.5px,3.3vw,13px);letter-spacing:-.02em;white-space:nowrap}}
+@media (max-width:350px){.case-filter{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
