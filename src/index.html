@@ -907,11 +907,51 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 .xo-ph.xo-photo img{inset:0;width:100%;height:100%;object-fit:cover}
 /* align photos across cards: equal header height */
 .xo-hit .xo-ph{margin-top:0}
-.xo-top{min-height:64px;align-content:start}
+.xo-top{align-content:start}
 .xo-gb{text-align:center}
-@media (max-width:699px){.xo-top{min-height:72px}}
 .xo.on .xo-shape+.xo-shape{margin-top:-2px}
 @media (max-width:699px){.xo-3{gap:3px}.xo-3 span{font-size:11px;letter-spacing:-.03em}}
+.pr-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.pr-trio img{aspect-ratio:3/4;object-fit:cover;background:#fff}
+.pr img.pr-tall{aspect-ratio:4/5;object-fit:cover;max-height:min(60vh,520px);width:auto;max-width:100%;margin:0 auto}
+.pr img.pr-sq{aspect-ratio:1/1;object-fit:contain;max-height:min(50vh,380px);width:auto;max-width:100%;margin:0 auto}
+.pr-white img{background:#fff;object-fit:contain}
+.pr-labels{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:-2px;font-size:12px;color:var(--muted);text-align:center}
+.pr img.pr-orig{width:auto;max-width:100%;height:auto;max-height:min(70vh,600px);margin:0 auto;object-fit:contain}
+/* props popup: 2-column cards */
+.pc-h{margin:14px 0 8px;font-size:12px;font-weight:700;letter-spacing:.1em;color:#8A6E3E}
+.pc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px}
+.pc{margin:0;display:grid;gap:6px;align-content:start;min-width:0}
+.pc-wide{grid-column:1/-1}
+.pc-ph{position:relative;display:block;aspect-ratio:var(--r,1/1);overflow:hidden;background:#fff;border-radius:2px}
+.pc-ph .xc-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
+.pc-ph .xc-track::-webkit-scrollbar{display:none}
+.pc-z{flex:0 0 100%;width:100%;height:100%;padding:0;border:0;background:#fff;cursor:zoom-in;scroll-snap-align:start;position:relative}
+.pc-z img{display:block;width:100%;height:100%;object-fit:cover}
+.pc-fit .pc-z img{object-fit:contain}
+.pc-z img[data-tag]+*{display:none}
+.pc figcaption{display:grid;gap:1px}
+.pc figcaption b{font-family:var(--display);font-size:15px;font-weight:600;line-height:1.35}
+.pc figcaption small{font-size:12px;color:var(--muted);line-height:1.4}
+.pc .xc-dots{margin-top:0}
+dialog.lb{z-index:50}
+@media (min-width:641px){.pc figcaption b{font-size:16px}}
+.pc figcaption b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pc-z img[src*="prop-lamp"]{transform:scale(1.11);transform-origin:50% 0%}
+.chip span .cdots{display:inline-flex;gap:3px;margin-right:8px;font-style:normal}
+.cdots b{width:10px;height:10px;border-radius:50%;box-shadow:inset 0 0 0 1px rgba(0,0,0,.14)}
+/* size boxes: price and quantity stepper on one row */
+.sb-main{position:relative;min-height:84px;padding:10px 12px 44px}
+.sb-main small{position:absolute;left:12px;bottom:8px;height:28px;display:flex;align-items:center;font-size:13px;font-weight:600}
+.sb-st{right:8px;bottom:8px;height:28px;gap:3px}.sb-st button{width:24px;height:24px;font-size:14px}.sb-st .qv{min-width:12px;font-size:14px}
+.sboxes{max-width:720px}
+@media (min-width:901px){.sboxes{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sb-main small{white-space:nowrap;letter-spacing:-.02em}
+@media (max-width:640px){.sb-main small{left:10px;font-size:12.5px}.sb-main{padding-left:10px}}
+/* photo tracks scroll sideways only */
+.xc-track{overflow-y:hidden!important;touch-action:pan-x pan-y}
+.pc-ph:not(.xo-car) .xc-track{overflow:hidden}
+.pc-z,.pc-z img{display:block}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -945,7 +985,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <b class="num">1.35m 289,000원부터<s class="tag-was" aria-label="정가 340,000원">340,000원</s></b>
           <span>10월 30일 예약 마감 · 11월부터 설치</span>
         </div>
-        <p class="hero-note">1월 말 회수까지 포함된 가격입니다. 기간에 따른 추가요금은 없습니다.<br>디자인 비용 없음은 기본 구성 기준입니다.</p>
+        <p class="hero-note">1월~2월 초 회수까지 포함된 가격입니다. 기간에 따른 추가요금은 없습니다.<br>디자인 비용 없음은 기본 구성 기준입니다.</p>
         <div class="hero-acts">
           <a class="hero-cue" href="#cases" aria-label="설치 사례로 내려가기"><span><span class="m-only">아래로 내려 </span>설치 사례 보기</span><svg viewBox="0 0 16 24" aria-hidden="true"><path d="M8 3v16M3 14l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
           <button type="button" data-sheet class="hero-kakao">카카오톡 상담</button>
@@ -985,7 +1025,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
             <div><dt>하단 연출</dt><dd>시그니처 상자(1.95m 3개 · 2.3m 5개 · 2.9m 8개, 1.35m 미포함), 받침대 가리개</dd></div>
             <div class="new"><dt>2026 추가<span class="new-b">NEW</span></dt><dd>벨벳 리본, 솔방울, 레드·화이트 베리, 자체 제작 시그니처 상자</dd></div>
             <div><dt>안전</dt><dd>KC 인증 전기안정기(SMPS) 설치</dd></div>
-            <div><dt>서비스</dt><dd>방문 설치, 1월 말 철거·회수</dd></div>
+            <div><dt>서비스</dt><dd>방문 설치, 1월~2월 초 철거·회수</dd></div>
           </dl>
         </div>
         <div class="slots" aria-label="2026 추가 장식">
@@ -1172,7 +1212,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
         <li class="on"><b class="num">~10.30</b><span>1차 얼리버드 예약<br>15% 할인</span></li>
         <li><b class="num">10.31~</b><span>2차 얼리버드 예약</span></li>
         <li><b class="num">11월~</b><span>설치</span></li>
-        <li><b class="num">1월 말</b><span>철거·회수</span></li>
+        <li><b class="num">1월~2월 초</b><span>철거·회수</span></li>
       </ol>
 
       <div class="est" id="estimate">
@@ -1204,10 +1244,10 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <fieldset>
             <legend>장식 색상</legend>
             <div class="chips">
-              <label class="chip"><input type="radio" name="color" id="cRed" value="레드 & 골드" checked><span>레드 &amp; 골드</span></label>
-              <label class="chip"><input type="radio" name="color" id="cChamp" value="화이트 & 샴페인"><span>화이트 &amp; 샴페인<em class="pop chip-new">NEW</em></span></label>
-              <label class="chip"><input type="radio" name="color" id="cGreen" value="세이지 그린 & 골드"><span>세이지 그린 &amp; 골드</span></label>
-              <label class="chip"><input type="radio" name="color" id="cNavy" value="네이비 & 골드"><span>네이비 &amp; 골드</span></label>
+              <label class="chip"><input type="radio" name="color" id="cRed" value="레드 & 골드" checked><span><i class="cdots" aria-hidden="true"><b style="background:#9e2330"></b><b style="background:#244a32"></b><b style="background:#c7a463"></b><b style="background:#f3eee5"></b></i>레드 &amp; 골드</span></label>
+              <label class="chip"><input type="radio" name="color" id="cChamp" value="화이트 & 샴페인"><span><i class="cdots" aria-hidden="true"><b style="background:#f1eee7"></b><b style="background:#d6c7a1"></b><b style="background:#8b8178"></b><b style="background:#a7b49b"></b></i>화이트 &amp; 샴페인<em class="pop chip-new">NEW</em></span></label>
+              <label class="chip"><input type="radio" name="color" id="cGreen" value="세이지 그린 & 골드"><span><i class="cdots" aria-hidden="true"><b style="background:#93a68a"></b><b style="background:#69773c"></b><b style="background:#c7b182"></b><b style="background:#eeeadd"></b></i>세이지 그린 &amp; 골드</span></label>
+              <label class="chip"><input type="radio" name="color" id="cNavy" value="네이비 & 골드"><span><i class="cdots" aria-hidden="true"><b style="background:#1d2d45"></b><b style="background:#c7a463"></b><b style="background:#f4f0e8"></b></i>네이비 &amp; 골드</span></label>
             </div>
           </fieldset>
           <fieldset>
@@ -1225,7 +1265,8 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
             <legend>추가 장식 (선택)</legend>
             <p class="xo-hint">금액은 트리 1개 기준이며, 고른 트리 개수만큼 더해집니다.</p>
             <div class="xopts" id="xopts">
-              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xDoll" value="인형 오너먼트 6개 추가" data-price="25000"><span class="xo-top"><b>인형 오너먼트 6개 추가</b><em class="num">+25,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-doll-1.webp" width="800" height="800" loading="lazy" alt="곰 인형 오너먼트 6개 세트"><img src="img/opt-doll-2.webp" width="800" height="800" loading="lazy" alt="펭귄, 산타, 순록 등 인형 오너먼트 6개 세트"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label></div>
+              <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xDoll" value="인형 오너먼트 6개 추가" data-price="25000"><span class="xo-top"><b>인형 오너먼트 6개 추가</b><em class="num">+25,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-doll-1.webp" width="800" height="800" loading="lazy" alt="곰 인형 오너먼트 6개 세트"><img src="img/opt-doll-2.webp" width="800" height="800" loading="lazy" alt="펭귄, 산타, 순록 등 인형 오너먼트 6개 세트"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label>
+                <div class="xo-shape" role="radiogroup" aria-label="인형 종류"><label><input type="radio" name="dollType" value="곰돌이" data-slide="0" checked><span>곰돌이</span></label><label><input type="radio" name="dollType" value="동물" data-slide="1"><span>동물</span></label></div></div>
               <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xRattan" value="라탄 바스켓 받침대로 변경" data-price="20000"><span class="xo-top"><b>라탄 바스켓 받침대로 변경</b><em class="num">+20,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-rattan-1.webp" width="640" height="640" loading="lazy" alt="짙은 갈색 라탄 바스켓 받침대"><img src="img/opt-rattan-2.webp" width="640" height="640" loading="lazy" alt="흰색 라탄 바스켓 받침대"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label>
                 <div class="xo-shape" role="radiogroup" aria-label="받침대 색상"><label><input type="radio" name="rattanColor" value="브라운" data-slide="0" checked><span>브라운</span></label><label><input type="radio" name="rattanColor" value="흰색" data-slide="1"><span>흰색</span></label></div></div>
               <div class="xo"><label class="xo-hit"><input type="checkbox" class="xo-in" id="xSnow" value="하단 눈사람 인형 3종 세트 추가" data-price="24000"><span class="xo-top"><b>하단 눈사람 인형 3종 세트 추가</b><em class="num">+24,000원</em></span><span class="xo-ph xo-car"><span class="xc-track"><img src="img/opt-snow-1.webp" width="800" height="800" loading="lazy" alt="트리 아래 시그니처 상자 사이에 놓은 눈사람 인형 3종"><img src="img/opt-snow-2.webp" width="800" height="800" loading="lazy" alt="회색 털모자를 쓴 눈사람 인형 3종"></span><button type="button" class="xc-nav xc-prev" aria-label="이전 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M7.5 2.5 4 6l3.5 3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button><button type="button" class="xc-nav xc-next" aria-label="다음 사진"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="M4.5 2.5 8 6 4.5 9.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button></span><span class="xc-dots"><button type="button" class="on" aria-label="1번 사진"></button><button type="button" aria-label="2번 사진"></button></span></label>
@@ -1240,7 +1281,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           </fieldset>
           <fieldset>
             <legend>추가 소품</legend>
-            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-wreath-red.webp" alt="" width="392" height="382" loading="lazy"><img src="img/prop-snowman.webp" alt="" width="1099" height="824" loading="lazy"></span><span class="pl-t">리스, 눈사람 등 소품 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
+            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-pwreath.webp" alt="" width="800" height="800" loading="lazy"><img src="img/prop-snowman-real.webp" alt="" width="963" height="1633" loading="lazy"></span><span class="pl-t">리스, 눈사람 등 소품 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
           </fieldset>
         </form>
 
@@ -1271,7 +1312,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
         <li><b>사진 보내기</b><span>카카오톡으로 공간 사진과 지역, 희망 날짜를 보내주세요.</span></li>
         <li><b>견적 확인</b><span>맞는 크기와 색상을 제안하고 운임까지 넣은 금액을 알려드립니다.</span></li>
         <li><b>설치</b><span>11월부터 약속한 날짜에 방문해 설치하며, 약 1시간이면 끝납니다. 영업 중에도 설치할 수 있습니다.</span></li>
-        <li><b>회수</b><span>1월 말, 협의한 날짜에 방문해 철거·회수합니다.</span></li>
+        <li><b>회수</b><span>1월~2월 초, 협의한 날짜에 방문해 철거·회수합니다.</span></li>
       </ol>
     </div>
   </section>
@@ -1280,16 +1321,16 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     <div class="wrap">
       <div class="sec-head"><h2>자주 묻는 질문</h2></div>
       <div class="faq">
-        <details><summary>언제까지 예약해야 하나요?</summary><p>1차 얼리버드 할인(15%)은 10월 30일 예약분까지 적용됩니다. 그 뒤에는 할인율을 낮춘 2차 얼리버드가 이어집니다. 원하는 설치 날짜가 있으면 상담할 때 함께 알려주세요.</p></details>
-        <details><summary>10월에 예약하면 바로 설치되나요?</summary><p>10월 30일은 1차 얼리버드 예약 마감일입니다. 설치는 11월부터 진행하며, 예약하실 때 원하는 설치 날짜를 알려주시면 일정을 맞춰 드립니다.</p></details>
-        <details><summary>전기 안전은 괜찮나요?</summary><p>모든 트리에는 화재 예방을 위해 KC 인증을 받은 전기안정기(SMPS)를 설치합니다.</p></details>
-        <details><summary>대여 기간은 어떻게 되나요?</summary><p>설치한 날부터 1월 말까지입니다. 기간에 따른 추가요금은 없고, 회수 날짜는 협의해서 정합니다.</p></details>
-        <details><summary>영업 중에 설치해도 되나요?</summary><p>네. 설치는 약 1시간 걸리고, 매장 동선과 영업 상황에 맞춰 진행합니다.</p></details>
-        <details><summary>결제와 세금계산서는 어떻게 하나요?</summary><p>카드 결제와 세금계산서 발행이 가능합니다. 안내된 금액은 모두 부가세 별도입니다.</p></details>
-        <details><summary>얼리버드 할인은 어디에 적용되나요?</summary><p>트리 구성 가격에만 적용됩니다. 운임과 추가 장식은 할인 대상이 아닙니다.</p></details>
-        <details><summary>트리를 여러 개 설치하면 할인되나요?</summary><p>네. 얼리버드 할인가에서 2개 설치 시 5%, 3개 설치 시 10%를 추가로 할인해 드립니다. 4개 이상 추가 할인은 별도 견적으로 안내해 드리며, 한 곳에 설치하면 운임은 한 번만 받습니다.</p></details>
-        <details><summary>크기는 어떻게 고르나요?</summary><p>천장 높이와 트리를 설치할 공간의 폭, 주변 통로를 함께 봅니다. 공간 사진을 보내주시면 맞는 크기를 제안해 드립니다.</p></details>
-        <details><summary>사용 중 파손되면 어떻게 하나요?</summary><p>상태를 확인할 수 있는 사진과 함께 연락해 주세요. 고객 귀책으로 인한 분실·파손에는 비용이 발생할 수 있으며, 세부 기준은 계약 전에 안내합니다.</p></details>
+        <details><summary>언제까지 예약해야 하나요?</summary><p>1차 얼리버드 할인(15%)은 10월 30일까지 예약하시는 분께 적용됩니다. 이후에는 할인율을 조정한 2차 얼리버드로 예약하실 수 있습니다. 원하시는 설치 날짜가 있으시면 상담하실 때 함께 말씀해 주세요.</p></details>
+        <details><summary>10월에 예약하면 바로 설치되나요?</summary><p>10월 30일은 1차 얼리버드 예약 마감일이며, 설치는 11월부터 진행됩니다. 예약하실 때 원하시는 설치 날짜를 알려 주시면 일정에 맞춰 설치해 드립니다.</p></details>
+        <details><summary>전기 안전은 괜찮나요?</summary><p>네, 안심하셔도 됩니다. 모든 트리에는 화재 예방을 위해 KC 인증을 받은 전기안정기(SMPS)를 설치해 드립니다.</p></details>
+        <details><summary>대여 기간은 어떻게 되나요?</summary><p>설치한 날부터 1월~2월 초까지 이용하실 수 있습니다. 기간에 따른 추가요금은 없으며, 회수 날짜는 편하신 날로 협의해 정합니다.</p></details>
+        <details><summary>영업 중에 설치해도 되나요?</summary><p>네, 가능합니다. 설치는 약 1시간 정도 걸리며, 매장 동선과 영업에 방해가 되지 않도록 진행해 드립니다.</p></details>
+        <details><summary>결제와 세금계산서는 어떻게 하나요?</summary><p>카드 결제와 세금계산서 발행 모두 가능합니다. 안내해 드린 금액은 모두 부가세 별도인 점 참고해 주세요.</p></details>
+        <details><summary>얼리버드 할인은 어디에 적용되나요?</summary><p>얼리버드 할인은 트리 구성 가격에 적용됩니다. 운임과 추가 장식은 할인에서 제외되는 점 양해 부탁드립니다.</p></details>
+        <details><summary>트리를 여러 개 설치하면 할인되나요?</summary><p>네, 가능합니다. 얼리버드 할인가에서 2개 설치하시면 5%, 3개 설치하시면 10%를 추가로 할인해 드립니다. 4개 이상은 별도 견적으로 안내해 드리며, 한 곳에 설치하시는 경우 운임은 한 번만 받습니다.</p></details>
+        <details><summary>크기는 어떻게 고르나요?</summary><p>천장 높이와 설치하실 공간의 폭, 주변 통로를 함께 보고 정하시면 됩니다. 고르기 어려우시면 공간 사진을 보내 주세요. 알맞은 크기를 제안해 드립니다.</p></details>
+        <details><summary>사용 중 파손되면 어떻게 하나요?</summary><p>상태를 확인할 수 있는 사진과 함께 연락 주시면 빠르게 확인해 드립니다. 고객님 부주의로 인한 분실·파손은 비용이 발생할 수 있으며, 자세한 기준은 계약 전에 미리 안내해 드립니다.</p></details>
       </div>
     </div>
   </section>
@@ -1309,7 +1350,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
           <ol class="ct-list">
             <li><b>설치할 공간 사진 1~2장</b><span>정면에서 한 장, 두세 걸음 떨어져서 한 장. 바닥과 천장이 함께 나오면 좋습니다.</span></li>
             <li><b>설치 주소</b><span>시·구까지만 알려주셔도 운임을 계산할 수 있습니다.</span></li>
-            <li><b>희망 설치일</b><span>설치는 11월부터 진행하며, 회수일은 1월 말 안에서 맞춰 드립니다.</span></li>
+            <li><b>희망 설치일</b><span>설치는 11월부터 진행하며, 회수일은 1월~2월 초 사이에서 맞춰 드립니다.</span></li>
             <li><b>천장 높이</b><span>대략이어도 괜찮습니다.</span></li>
           </ol>
         </div>
@@ -1449,6 +1490,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
   const lb = $('#lb'), lbImg = $('#lbImg'), lbCap = $('#lbCap');
   let back = null;
   function openLb(src, alt, from) { back = from; lbImg.src = src; lbImg.alt = alt; lbCap.textContent = alt; if (lb.showModal) lb.showModal(); }
+  window.__openLb = openLb;
   document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
     const img = b.querySelector('img'); openLb(b.dataset.zoom, img ? img.alt : '', b);
   }));
@@ -1543,13 +1585,37 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
     function pick(id) { if (/^s\d{3}$/.test(id) && window.__estPick) return window.__estPick(id); const r = document.getElementById(id); if (r) { r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true })); } }
     const propsBtn = document.getElementById('propsBtn');
     if (propsBtn) propsBtn.addEventListener('click', () => {
-      show('<p class="cc-k">추가 소품</p><p class="ic-title">크리스마스 소품 대여</p>' +
-        '<p class="cc-d">트리와 함께 크리스마스 소품도 대여합니다.</p>' +
-        '<div class="pr-list">' +
-        '<figure class="pr"><div class="pr-pair"><img src="img/prop-wreath-red.webp" alt="레드 리스 장식" loading="lazy"><img src="img/prop-wreath-green.webp" alt="그린 리스 장식" loading="lazy"></div><figcaption><b>60cm 리스 장식</b><span>개별 문의</span></figcaption></figure>' +
-        '<figure class="pr"><img src="img/prop-snowman.webp" alt="LED 눈사람 장식" loading="lazy"><figcaption><b>2.7m LED 눈사람 장식</b><small>실내용</small><span>개별 문의</span></figcaption></figure>' +
-        '</div><p class="pr-note">소품 가격은 개별로 안내해 드립니다. 상담하실 때 필요한 소품을 함께 말씀해 주세요.</p>' +
+      const ARW = (d, p, l) => '<button type="button" class="xc-nav xc-' + d + '" aria-label="' + l + '"><svg viewBox="0 0 12 12" aria-hidden="true"><path d="' + p + '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>';
+      const card = (o) => {
+        const ph = o.imgs.map(x => '<button type="button" class="pc-z" data-zoom-dyn aria-label="' + x[1] + ' 크게 보기"><img src="' + x[0] + '" alt="' + x[1] + '" loading="lazy"' + (x[2] ? ' data-tag="' + x[2] + '"' : '') + '></button>').join('');
+        const multi = o.imgs.length > 1;
+        return '<figure class="pc' + (o.wide ? ' pc-wide' : '') + (o.fit ? ' pc-fit' : '') + '" style="--r:' + (o.r || '1/1') + '">' +
+          '<span class="pc-ph' + (multi ? ' xo-car' : '') + '"><span class="xc-track">' + ph + '</span>' +
+          (multi ? ARW('prev', 'M7.5 2.5 4 6l3.5 3.5', '이전 사진') + ARW('next', 'M4.5 2.5 8 6 4.5 9.5', '다음 사진') : '') + '</span>' +
+          (multi ? '<span class="xc-dots">' + o.imgs.map((x, k) => '<button type="button"' + (k ? '' : ' class="on"') + ' aria-label="' + (x[2] || (k + 1) + '번 사진') + '"></button>').join('') + '</span>' : '') +
+          '<figcaption><b>' + o.t + '</b>' + (o.s ? '<small>' + o.s + '</small>' : '') + '</figcaption></figure>';
+      };
+      const grp = (h, items) => '<p class="pc-h">' + h + '</p><div class="pc-grid">' + items.map(card).join('') + '</div>';
+      show('<p class="cc-k">추가 소품</p><p class="ic-title">크리스마스 소품 대여<small>실내용</small></p>' +
+        '<p class="cc-d">트리와 함께 대여합니다. 가격은 상담하실 때 개별로 안내해 드립니다. 사진을 누르면 크게 볼 수 있습니다.</p>' +
+        grp('대형 LED', [
+          { t: '2.7m LED 눈사람', r: '3/4', imgs: [['img/prop-snowman-real.webp', '스키를 든 2.7m LED 눈사람을 건물 로비에 설치한 모습']] },
+          { t: '2.1m LED 가로등', r: '3/4', imgs: [['img/prop-lamp.webp', '빨간 리본을 단 2.1m LED 가로등']] },
+          { t: 'LED 눈사람 가족', s: '117cm · 89cm · 61cm · 56cm', r: '16/9', wide: 1, imgs: [['img/prop-snowfamily.webp', '모자와 체크 목도리를 한 LED 눈사람 네 개']] }
+        ]) +
+        grp('동물', [
+          { t: 'LED 사슴 가족', s: '184cm · 153cm · 107cm', imgs: [['img/prop-deer.webp', '빨간 리본을 단 골드 LED 사슴 세 마리']] },
+          { t: 'LED 북극곰 가족', s: '북극곰 97cm · 아기곰 46cm', imgs: [['img/prop-bearfamily.webp', '큰 북극곰과 작은 북극곰 LED 모형']] },
+          { t: '61cm LED 모형', s: '펭귄 · 북극곰', imgs: [['img/prop-penguin.webp', '전구 줄을 두른 LED 펭귄 모형', '펭귄'], ['img/prop-bear.webp', '빨간 모자와 초록 스웨터를 입은 LED 북극곰 모형', '북극곰']] },
+          { t: '65cm 모형 강아지', s: '버니즈 · 리트리버 · 아키타', fit: 1, imgs: [['img/prop-dog-2.webp', '루돌프 머리띠를 한 버니즈 마운틴 독 모형', '버니즈'], ['img/prop-dog-3.webp', '산타 옷을 입은 골든 리트리버 모형', '리트리버'], ['img/prop-dog-1.webp', '산타 모자와 목도리를 한 아키타 모형', '아키타']] }
+        ]) +
+        grp('벽 장식', [
+          { t: '76cm LED 리스', s: '포인세티아 · 노퍽', fit: 1, imgs: [['img/prop-pwreath.webp', '빨간 포인세티아와 오너먼트로 꾸민 76cm LED 리스', '포인세티아'], ['img/prop-nwreath.webp', '장식 없이 잎만 풍성한 76cm LED 노퍽 리스', '노퍽']] },
+          { t: '120cm 대형 리본', imgs: [['img/prop-bow.webp', 'LED 조명이 들어간 120cm 대형 빨간 리본']] }
+        ]) +
         '<div class="cc-b"><button type="button" class="cc-main" data-close>닫기</button></div>', propsBtn);
+      if (window.__initCar) window.__initCar(body);
+      body.querySelectorAll('.pc-z').forEach(z => z.addEventListener('click', () => { const im = z.querySelector('img'); if (window.__openLb) window.__openLb(im.src, im.alt, z); }));
       body.querySelector('[data-close]').addEventListener('click', () => dlg.close());
     });
     const setMore = document.getElementById('setMore');
@@ -1969,16 +2035,23 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 c.classList.add('fx');new IntersectionObserver(function(e,o){if(e[0].isIntersecting){c.classList.add('on');o.disconnect()}},{threshold:.25}).observe(c)})();
 </script>
 <script>
-document.querySelectorAll('.xo-car').forEach(function(car){
-  var t=car.querySelector('.xc-track'),n=t.children.length,card=car.closest('.xo'),dots=card?[].slice.call(card.querySelectorAll('.xc-dots button')):[],pv=car.querySelector('.xc-prev'),nx=car.querySelector('.xc-next');
+window.__initCar=function(root){(root||document).querySelectorAll('.xo-car:not([data-ok])').forEach(function(car){car.setAttribute('data-ok','');
+  var t=car.querySelector('.xc-track'),n=t.children.length,card=car.closest('.xo,.pc'),dots=card?[].slice.call(card.querySelectorAll('.xc-dots button')):[],pv=car.querySelector('.xc-prev'),nx=car.querySelector('.xc-next');
   function cur(){return Math.round(t.scrollLeft/Math.max(1,t.clientWidth))}
   function go(i,e){if(e){e.preventDefault();e.stopPropagation()}i=Math.max(0,Math.min(n-1,i));t.scrollTo({left:i*t.clientWidth,behavior:'smooth'})}
   function sync(){var i=cur();dots.forEach(function(d,k){d.classList.toggle('on',k===i)});pv.disabled=i<=0;nx.disabled=i>=n-1}
   pv.addEventListener('click',function(e){go(cur()-1,e)});nx.addEventListener('click',function(e){go(cur()+1,e)});
   dots.forEach(function(d,k){d.addEventListener('click',function(e){go(k,e)})});
   t.addEventListener('scroll',sync,{passive:true});sync();
-});
+});};window.__initCar();
 </script>
 <script>
 document.querySelectorAll('.xo-shape input[data-slide]').forEach(function(r){r.addEventListener('change',function(){var t=r.closest('.xo').querySelector('.xc-track');if(t)t.scrollTo({left:+r.dataset.slide*t.clientWidth,behavior:'smooth'})})});
+</script>
+<script>
+(function(){var g=document.getElementById('xopts');if(!g)return;
+function fit(){var tops=[].slice.call(g.querySelectorAll('.xo-top'));tops.forEach(function(t){t.style.minHeight=''});
+var rows={};tops.forEach(function(t){var y=Math.round(t.closest('.xo').offsetTop);(rows[y]=rows[y]||[]).push(t)});
+Object.keys(rows).forEach(function(y){var m=Math.max.apply(null,rows[y].map(function(t){return t.offsetHeight}));rows[y].forEach(function(t){t.style.minHeight=m+'px'})})}
+fit();addEventListener('resize',fit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);addEventListener('load',fit)})();
 </script>
