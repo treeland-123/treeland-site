@@ -1000,6 +1000,21 @@ dialog.lb{z-index:50}
 @media (max-width:640px){.pt-n{min-width:78px;font-size:13px}.pt-o{gap:7px}.pt-b{width:24px;height:24px}}
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);max-width:calc(100vw - 32px);padding:10px 16px;border-radius:4px;background:rgba(21,33,27,.92);color:#F4F1EA;font-size:13.5px;line-height:1.45;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.on{opacity:1;transform:translate(-50%,0)}
+/* 2025 vs 2026 compare in season popup */
+.yc{display:grid;gap:8px;margin:4px 0 6px}
+.yc .ic-h{margin:0}
+.yc-f{position:relative;aspect-ratio:3/4;overflow:hidden;border-radius:2px;background:#e9e3d8}
+.yc-f img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:opacity .45s ease}
+.yc-f .yc-b{opacity:0}
+.yc-f.is-26 .yc-b{opacity:1}
+.yc-tag{position:absolute;left:8px;top:8px;padding:3px 8px;border-radius:2px;background:rgba(18,26,21,.66);color:#F4F1EA;font-size:12px;font-weight:700;letter-spacing:.04em}
+.yc-f.is-26 .yc-tag{background:var(--berry)}
+.yc-btn{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.yc-btn button{min-height:38px;border:1px solid var(--line);background:var(--paper);font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;border-radius:2px}
+.yc-btn button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#F4F1EA}
+.yc-d{font-size:14px;font-weight:600;text-align:center}
+.yc-n{font-size:11.5px;line-height:1.5;color:var(--muted);text-align:center}
+@media (min-width:641px){.yc-f{max-height:52vh;aspect-ratio:auto;height:min(52vh,560px)}}
 </style>
 </head>
 <body>
@@ -1682,10 +1697,17 @@ dialog.lb{z-index:50}
       const card = document.querySelector('.set-card');
       show('<p class="cc-k">2026 SEASON</p><p class="ic-title">2026 시즌 구성</p>' +
         '<p class="cc-d">올해부터 벨벳 리본·솔방울·베리 장식이 기본으로 들어갑니다.</p>' +
+        '<div class="yc"><p class="ic-h">올해는 이렇게 바뀝니다</p><div class="yc-f is-26"><img class="yc-a" src="img/set-2025.webp" alt="2025년 설치 모습" loading="lazy"><img class="yc-b" src="img/set-2026.webp" alt="2026년 장식을 더한 예시" loading="lazy"><span class="yc-tag">2026</span></div>' +
+        '<div class="yc-btn" role="group" aria-label="연도 바꿔 보기"><button type="button" data-y="25" aria-pressed="false">2025</button><button type="button" data-y="26" aria-pressed="true">2026</button></div>' +
+        '<p class="yc-d">벨벳 리본 · 솔방울 · 베리 추가</p><p class="yc-n">2025년 실제 설치 사진에 올해 추가되는 장식을 더한 예시 이미지입니다.</p></div>' +
         '<p class="set-up"><b>시그니처 상자, 30% 더 크게 자체 제작했습니다.</b>디올 느낌이 나는 투알 드 주이 패턴은 그대로, 크기만 트리에 맞춰 키웠습니다.</p>' +
         '<div class="set-pop">' + card.querySelector('.inc dl').outerHTML + '<p class="ic-h" style="margin-top:14px">2026 추가 장식</p>' + card.querySelector('.slots').outerHTML + '</div>' +
         '<div class="cc-b"><button type="button" class="cc-main" data-close>닫기</button></div>', setMore);
       body.querySelector('[data-close]').addEventListener('click', () => dlg.close());
+      const yf = body.querySelector('.yc-f'), yt = body.querySelector('.yc-tag');
+      body.querySelectorAll('.yc-btn button').forEach(bt => bt.addEventListener('click', () => { const n = bt.dataset.y === '26';
+        yf.classList.toggle('is-26', n); yt.textContent = n ? '2026' : '2025';
+        body.querySelectorAll('.yc-btn button').forEach(x => x.setAttribute('aria-pressed', String(x === bt))); }));
     });
     function openSize(key, from) {
       const z = SIZES[key], pr = priceOf(z.chip);
