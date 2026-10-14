@@ -994,6 +994,27 @@ dialog.lb{z-index:50}
 .yc-d{font-size:14px;font-weight:600;text-align:center}
 .yc-n{font-size:11.5px;line-height:1.5;color:var(--muted);text-align:center}
 @media (min-width:641px){.yc-f{max-height:52vh;aspect-ratio:auto;height:min(52vh,560px)}}
+/* stronger CTAs: season popup + props popup */
+.set-more.cta-fx{display:grid!important;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;gap:1px 12px;width:100%;min-height:56px;padding:10px 16px;border:0;background:var(--pine);color:#F4F1EA;text-align:left;position:relative;overflow:hidden;font-family:inherit;cursor:pointer;border-radius:3px;margin-top:4px}
+.cta-t{font-size:15px;font-weight:700}
+.cta-s{grid-row:2;font-size:12px;color:#EBC97E}
+.cta-ar{grid-row:1/3;grid-column:2;font-size:24px;line-height:1;color:#EBC97E}
+.inc .set-more.cta-fx{margin-top:18px}
+.prop-link{border:1.5px solid var(--berry)!important;background:color-mix(in srgb,var(--berry) 5%,var(--paper))!important;position:relative;overflow:hidden}
+.prop-link::after{color:var(--berry)!important}
+.prop-link .pl-t{color:var(--berry)}
+.pl-thumbs img{width:38px;height:38px}
+.pl-thumbs img+img{margin-left:-14px}
+@media (prefers-reduced-motion: no-preference){
+  .set-more.cta-fx::before,.prop-link::before{content:"";position:absolute;top:0;bottom:0;left:-60%;width:45%;background:linear-gradient(100deg,transparent,rgba(255,240,200,.38),transparent);transform:skewX(-18deg);animation:ctaShine 3.6s ease-in-out 1.2s infinite;pointer-events:none}
+  .prop-link::before{background:linear-gradient(100deg,transparent,rgba(163,35,47,.14),transparent)}
+  .cta-ar,.prop-link::after{animation:ctaNudge 1.8s ease-in-out infinite}
+  .pl-thumbs img{animation:ctaBob 3.6s ease-in-out infinite}
+  .pl-thumbs img:nth-child(2){animation-delay:.25s}.pl-thumbs img:nth-child(3){animation-delay:.5s}
+}
+@keyframes ctaShine{0%{left:-60%}45%,100%{left:130%}}
+@keyframes ctaNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
+@keyframes ctaBob{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-4px)}90%{transform:translateY(0)}}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -1076,7 +1097,7 @@ dialog.lb{z-index:50}
           <figure class="slot"><div class="ph has-img"><img src="img/set-berry.webp" width="579" height="720" loading="lazy" alt="레드 베리와 화이트 베리 가지"><span class="ph-n">03</span></div><figcaption><span class="d-only">레드·화이트 </span>베리</figcaption></figure>
           <figure class="slot up"><div class="ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="투알 드 주이 패턴에 네이비·샴페인 골드·와인 리본을 묶은 트리랜드 시그니처 상자"><span class="ph-n">04</span></div><figcaption>시그니처 상자</figcaption></figure>
         </div>
-        <button type="button" class="set-more" id="setMore">구성 전체 보기 <span aria-hidden="true">›</span></button>
+        <button type="button" class="set-more cta-fx" id="setMore"><span class="cta-t">구성 전체 보기</span><span class="cta-s">2025 → 2026 바뀐 모습 비교</span><span class="cta-ar" aria-hidden="true">›</span></button>
       </div>
     </div>
   </section>
@@ -1331,7 +1352,7 @@ dialog.lb{z-index:50}
           </fieldset>
           <fieldset>
             <legend>추가 소품</legend>
-            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-pwreath.webp" alt="" width="800" height="800" loading="lazy"><img src="img/prop-snowman-real.webp" alt="" width="963" height="1633" loading="lazy"></span><span class="pl-t">리스, 눈사람 등 소품 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
+            <button type="button" class="prop-link" id="propsBtn"><span class="pl-thumbs" aria-hidden="true"><img src="img/prop-pwreath.webp" alt="" width="800" height="800" loading="lazy"><img src="img/prop-snowman-real.webp" alt="" width="963" height="1633" loading="lazy"><img src="img/prop-deer.webp" alt="" width="800" height="800" loading="lazy"></span><span class="pl-t">추가 소품 9종 보기</span><span class="pl-v">트리와 함께 대여 · 가격 개별 문의</span></button>
           </fieldset>
         </form>
 
