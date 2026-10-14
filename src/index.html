@@ -977,6 +977,8 @@ dialog.lb{z-index:50}
 .pt-b:focus-visible{outline:2px solid var(--berry);outline-offset:3px}
 .pt-v{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
 @media (max-width:640px){.pt-n{min-width:78px;font-size:13px}.pt-o{gap:7px}.pt-b{width:24px;height:24px}}
+#toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);max-width:calc(100vw - 32px);padding:10px 16px;border-radius:4px;background:rgba(21,33,27,.92);color:#F4F1EA;font-size:13.5px;line-height:1.45;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -1978,9 +1980,11 @@ dialog.lb{z-index:50}
     if (inEst) { barBtn.setAttribute('href', 'http://pf.kakao.com/_XqWFX/chat'); barBtn.setAttribute('target', '_blank'); barBtn.setAttribute('rel', 'noopener noreferrer'); barBtn.removeAttribute('role'); }
     else { barBtn.removeAttribute('href'); barBtn.removeAttribute('target'); barBtn.setAttribute('role', 'button'); }
   }, { rootMargin: '-35% 0px -35% 0px' }).observe($('#estimate'));
-  barBtn.addEventListener('click', () => { if (inEst) navigator.clipboard.writeText(quoteText()).catch(() => {}); });
+  function copyNow(text) { let ok = false; try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px'; document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length); ok = document.execCommand('copy'); t.remove(); } catch (e) {} try { navigator.clipboard.writeText(text).catch(() => {}); ok = true; } catch (e) {} return ok; }
+  function toast(msg) { let el = document.getElementById('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); } el.textContent = msg; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2600); }
+  barBtn.addEventListener('click', () => { if (!inEst) return; const ok = copyNow(quoteText()); toast(ok ? '견적 내용을 복사했습니다. 상담창에 붙여넣어 주세요.' : '복사가 되지 않았습니다. 견적 금액 아래 버튼을 이용해 주세요.'); });
   $('#copyKakao').addEventListener('click', () => {
-    const text = quoteText();
+    const text = quoteText(); copyNow(text);
     copy(text, $('#copyMsg'), '견적 내용을 복사했습니다. 열린 상담창에 붙여넣어 주세요.', $('#copyOut'));
   });
   document.querySelectorAll('.ch-copy[data-copy]').forEach(btn => btn.addEventListener('click', () => {
