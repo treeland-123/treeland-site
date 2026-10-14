@@ -1017,8 +1017,8 @@ dialog.lb{z-index:50}
 @media (min-width:641px){.yc-f{max-height:52vh;aspect-ratio:auto;height:min(52vh,560px)}}
 /* stronger CTAs: season popup + props popup */
 .set-more.cta-fx{display:grid!important;grid-template-columns:1fr auto;grid-template-rows:auto auto;align-items:center;gap:1px 12px;width:100%;min-height:56px;padding:10px 16px;border:0;background:var(--pine);color:#F4F1EA;text-align:left;position:relative;overflow:hidden;font-family:inherit;cursor:pointer;border-radius:3px;margin-top:4px}
-.cta-t{font-size:15px;font-weight:700}
-.cta-s{grid-row:2;font-size:12px;color:#EBC97E}
+.cta-t{font-family:var(--display);font-size:16px;font-weight:500;letter-spacing:.01em}
+.cta-s{grid-row:2;font-size:11.5px;font-weight:400;color:#EBC97E}
 .cta-ar{grid-row:1/3;grid-column:2;font-size:24px;line-height:1;color:#EBC97E}
 .inc .set-more.cta-fx{margin-top:18px}
 .prop-link{border:1.5px solid var(--berry)!important;background:color-mix(in srgb,var(--berry) 5%,var(--paper))!important;position:relative;overflow:hidden}
@@ -1036,6 +1036,8 @@ dialog.lb{z-index:50}
 @keyframes ctaShine{0%{left:-60%}45%,100%{left:130%}}
 @keyframes ctaNudge{0%,100%{transform:translateX(0)}50%{transform:translateX(4px)}}
 @keyframes ctaBob{0%,70%,100%{transform:translateY(0)}80%{transform:translateY(-4px)}90%{transform:translateY(0)}}
+.set-more.cta-fx{grid-template-rows:auto;min-height:52px}
+.set-more.cta-fx .cta-ar{grid-row:1}
 </style>
 </head>
 <body>
@@ -1120,7 +1122,7 @@ dialog.lb{z-index:50}
           <figure class="slot"><div class="ph has-img"><img src="img/set-berry.webp" width="579" height="720" loading="lazy" alt="레드 베리와 화이트 베리 가지"><span class="ph-n">03</span></div><figcaption><span class="d-only">레드·화이트 </span>베리</figcaption></figure>
           <figure class="slot up"><div class="ph has-img"><img src="img/signature-box.webp" width="1010" height="620" loading="lazy" alt="투알 드 주이 패턴에 네이비·샴페인 골드·와인 리본을 묶은 트리랜드 시그니처 상자"><span class="ph-n">04</span></div><figcaption>시그니처 상자</figcaption></figure>
         </div>
-        <button type="button" class="set-more cta-fx" id="setMore"><span class="cta-t">구성 전체 보기</span><span class="cta-s">2025 → 2026 바뀐 모습 비교</span><span class="cta-ar" aria-hidden="true">›</span></button>
+        <button type="button" class="set-more cta-fx" id="setMore"><span class="cta-t">작년과 비교해 보기</span><span class="cta-ar" aria-hidden="true">›</span></button>
       </div>
     </div>
   </section>
@@ -1659,7 +1661,7 @@ dialog.lb{z-index:50}
       '135': { box: 0, t: '1.35m', d: '81cm', img: 'img/size-135.webp', fit: '매장 입구, 카운터 옆, 작은 스터디카페처럼 자리가 넉넉하지 않은 곳', cases: ['study'], chip: 's135' },
       '195': { box: 3, t: '1.95m 슬림', d: '100cm', img: 'img/size-195.webp', fit: '병원 대기실이나 복도처럼 폭은 좁고 높이를 살리고 싶은 자리', cases: ['guro'], chip: 's195' },
       '230': { box: 5, t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['petit', 'salon', 'bath'], chip: 's230', pop: true },
-      '230s': { box: 5, ltd: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 구성은 2.3m와 같고, 장식 색상도 똑같이 고르실 수 있습니다.', cases: ['bath'], chip: 's230s' },
+      '230s': { box: 5, ltd: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 눈 쌓인 표현은 잎이 촘촘해야 자연스럽게 나옵니다. 그래서 스노우 트리는 일반 트리(PE 잎)와 달리, 잎이 가늘고 빽빽한 고밀도 PVC를 사용했습니다. 구성과 장식 색상은 2.3m와 같습니다.', cases: ['bath'], chip: 's230s' },
       '290': { box: 8, t: '2.9m', d: '155cm', img: 'img/size-290.webp', fit: '천장이 높은 로비, 대형 카페, 극장처럼 멀리서도 보여야 하는 곳', cases: ['asan', 'biz', 'arko'], chip: 's290' }
     };
     const COLORS = {
