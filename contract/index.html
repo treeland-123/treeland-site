@@ -331,7 +331,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
     <p class="c" style="margin:8px 0">계약일 : ${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일</p>
     <table class="sig"><tr><th colspan="2">갑 (임차인)</th><th colspan="2">을 (임대인)</th></tr>
     <tr><th>상호(성명)</th><td>${esc(g.name)}</td><th>상호</th><td>트리랜드 (TREELAND)</td></tr>
-    <tr><th>대표자</th><td>${esc(g.rep)}　<img src="${sigUrl}" alt=""></td><th>대표자</th><td>홍준서　(인)</td></tr></table>
+    <tr><th>대표자</th><td>${esc(g.rep)}　<img src="${sigUrl}" alt=""></td><th>대표자</th><td>홍준서　<span class="seal">(인)${C.stamp ? `<img class="stamp" src="${C.stamp}" alt="">` : ""}</span></td></tr></table>
     <p style="margin-top:8px">별첨 : 견적서 1부</p>
     <div class="audit">전자서명 기록 · 계약번호 ${esc(C.id)} · 서명 일시 ${d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})} (KST) · 개인정보 수집·이용 동의 및 계약 체결 동의 확인 · 기기 ${esc(navigator.userAgent)} · 문서 확인값(SHA-256) ${hash}</div></div>`;
 }
@@ -349,6 +349,8 @@ const PAPER_CSS = `#paper{width:794px;background:#fff;color:#000;font-family:"No
 #paper .s{padding-left:2.4em;text-indent:-1.2em}
 #paper .c{text-align:center}
 #paper .sig img{height:48px;vertical-align:middle}
+#paper .seal{position:relative;display:inline-block}
+#paper .sig img.stamp{position:absolute;left:-20px;top:-24px;width:66px;height:66px;max-width:none}
 #paper .avoid{break-inside:avoid;page-break-inside:avoid}
 #paper .audit{margin-top:14px;font-size:10px;color:#444;border-top:1px solid #999;padding-top:6px;overflow-wrap:anywhere}`;
 async function makePdf(html){
@@ -426,7 +428,7 @@ async function init(){
       const r = await fetch(`${ENDPOINT}?action=get&id=${encodeURIComponent(id)}`); const j = await r.json();
       if(!j.ok) throw new Error(j.error);
       if(j.signed){ $("#app").hidden = true; $("#doneView").hidden = false; $("#doneView h1").textContent = "이미 서명된 계약입니다"; $("#doneMsg").textContent = "서명한 계약서는 서명 당시 입력하신 이메일로 발송되었습니다. 다시 받으셔야 하면 070-4571-7467로 연락해 주세요."; return; }
-      C = j.contract;
+      C = j.contract; if(j.stamp) C.stamp = j.stamp;
     }catch(e){ $("#app").innerHTML = `<header><div class="brand">TREELAND</div><h1>계약서를 찾을 수 없습니다</h1><p class="lead">링크 주소가 정확한지 확인해 주세요. 문의 070-4571-7467</p></header>`; return; }
   } else { C = SAMPLE; $("#demoNote").hidden = false; }
   renderSummary(); renderTerms(); syncPhoto(); sizePad();
