@@ -1,0 +1,540 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<meta name="robots" content="noindex,nofollow">
+<title>트리랜드 지출 장부</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+
+/* Layout: 한 장짜리 장부. 상단에 시즌 수지, 아래는 탭(기록·현장·항목·내역). 폰에서 현장 바로 입력하는 걸 기준으로 설계 */
+:root{
+  --bg:#f7f8f5; --paper:#ffffff; --ink:#1d2621; --muted:#6a756e; --line:#e2e6df;
+  --pine:#1f4a3a; --pine-soft:#e7efe9; --brass:#a8823a; --brass-soft:#f4ecdc;
+  --good:#2f6e4b; --bad:#a6402f; --bad-soft:#f7e6e2;
+  --f-display:"Gowun Batang","Nanum Myeongjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
+  --good:#7fc79d; --bad:#e58b78; --bad-soft:#2f1f1b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
+  --good:#7fc79d; --bad:#e58b78; --bad-soft:#2f1f1b; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 64px;display:flex;flex-direction:column;gap:20px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand small{font-size:11px;letter-spacing:.18em;color:var(--brass);font-weight:600}
+.brand h1{font-family:var(--f-display);font-size:26px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;box-sizing:border-box}
+select:focus,input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--pine);outline-offset:1px}
+.season-pick{display:flex;gap:8px;align-items:center}
+.season-pick select{width:auto;min-width:170px}
+
+.ledger{background:var(--paper);border:1px solid var(--line);border-radius:12px;display:grid;grid-template-columns:repeat(3,1fr)}
+.ledger div{padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.ledger div+div{border-left:1px solid var(--line)}
+.ledger span{font-size:12px;color:var(--muted)}
+.ledger b{font-family:var(--f-num);font-weight:500;font-size:18px;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ledger .net b{color:var(--pine)} .ledger .net.minus b{color:var(--bad)}
+.ledger em{font-style:normal;font-size:12px;color:var(--muted)}
+
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+nav button{flex:1;background:none;border:0;border-bottom:2px solid transparent;padding:10px 4px;font:inherit;font-weight:500;color:var(--muted);cursor:pointer}
+nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--brass)}
+
+section{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+form .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:5px;font-size:13px;color:var(--muted);min-width:0}
+.amount input{font-family:var(--f-num);font-size:22px;padding:10px 12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.row-btns{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;padding:11px 18px;font:inherit;font-weight:600;cursor:pointer;background:var(--pine);color:var(--paper)}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+.btn.danger{background:var(--bad);color:var(--paper)}
+.btn.small{padding:6px 12px;font-size:13px}
+.mode{font-size:13px;color:var(--brass);font-weight:600}
+
+h2{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:600}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:baseline;padding:11px 0;border-top:1px solid var(--line);cursor:pointer}
+.item:first-child{border-top:0}
+.item .d{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.item .t{min-width:0}
+.item .t b{font-weight:500}
+.item .t small{display:block;color:var(--muted);font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .a{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--brass-soft);color:var(--brass);margin-left:6px;vertical-align:1px}
+.tag.common{background:var(--pine-soft);color:var(--pine)}
+
+.site{border-top:1px solid var(--line);padding:14px 0;display:flex;flex-direction:column;gap:8px}
+.site:first-child{border-top:0}
+.site-head{display:flex;justify-content:space-between;gap:12px;align-items:baseline;cursor:pointer;flex-wrap:wrap}
+.site-head b{font-weight:600}
+.site-head small{color:var(--muted);font-size:12px;margin-left:6px}
+.site-nums{display:grid;grid-template-columns:repeat(3,auto);gap:4px 16px;font-size:13px;color:var(--muted)}
+.site-nums .num{color:var(--ink)}
+.linkbtn{align-self:flex-start;background:none;border:0;padding:0;font:inherit;font-size:13px;color:var(--pine);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.margin-pill{font-family:var(--f-num);font-size:12px;padding:2px 8px;border-radius:999px;background:var(--pine-soft);color:var(--good)}
+.margin-pill.minus{background:var(--bad-soft);color:var(--bad)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass)}
+.site .detail{padding-left:12px;border-left:2px solid var(--line)}
+
+.cat{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;padding:8px 0}
+.cat span{font-size:14px}
+.cat .num{font-size:14px;text-align:right;min-width:92px}
+.cat .pct{color:var(--muted);font-size:12px;display:block}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters select{width:auto;flex:1;min-width:130px}
+label.check{flex-direction:row;align-items:center;gap:8px;align-self:end;padding-bottom:10px;color:var(--ink);font-size:14px;cursor:pointer}
+label.check input{width:18px;height:18px;padding:0;accent-color:var(--pine)}
+.tag.tax{background:var(--pine-soft);color:var(--pine)}
+.rev-row{display:flex;gap:8px}
+.rev-row input{flex:1;min-width:0;font-family:var(--f-num)}
+.rev-row select{width:auto;flex:none}
+.site-phone{font-family:var(--f-num);font-size:12px;color:var(--muted);user-select:all}
+.site-acts{display:flex;gap:14px;flex-wrap:wrap}
+.links{display:flex;gap:6px;flex-wrap:wrap}
+.links a{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.lock{font-size:13px;color:var(--muted);background:var(--pine-soft);border-radius:8px;padding:10px 12px}
+input:disabled,select:disabled{opacity:.6}
+details.card summary{cursor:pointer;list-style-position:inside}
+details.card[open] summary{margin-bottom:6px}
+.empty{color:var(--muted);font-size:14px;padding:18px 0;text-align:left}
+.note{font-size:12px;color:var(--muted)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--bad)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px}
+.status{padding:14px 16px;border-radius:10px;background:var(--brass-soft);color:var(--ink);font-size:14px}
+@media (max-width:520px){
+  form{grid-template-columns:1fr}
+  .ledger b{font-size:15px}
+  .ledger div{padding:12px}
+  .cat{grid-template-columns:84px 1fr auto}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><small>TREELAND</small><h1>지출 장부</h1></div>
+    <div class="season-pick">
+      <span class="links"><a href="/admin">계약 관리</a><a href="/schedule">일정표</a></span>
+      <select id="seasonSel" aria-label="시즌"></select>
+    </div>
+  </header>
+
+  <div id="status" class="status" hidden></div>
+
+  <div class="card" id="pinBox" hidden>
+    <label>관리자 비밀번호
+      <span class="rev-row"><input type="password" id="pin" autocomplete="current-password"><button type="button" class="btn small" id="pinBtn">열기</button></span>
+    </label>
+    <p class="note" style="margin:8px 0 0">계약 관리 화면과 같은 비밀번호입니다. 이 기기에서는 다음부터 자동으로 열립니다.</p>
+    <p class="note" id="pinErr" style="color:var(--bad)" hidden></p>
+  </div>
+
+  <div id="main" style="display:flex;flex-direction:column;gap:20px">
+
+  <div class="ledger" aria-label="시즌 수지">
+    <div><span>매출 (공급가)</span><b id="sumRev" class="num">0</b><em id="sumSites">현장 0곳</em></div>
+    <div><span>지출</span><b id="sumExp" class="num">0</b><em id="sumCount">0건</em></div>
+    <div class="net" id="netBox"><span>남는 돈</span><b id="sumNet" class="num">0</b><em id="sumRate">마진 —</em></div>
+  </div>
+
+  <nav role="tablist">
+    <button role="tab" id="tab-rec" aria-selected="true" data-tab="rec">기록</button>
+    <button role="tab" id="tab-site" aria-selected="false" data-tab="site">현장</button>
+    <button role="tab" id="tab-cat" aria-selected="false" data-tab="cat">항목</button>
+    <button role="tab" id="tab-all" aria-selected="false" data-tab="all">내역</button>
+  </nav>
+
+  <!-- 기록 -->
+  <section id="p-rec">
+    <div class="card">
+      <form id="expForm" autocomplete="off">
+        <div class="full mode" id="expMode" hidden>수정 중</div>
+        <label class="full amount">금액 (원)
+          <input id="fAmount" inputmode="numeric" placeholder="0" required>
+        </label>
+        <div class="full" style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:13px;color:var(--muted)">항목</span>
+          <div class="chips" id="catChips"></div>
+        </div>
+        <label>날짜<input id="fDate" type="date" required></label>
+        <label>현장<select id="fSite"></select></label>
+        <label>거래처<input id="fVendor" placeholder="예: 1688, 다마스퀵"></label>
+        <label>결제수단<select id="fPay">
+          <option>카드</option><option>계좌이체</option><option>현금</option><option>기타</option>
+        </select></label>
+        <label class="full">메모<input id="fMemo" placeholder="예: 2.3m 트리 4대분 오너먼트"></label>
+        <div class="full row-btns">
+          <button type="button" class="btn ghost" id="expCancel" hidden>취소</button>
+          <button type="submit" class="btn" id="expSave">저장</button>
+        </div>
+      </form>
+    </div>
+    <div class="card">
+      <h2>최근 기록</h2>
+      <div class="list" id="recentList"><div class="empty">아직 기록이 없습니다. 위에서 첫 지출을 입력하세요.</div></div>
+    </div>
+  </section>
+
+  <!-- 현장 -->
+  <section id="p-site" hidden>
+    <div class="card">
+      <h2>설치 현장</h2>
+      <p class="note" style="margin:4px 0 0">서명이 끝난 계약은 자동으로 들어옵니다. 현장을 누르면 정보를 봅니다.</p>
+      <p class="note" id="contractNote" style="color:var(--bad)" hidden></p>
+      <div id="siteList"><div class="empty">이 시즌에 등록된 현장이 없습니다. 설치가 확정되면 위에서 추가하세요.</div></div>
+      <p class="note" id="commonNote"></p>
+    </div>
+    <details class="card" id="siteFormBox">
+      <summary><h2 style="display:inline" id="siteFormTitle">현장 직접 추가</h2></summary>
+      <p class="note" style="margin:0 0 12px">계약서로 진행한 현장은 서명이 끝나면 자동으로 들어옵니다. 계약서 없이 진행한 현장만 여기서 추가하세요.</p>
+      <form id="siteForm" autocomplete="off">
+        <div class="full mode" id="siteMode" hidden>현장 수정 중</div>
+        <div class="full lock" id="contractLock" hidden>계약서에서 가져온 현장입니다. 설치 정보와 금액은 계약 관리에서 바꾸고, 여기서는 세금계산서와 메모만 저장합니다.</div>
+        <label class="full">업장명<input id="sName" placeholder="예: 성북구청 1층 로비" required></label>
+        <label>설치일<input id="sDate" type="date"></label>
+        <label>회수일<input id="sPickup" type="date"></label>
+        <label>트리 구성<input id="sSpec" placeholder="예: 2.3m ×1, 레드&골드"></label>
+        <label>전화번호<input id="sPhone" type="tel" inputmode="tel" placeholder="010-0000-0000"></label>
+        <label class="full">매출 (원)
+          <span class="rev-row">
+            <input id="sRev" inputmode="numeric" placeholder="0">
+            <select id="sVat" aria-label="부가세 포함 여부">
+              <option value="ex">부가세 미포함</option>
+              <option value="in">부가세 포함</option>
+            </select>
+          </span>
+          <span class="note" id="revHint"></span>
+        </label>
+        <label>결제수단<select id="sPay">
+          <option value="">선택 안 함</option><option>계좌이체</option><option>카드</option><option>현금</option>
+        </select></label>
+        <label class="check"><input type="checkbox" id="sTax"> 세금계산서 발행</label>
+        <label class="full">메모<input id="sMemo" placeholder="재계약, 소개 등"></label>
+        <div class="full row-btns">
+          <button type="button" class="btn ghost" id="siteDel" hidden>현장 삭제</button>
+          <button type="button" class="btn ghost" id="siteCancel" hidden>취소</button>
+          <button type="submit" class="btn">현장 저장</button>
+        </div>
+        <div class="full confirm" id="siteDelConfirm" hidden>이 현장을 지울까요? 연결된 지출은 공통 비용으로 옮겨집니다.
+          <button type="button" class="btn danger small" id="siteDelYes">삭제</button>
+          <button type="button" class="btn ghost small" id="siteDelNo">취소</button>
+        </div>
+      </form>
+    </details>
+  </section>
+
+  <!-- 항목 -->
+  <section id="p-cat" hidden>
+    <div class="card">
+      <h2 style="margin-bottom:8px">항목별 지출</h2>
+      <div id="catList"><div class="empty">이 시즌 지출이 아직 없습니다.</div></div>
+    </div>
+  </section>
+
+  <!-- 내역 -->
+  <section id="p-all" hidden>
+    <div class="filters">
+      <select id="xCat" aria-label="항목 필터"></select>
+      <select id="xSite" aria-label="현장 필터"></select>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <h2 id="allTitle">전체 내역</h2>
+        <button class="btn ghost small" id="csvBtn" hidden>CSV 내려받기</button>
+      </div>
+      <div class="list" id="allList"><div class="empty">조건에 맞는 지출이 없습니다.</div></div>
+    </div>
+    <div class="card" id="seasonCard">
+      <h2 style="margin-bottom:10px">시즌 추가</h2>
+      <div style="display:flex;gap:8px">
+        <input id="newSeason" placeholder="예: 2027 벚꽃">
+        <button class="btn small" id="addSeason" type="button">추가</button>
+      </div>
+    </div>
+  </section>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<script>
+(function(){
+// 장부 저장 서버(트리랜드 장부 Apps Script)와 계약 서버(트리랜드 전자계약 Apps Script)
+const LEDGER_ENDPOINT = "https://script.google.com/macros/s/AKfycbxQ3PcUoyJs9t2awb8TAfD2-7T_Ov4vpXLXpr8VPOAfQVD0uO_4rpuvrcFEPLz2nJnQ/exec";
+const CONTRACT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
+
+const DEFAULT_CATS=["트리 구매","장식·오너먼트","수입·통관","운송·퀵","인건비","차량·유류","보관·창고","광고·마케팅","사이트·툴","소모품","기타"];
+const S={expenses:[],sites:[],contracts:[],extras:{},seasons:["2026 크리스마스"],season:null,cat:DEFAULT_CATS[0],editExp:null,editSite:null,openSite:null,ready:false,contractErr:""};
+const $=id=>document.getElementById(id);
+const won=n=>(Math.round(n)||0).toLocaleString("ko-KR");
+const parseNum=v=>Number(String(v||"").replace(/[^\d-]/g,""))||0;
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+function status(m){const s=$("status");s.textContent=m||"";s.hidden=!m}
+const getPin=()=>{try{return localStorage.getItem("tl_pin")||""}catch(e){return ""}};
+const setPin=v=>{try{localStorage.setItem("tl_pin",v)}catch(e){}};
+try{S.season=localStorage.getItem("tl_season")}catch(e){}
+
+async function post(url,body){
+  const r=await fetch(url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(body)});
+  return r.json();
+}
+async function ledger(action,data){
+  const j=await post(LEDGER_ENDPOINT,{action,pin:getPin(),data});
+  if(!j.ok){const e=new Error(j.error==="pin"?"비밀번호가 맞지 않습니다.":(j.error||"저장하지 못했습니다."));e.code=j.error;throw e}
+  return j;
+}
+
+// 계약 → 현장 변환. 서명완료만, 임대료는 부가세 별도라 그대로 공급가
+function seasonOf(iso){
+  const m=/^(\d{4})-(\d{2})/.exec(iso||"");if(!m)return S.seasons[S.seasons.length-1];
+  const y=+m[1],mo=+m[2];
+  if(mo>=9)return `${y} 크리스마스`;if(mo<=2)return `${y-1} 크리스마스`;return `${y} 벚꽃`;
+}
+function kst(v){
+  v=String(v??"").trim();
+  if(/Z$|[+-]\d\d:\d\d$/.test(v)){const d=new Date(v);if(!isNaN(d))v=new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d)}
+  return v.slice(0,10);
+}
+function contractSites(){
+  return S.contracts.filter(c=>c.status==="서명완료").map(c=>{
+    const id="c:"+c.id,x=S.extras[c.id]||{};
+    return {id,contractId:c.id,fromContract:true,name:c.name||c.customer||c.place,date:kst(c.install),pickup:kst(c.retrieve),
+      spec:[c.size,c.color].filter(Boolean).join(" · "),phone:c.tel||"",pay:c.pay||"",revenue:Number(c.price)||0,
+      taxInvoice:!!x.taxInvoice,memo:x.memo||"",pdf:c.pdf||"",contact:c.contact||"",season:seasonOf(kst(c.install))};
+  });
+}
+const allSites=()=>contractSites().concat(S.sites);
+
+// tabs
+document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+function showTab(t){document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  ["rec","site","cat","all"].forEach(k=>$("p-"+k).hidden=k!==t);}
+if(/^#(rec|site|cat|all)$/.test(location.hash))showTab(location.hash.slice(1));
+
+["fAmount","sRev"].forEach(id=>$(id).addEventListener("input",e=>{const n=parseNum(e.target.value);e.target.value=n?won(n):""}));
+$("fDate").value=today();
+function fmtPhone(v){const d=String(v||"").replace(/\D/g,"").slice(0,12);
+  if(/^1[5-9]/.test(d))return d.length>4?d.slice(0,4)+"-"+d.slice(4,8):d;
+  if(d.startsWith("02")){const r=d.slice(2,10);if(!r)return d;
+    return "02-"+(r.length<=3?r:r.length<=7?r.slice(0,3)+"-"+r.slice(3):r.slice(0,4)+"-"+r.slice(4))}
+  const p=/^050/.test(d)?4:3,h=d.slice(0,p),r=d.slice(p,p+8);if(!r)return h;
+  return h+"-"+(r.length<=3?r:r.length<=7?r.slice(0,3)+"-"+r.slice(3):r.slice(0,4)+"-"+r.slice(4))}
+$("sPhone").addEventListener("input",e=>{e.target.value=fmtPhone(e.target.value)});
+
+function seasons(){const set=new Set(S.seasons||[]);S.expenses.forEach(e=>e.season&&set.add(e.season));allSites().forEach(s=>s.season&&set.add(s.season));return [...set]}
+function curSeason(){const list=seasons();if(!S.season||!list.includes(S.season))S.season=list[list.length-1]||"2026 크리스마스";return S.season}
+function cats(){const set=new Set(DEFAULT_CATS);S.expenses.forEach(e=>e.category&&set.add(e.category));return [...set]}
+const seasonSites=()=>allSites().filter(s=>s.season===curSeason()).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
+const seasonExp=()=>S.expenses.filter(e=>e.season===curSeason()).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+const siteName=id=>{const s=allSites().find(x=>x.id===id);return s?s.name:""};
+const md=d=>d?d.slice(5).replace("-","."):"";
+
+function render(){
+  const season=curSeason();
+  $("seasonSel").innerHTML=seasons().map(s=>`<option ${s===season?"selected":""}>${esc(s)}</option>`).join("");
+  const sites=seasonSites(),exps=seasonExp();
+  const rev=sites.reduce((a,s)=>a+(s.revenue||0),0),exp=exps.reduce((a,e)=>a+(e.amount||0),0),net=rev-exp;
+  $("sumRev").textContent=won(rev);$("sumExp").textContent=won(exp);$("sumNet").textContent=won(net);
+  const nc=sites.filter(s=>s.fromContract).length;
+  $("sumSites").textContent=`현장 ${sites.length}곳`+(nc?` · 계약 ${nc}`:"");$("sumCount").textContent=`${exps.length}건`;
+  $("sumRate").textContent=rev?`마진 ${(net/rev*100).toFixed(1)}%`:"마진 —";
+  $("netBox").classList.toggle("minus",net<0);
+  $("catChips").innerHTML=cats().map(c=>`<button type="button" class="chip" aria-pressed="${c===S.cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
+  const keep=$("fSite").value;
+  $("fSite").innerHTML=`<option value="">공통 (현장 무관)</option>`+sites.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+  if(keep&&sites.some(s=>s.id===keep))$("fSite").value=keep;
+  $("recentList").innerHTML=exps.length?exps.slice(0,6).map(itemHtml).join(""):`<div class="empty">${S.ready?"이 시즌 기록이 없습니다. 위에서 첫 지출을 입력하세요.":"불러오는 중…"}</div>`;
+  renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);
+}
+function itemHtml(e){
+  const where=e.siteId?`<span class="tag">${esc(siteName(e.siteId)||"삭제된 현장")}</span>`:`<span class="tag common">공통</span>`;
+  const sub=[e.vendor,e.memo,e.pay].filter(Boolean).map(esc).join(" · ");
+  return `<div class="item" data-id="${esc(e.id)}" tabindex="0"><span class="d">${md(e.date)}</span><span class="t"><b>${esc(e.category)}</b>${where}${sub?`<small>${sub}</small>`:""}</span><span class="a">${won(e.amount)}</span></div>`;
+}
+function renderSites(sites,exps){
+  $("contractNote").textContent=S.contractErr;$("contractNote").hidden=!S.contractErr;
+  if(!sites.length){$("siteList").innerHTML=`<div class="empty">${S.ready?"이 시즌 현장이 없습니다. 계약서 서명이 끝나면 자동으로 들어옵니다.":"불러오는 중…"}</div>`}
+  else $("siteList").innerHTML=sites.map(s=>{
+    const se=exps.filter(e=>e.siteId===s.id),cost=se.reduce((a,e)=>a+e.amount,0),m=(s.revenue||0)-cost;
+    const rate=s.revenue?(m/s.revenue*100).toFixed(0)+"%":"매출 미입력";
+    const open=S.openSite===s.id;
+    const period=[s.date,s.pickup].filter(Boolean).map(md).join("–");
+    return `<div class="site"><div class="site-head" data-site="${esc(s.id)}" tabindex="0"><span><b>${esc(s.name)}</b>${s.fromContract?`<span class="tag common">계약</span>`:""}${s.taxInvoice?`<span class="tag tax">계산서</span>`:""}<small>${esc([period,s.spec,s.pay].filter(Boolean).join(" · "))}</small></span>${se.length?`<span class="margin-pill ${m<0?"minus":""}">${rate}</span>`:""}</div>
+      ${s.phone?`<span class="site-phone">${esc([s.contact,fmtPhone(s.phone)].filter(Boolean).join(" "))}</span>`:""}
+      <div class="site-nums"><span>매출 <span class="num">${won(s.revenue)}</span></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
+      ${se.length&&s.revenue?`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,cost/s.revenue*100)}%"></i></div>`:""}
+      <div class="site-acts">${se.length?`<button type="button" class="linkbtn" data-toggle="${esc(s.id)}">이 현장 지출 ${se.length}건 ${open?"접기":"보기"}</button>`:""}${s.pdf?`<a class="linkbtn" href="${esc(s.pdf)}" target="_blank" rel="noopener">계약서 PDF</a>`:""}</div>
+      ${open&&se.length?`<div class="detail"><div class="list">${se.map(itemHtml).join("")}</div></div>`:""}
+    </div>`}).join("");
+  const common=exps.filter(e=>!e.siteId).reduce((a,e)=>a+e.amount,0);
+  $("commonNote").textContent=common?`현장에 묶이지 않은 공통 지출 ${won(common)}원은 시즌 합계에만 들어갑니다.`:"";
+}
+function renderCats(exps){
+  const total=exps.reduce((a,e)=>a+e.amount,0);const m={};exps.forEach(e=>m[e.category]=(m[e.category]||0)+e.amount);
+  const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]);const max=rows[0]?rows[0][1]:1;
+  $("catList").innerHTML=rows.length?rows.map(([c,v])=>`<div class="cat"><span>${esc(c)}</span><div class="bar"><i style="width:${v/max*100}%"></i></div><span class="num">${won(v)}<span class="pct">${(v/total*100).toFixed(1)}%</span></span></div>`).join(""):`<div class="empty">이 시즌 지출이 아직 없습니다.</div>`;
+}
+function renderAll(exps,sites){
+  const xc=$("xCat").value,xs=$("xSite").value;
+  $("xCat").innerHTML=`<option value="">항목 전체</option>`+cats().map(c=>`<option ${c===xc?"selected":""}>${esc(c)}</option>`).join("");
+  $("xSite").innerHTML=`<option value="">현장 전체</option><option value="__common" ${xs==="__common"?"selected":""}>공통만</option>`+sites.map(s=>`<option value="${esc(s.id)}" ${s.id===xs?"selected":""}>${esc(s.name)}</option>`).join("");
+  const list=filtered(exps),sum=list.reduce((a,e)=>a+e.amount,0);
+  $("allTitle").textContent=`내역 ${list.length}건 · ${won(sum)}원`;
+  $("allList").innerHTML=list.length?list.map(itemHtml).join(""):`<div class="empty">조건에 맞는 지출이 없습니다.</div>`;
+}
+function filtered(exps){const xc=$("xCat").value,xs=$("xSite").value;
+  return exps.filter(e=>(!xc||e.category===xc)&&(!xs||(xs==="__common"?!e.siteId:e.siteId===xs)))}
+$("xCat").addEventListener("change",render);$("xSite").addEventListener("change",render);
+$("seasonSel").addEventListener("change",e=>{S.season=e.target.value;try{localStorage.setItem("tl_season",S.season)}catch(_){}S.openSite=null;render()});
+$("catChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;S.cat=b.dataset.c;render()});
+
+function bindOpen(el){el.addEventListener("click",e=>{
+  if(e.target.closest("a"))return;
+  const tg=e.target.closest("[data-toggle]");if(tg){S.openSite=S.openSite===tg.dataset.toggle?null:tg.dataset.toggle;render();return}
+  const sh=e.target.closest("[data-site]");if(sh){editSite(sh.dataset.site);return}
+  const it=e.target.closest(".item");if(it)editExp(it.dataset.id)});
+  el.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.matches("[tabindex]"))e.target.click()})}
+["recentList","siteList","allList"].forEach(id=>bindOpen($(id)));
+
+async function run(fn,okMsg){
+  try{await fn();if(okMsg)toast(okMsg);return true}
+  catch(err){if(err&&err.code==="pin"){showPin("비밀번호가 맞지 않습니다.")}else toast(err&&err.message&&!/fetch/i.test(err.message)?err.message:"저장하지 못했습니다. 인터넷 연결을 확인하고 다시 눌러 주세요.");return false}
+}
+
+// 지출
+function editExp(id){const e=S.expenses.find(x=>x.id===id);if(!e)return;S.editExp=id;S.cat=e.category;
+  showTab("rec");render();
+  $("fAmount").value=won(e.amount);$("fDate").value=e.date||today();$("fSite").value=e.siteId||"";$("fVendor").value=e.vendor||"";$("fPay").value=e.pay||"카드";$("fMemo").value=e.memo||"";
+  $("expMode").hidden=false;$("expCancel").hidden=false;$("expSave").textContent="수정 저장";
+  ensureDelBtn(true);window.scrollTo({top:0});$("fAmount").focus()}
+function resetExp(){S.editExp=null;$("expForm").reset();$("fDate").value=today();$("expMode").hidden=true;$("expCancel").hidden=true;$("expSave").textContent="저장";ensureDelBtn(false)}
+$("expCancel").addEventListener("click",resetExp);
+let delBtn;function ensureDelBtn(on){
+  if(!delBtn){delBtn=document.createElement("button");delBtn.type="button";delBtn.className="btn ghost";
+    delBtn.addEventListener("click",async()=>{
+      if(!delBtn.dataset.arm){delBtn.dataset.arm=1;delBtn.textContent="한 번 더 누르면 삭제";delBtn.className="btn danger";return}
+      const id=S.editExp;
+      if(await run(()=>ledger("deleteExpense",{id}),"삭제했습니다")){S.expenses=S.expenses.filter(x=>x.id!==id);resetExp();render()}});
+    $("expCancel").before(delBtn)}
+  delBtn.hidden=!on;delete delBtn.dataset.arm;delBtn.textContent="삭제";delBtn.className="btn ghost"}
+ensureDelBtn(false);
+
+$("expForm").addEventListener("submit",async ev=>{ev.preventDefault();
+  const amount=parseNum($("fAmount").value);if(!amount){toast("금액을 입력하세요");$("fAmount").focus();return}
+  const siteId=$("fSite").value;const site=allSites().find(s=>s.id===siteId);
+  const old=S.editExp?S.expenses.find(x=>x.id===S.editExp):null;
+  const body={id:old?old.id:"",createdAt:old?old.createdAt:Date.now(),amount,category:S.cat,date:$("fDate").value||today(),siteId,season:site?site.season:curSeason(),vendor:$("fVendor").value.trim(),pay:$("fPay").value,memo:$("fMemo").value.trim()};
+  const btn=$("expSave");btn.disabled=true;
+  let j;const ok=await run(async()=>{j=await ledger("saveExpense",body)},old?"수정했습니다":`${won(amount)}원 저장했습니다`);
+  btn.disabled=false;if(!ok)return;
+  body.id=j.id;S.expenses=S.expenses.filter(x=>x.id!==body.id).concat([body]);
+  if(old)resetExp();else{const ks=$("fSite").value,kd=$("fDate").value;$("expForm").reset();$("fSite").value=ks;$("fDate").value=kd;$("fAmount").focus()}
+  render();
+});
+
+// 현장
+const supply=(v,vat)=>vat==="in"?Math.round(v/1.1):v;
+function revHint(){const v=parseNum($("sRev").value),vat=$("sVat").value;
+  $("revHint").textContent=!v?"":vat==="in"?`공급가 ${won(supply(v,vat))}원 · 부가세 ${won(v-supply(v,vat))}원 (수지는 공급가로 계산)`:`부가세 포함 ${won(Math.round(v*1.1))}원`}
+$("sRev").addEventListener("input",revHint);$("sVat").addEventListener("change",revHint);
+
+function editSite(id){const s=allSites().find(x=>x.id===id);if(!s)return;S.editSite=id;
+  const c=!!s.fromContract;
+  $("siteFormTitle").textContent=c?"계약 현장":"현장 수정";
+  ["sName","sDate","sPickup","sSpec","sPhone","sRev","sVat","sPay"].forEach(k=>$(k).disabled=c);
+  $("sName").value=s.name||"";$("sDate").value=s.date||"";$("sPickup").value=s.pickup||"";$("sSpec").value=s.spec||"";$("sPhone").value=fmtPhone(s.phone);
+  const rin=c?s.revenue:(s.revenueInput||s.revenue);$("sRev").value=rin?won(rin):"";$("sVat").value=s.vat==="in"?"in":"ex";
+  $("sPay").value=s.pay||"";$("sTax").checked=!!s.taxInvoice;$("sMemo").value=s.memo||"";revHint();
+  $("contractLock").hidden=!c;$("siteMode").hidden=c;$("siteCancel").hidden=false;$("siteDel").hidden=c;
+  showTab("site");$("siteFormBox").open=true;$("siteFormBox").scrollIntoView({block:"start"});(c?$("sTax"):$("sName")).focus()}
+function resetSite(){S.editSite=null;$("siteForm").reset();revHint();$("siteFormTitle").textContent="현장 직접 추가";
+  ["sName","sDate","sPickup","sSpec","sPhone","sRev","sVat","sPay"].forEach(k=>$(k).disabled=false);
+  $("contractLock").hidden=true;$("siteMode").hidden=true;$("siteFormBox").open=false;$("siteCancel").hidden=true;$("siteDel").hidden=true;$("siteDelConfirm").hidden=true}
+$("siteCancel").addEventListener("click",resetSite);
+$("siteDel").addEventListener("click",()=>$("siteDelConfirm").hidden=false);
+$("siteDelNo").addEventListener("click",()=>$("siteDelConfirm").hidden=true);
+$("siteDelYes").addEventListener("click",async()=>{const id=S.editSite;
+  if(await run(()=>ledger("deleteSite",{id}),"현장을 삭제했습니다")){S.sites=S.sites.filter(x=>x.id!==id);S.expenses.forEach(e=>{if(e.siteId===id)e.siteId=""});resetSite();render()}});
+$("siteForm").addEventListener("submit",async ev=>{ev.preventDefault();
+  const cur=S.editSite&&allSites().find(x=>x.id===S.editSite);
+  if(cur&&cur.fromContract){
+    const d={id:cur.contractId,taxInvoice:$("sTax").checked,memo:$("sMemo").value.trim()};
+    if(await run(()=>ledger("saveExtra",d),"저장했습니다")){S.extras[cur.contractId]={taxInvoice:d.taxInvoice,memo:d.memo};resetSite();render()}
+    return}
+  const name=$("sName").value.trim();if(!name){$("sName").focus();return}
+  const rin=parseNum($("sRev").value),vat=$("sVat").value;
+  const body={id:cur?cur.id:"",createdAt:cur?cur.createdAt:Date.now(),season:cur?cur.season:curSeason(),name,date:$("sDate").value,pickup:$("sPickup").value,spec:$("sSpec").value.trim(),
+    phone:fmtPhone($("sPhone").value),revenueInput:rin,vat,revenue:supply(rin,vat),pay:$("sPay").value,taxInvoice:$("sTax").checked,memo:$("sMemo").value.trim()};
+  let j;if(await run(async()=>{j=await ledger("saveSite",body)},cur?"현장을 수정했습니다":"현장을 추가했습니다")){
+    body.id=j.id;S.sites=S.sites.filter(x=>x.id!==body.id).concat([body]);resetSite();render()}
+});
+
+// 시즌
+$("addSeason").addEventListener("click",async()=>{const v=$("newSeason").value.trim();if(!v)return;
+  if(seasons().includes(v)){S.season=v;render();return}
+  const next=[...S.seasons,v];
+  if(await run(()=>ledger("saveSeasons",{seasons:next}),`'${v}' 시즌을 만들었습니다`)){S.seasons=next;S.season=v;try{localStorage.setItem("tl_season",v)}catch(_){}$("newSeason").value="";render()}});
+
+// CSV
+$("csvBtn").addEventListener("click",()=>{
+  const rows=[["날짜","시즌","항목","현장","거래처","결제수단","금액","메모"]].concat(filtered(seasonExp()).map(e=>[e.date,e.season,e.category,e.siteId?siteName(e.siteId):"공통",e.vendor,e.pay,e.amount,e.memo]));
+  const csv="\ufeff"+rows.map(r=>r.map(v=>{v=String(v??"");return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\n");
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download=`트리랜드_지출_${curSeason().replace(/\s+/g,"_")}.csv`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+});
+
+// 비밀번호
+function showPin(msg){$("pinBox").hidden=false;$("main").hidden=true;$("pinErr").textContent=msg||"";$("pinErr").hidden=!msg;$("pin").focus()}
+$("pinBtn").onclick=()=>{const v=$("pin").value.trim();if(!v)return;setPin(v);load()};
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("pinBtn").click()});
+
+async function load(){
+  if(!LEDGER_ENDPOINT){status("저장 서버 주소가 아직 연결되지 않았습니다.");return}
+  if(!getPin()){showPin();return}
+  status("");
+  const [L,C]=await Promise.allSettled([
+    ledger("load"),
+    post(CONTRACT_ENDPOINT,{action:"schedule",pin:getPin()})
+  ]);
+  if(L.status==="rejected"){
+    if(L.reason&&L.reason.code==="pin"){showPin("비밀번호가 맞지 않습니다.");return}
+    status("장부를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침하세요.");return}
+  const j=L.value;
+  S.expenses=j.expenses||[];S.sites=j.sites||[];S.extras=j.extras||{};S.seasons=j.seasons&&j.seasons.length?j.seasons:S.seasons;
+  if(C.status==="fulfilled"&&C.value&&C.value.ok){S.contracts=C.value.items||[];S.contractErr=""}
+  else{S.contractErr="계약 목록을 불러오지 못해 계약 현장이 빠져 있습니다. 잠시 후 새로고침하세요."}
+  S.ready=true;$("pinBox").hidden=true;$("main").hidden=false;render();
+}
+// 다른 탭(계약 관리)에서 서명이 끝난 뒤 돌아오면 다시 불러오기
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&S.ready&&!S.editExp&&!S.editSite)load()});
+
+render();load();
+})();
+
+</script>
+</body>
+</html>
