@@ -87,7 +87,7 @@ footer{font-size:12px;color:var(--sub);text-align:center}
 <div class="wrap" id="app">
   <header>
     <div class="brand">TREELAND</div>
-    <h1>트리 임대차 계약서</h1>
+    <h1>트리 설치 계약서</h1>
     <p class="lead">계약 내용을 확인하신 뒤 정보를 입력하고 서명해 주세요. 서명한 계약서는 입력하신 이메일로 발송됩니다.</p>
     <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 계약 내용은 예시이며, 제출해도 저장되지 않습니다.</div>
   </header>
@@ -324,7 +324,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
     <tr><th>주소</th><td>-</td><th>주소</th><td>서울 성북구 아리랑로19길 87</td></tr>
     <tr><th>담당자·연락처</th><td>${esc(g.contact)} / ${esc(g.tel)}</td><th>전화</th><td>070-4571-7467</td></tr>
     <tr><th>이메일</th><td>${esc(g.email)}</td><th>이메일</th><td>info@treeland.kr</td></tr></table>`;
-  return `<h1>트리 임대차 계약서</h1><div class="subt">대여 · 설치 · 회수</div>
+  return `<h1>트리 설치 계약서</h1><div class="subt">대여 · 설치 · 회수</div>
     <p>임차인(이하 "갑"이라 한다)과 임대인 트리랜드(이하 "을"이라 한다)는 트리 임대 및 설치에 관하여 다음과 같이 계약을 체결한다.</p>
     ${party}${body}
     <div class="avoid"><p class="c" style="margin-top:16px">본 계약의 성립을 증명하기 위하여 계약서를 작성하고 갑과 을이 서명 또는 날인한다.</p>
