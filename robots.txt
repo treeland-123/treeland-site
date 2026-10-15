@@ -5,4 +5,5 @@ Disallow: /build/
 Disallow: /contract/
 Disallow: /admin/
 Disallow: /schedule/
+Disallow: /ledger/
 Sitemap: https://treeland.kr/sitemap.xml
