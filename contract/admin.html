@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<title>트리랜드 계약 관리</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 위 링크 만들기, 아래 계약 목록. 휴대폰에서도 한 칼럼 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --ok:#2e6b3a; --wait:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{padding-top:28px;display:flex;flex-direction:column;gap:4px}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:22px;margin:0}
+.lead{margin:0;color:var(--sub);font-size:14px}
+.demo{font-size:13px;background:var(--soft);border:1px dashed var(--line);padding:8px 12px;border-radius:6px;color:var(--sub)}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-size:16px;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.grid2{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:13px;color:var(--sub)}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:110px;font-size:14px}
+input:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--sub)}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:13px;font-size:15px;font-weight:700}
+.primary[disabled]{opacity:.5;cursor:wait}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row input{flex:1;min-width:0}
+.error{color:var(--err);font-size:14px;margin:0}
+.result{background:var(--soft);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.item:first-child{border-top:0}
+.item .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.item .m{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
+.item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid currentColor;align-self:start;white-space:nowrap}
+.pill.done{color:var(--ok)} .pill.wait{color:var(--wait)} .pill.stop{color:var(--sub)}
+a{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="brand">TREELAND</div>
+    <h1>계약 관리</h1>
+    <p class="lead">계약 내용을 넣으면 고객에게 보낼 서명 링크가 만들어집니다.</p>
+    <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 저장 기능이 연결되기 전이라 예시 데이터로 동작합니다.</div>
+  </header>
+
+  <section>
+    <div class="field"><label for="pin">관리자 비밀번호</label>
+      <div class="row"><input type="password" id="pin" autocomplete="current-password"><button type="button" class="ghost" id="loadBtn">목록 불러오기</button></div>
+      <span class="hint">이 기기에서는 다음부터 자동으로 입력됩니다.</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-new">
+    <h2 id="h-new">새 계약 링크 만들기</h2>
+    <form id="newForm" novalidate>
+      <div class="wrap" style="gap:12px">
+        <div class="field"><label for="n-customer">고객 상호 (선택, 미리 채워짐)</label><input type="text" id="n-customer"></div>
+        <div class="field"><label for="n-place">설치 장소</label><input type="text" id="n-place" placeholder="예: 서울 성북구 ○○카페 1층 입구"></div>
+        <div class="grid2">
+          <div class="field"><label for="n-size">임대물 크기·수량</label><input type="text" id="n-size" placeholder="예: 180cm 트리 1대"></div>
+          <div class="field"><label for="n-color">장식 색상</label><input type="text" id="n-color" placeholder="예: 레드·골드"></div>
+        </div>
+        <div class="field"><label for="n-extra">추가 장식·소품</label><input type="text" id="n-extra" placeholder="없으면 비워 두세요"></div>
+        <div class="grid2">
+          <div class="field"><label for="n-install">설치 예정일</label><input type="date" id="n-install"></div>
+          <div class="field"><label for="n-price">임대료 (부가세 별도, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450000"></div>
+        </div>
+        <div class="field"><label for="n-retrieve">회수 예정일</label><input type="text" id="n-retrieve" value="1월~2월 초 중 협의"></div>
+        <p class="error" id="newErr" role="alert" hidden></p>
+        <button type="submit" class="primary" id="newBtn">링크 만들기</button>
+      </div>
+    </form>
+    <div class="result" id="result" hidden>
+      <div class="field"><label for="r-msg">고객에게 보낼 카톡 문구</label><textarea id="r-msg"></textarea></div>
+      <div class="row"><button type="button" class="primary" id="copyBtn" style="flex:1">문구 복사</button></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-list">
+    <h2 id="h-list">계약 목록</h2>
+    <div class="list" id="list"><p class="lead">비밀번호를 넣고 목록 불러오기를 누르세요.</p></div>
+  </section>
+</div>
+
+<script>
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n).toLocaleString("ko-KR");
+const fmtCreated = v => { const d = new Date(v); if(isNaN(d)) return v; const p = n => String(n).padStart(2,"0"); return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`; };
+try{ const p = localStorage.getItem("tl_pin"); if(p) $("#pin").value = p; }catch(e){}
+if(!ENDPOINT) $("#demoNote").hidden = false;
+
+const DEMO = [
+  {id:"a1b2c3d4e5", status:"서명완료", customer:"달빛카페", place:"서울 성북구 ○○카페 1층 입구", install:"2026-11-24", price:450000, pdf:"#", url:"https://treeland.kr/contract/?id=a1b2c3d4e5", created:"2026-10-15 22:10"},
+  {id:"f6g7h8i9j0", status:"서명대기", customer:"", place:"성북구청 민원실", install:"2026-11-28", price:1200000, pdf:"", url:"https://treeland.kr/contract/?id=f6g7h8i9j0", created:"2026-10-15 23:02"},
+];
+
+async function api(body){
+  if(!ENDPOINT){
+    if(body.action === "list") return {ok:true, items:DEMO};
+    if(body.action === "create") return {ok:true, id:"demo123456", url:"https://treeland.kr/contract/?id=demo123456"};
+    return {ok:true};
+  }
+  const r = await fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
+  return r.json();
+}
+const pin = () => { const v = $("#pin").value.trim(); try{ localStorage.setItem("tl_pin", v); }catch(e){} return v; };
+
+async function load(){
+  $("#list").innerHTML = `<p class="lead">불러오는 중…</p>`;
+  try{
+    const j = await api({action:"list", pin:pin()});
+    if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
+    if(!j.items.length){ $("#list").innerHTML = `<p class="lead">아직 만든 계약이 없습니다.</p>`; return; }
+    $("#list").innerHTML = j.items.map(it => {
+      const cls = it.status === "서명완료" ? "done" : it.status === "서명대기" ? "wait" : "stop";
+      return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="pill ${cls}">${esc(it.status)}</span>
+        <span class="m">설치 ${esc(it.install)} · ₩${won(it.price)} · 생성 ${esc(fmtCreated(it.created))}</span><span></span>
+        <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
+        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div></div>`;
+    }).join("");
+  }catch(e){ $("#list").innerHTML = `<p class="error">${esc(e.message || "목록을 불러오지 못했습니다.")}</p>`; }
+}
+$("#loadBtn").onclick = load;
+
+async function copy(text, btn){
+  const old = btn.textContent;
+  try{ await navigator.clipboard.writeText(text); btn.textContent = "복사됨"; }
+  catch(e){ btn.textContent = "길게 눌러 복사하세요"; }
+  setTimeout(() => btn.textContent = old, 1600);
+}
+$("#list").addEventListener("click", async e => {
+  const c = e.target.closest("[data-copy]"); if(c) return copy(c.dataset.copy, c);
+  const s = e.target.closest("[data-stop]");
+  if(s){
+    if(s.dataset.armed !== "1"){ s.dataset.armed = "1"; s.textContent = "한 번 더 누르면 중지"; return; }
+    const j = await api({action:"cancel", pin:pin(), id:s.dataset.stop});
+    if(!j.ok) s.textContent = j.error; else load();
+  }
+});
+
+function msg(url){
+  return `안녕하세요, 트리랜드입니다.\n트리 임대차 계약서 보내드립니다. 아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요.\n${url}\n\n세부 구성은 보내드린 견적서와 같습니다.`;
+}
+$("#newForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const v = id => $(id).value.trim();
+  const price = Number(v("#n-price").replace(/[^\d]/g, ""));
+  const err = m => { $("#newErr").textContent = m; $("#newErr").hidden = false; };
+  if(!v("#n-place")) return err("설치 장소를 입력해 주세요.");
+  if(!v("#n-size")) return err("임대물 크기·수량을 입력해 주세요.");
+  if(!v("#n-install")) return err("설치 예정일을 골라 주세요.");
+  if(!(price > 0)) return err("임대료를 숫자로 입력해 주세요.");
+  $("#newErr").hidden = true;
+  const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
+  try{
+    const j = await api({action:"create", pin:pin(), contract:{
+      customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-extra"),
+      install:v("#n-install"), retrieve:v("#n-retrieve"), price}});
+    if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
+    $("#r-msg").value = msg(j.url); $("#result").hidden = false;
+    e.target.reset(); $("#n-retrieve").value = "1월~2월 초 중 협의";
+    load();
+  }catch(ex){ err(ex.message || "링크를 만들지 못했습니다."); }
+  finally{ btn.disabled = false; btn.textContent = "링크 만들기"; }
+});
+$("#copyBtn").onclick = e => copy($("#r-msg").value, e.currentTarget);
+</script>
+
+</body>
+</html>
