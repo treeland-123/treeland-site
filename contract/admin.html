@@ -86,8 +86,8 @@ a{color:var(--ink)}
 
   <section>
     <div class="field"><label for="pin">관리자 비밀번호</label>
-      <div class="row"><input type="password" id="pin" autocomplete="current-password"><button type="button" class="ghost" id="loadBtn">목록 불러오기</button></div>
-      <span class="hint">이 기기에서는 다음부터 자동으로 입력됩니다.</span>
+      <div class="row"><input type="password" id="pin" autocomplete="current-password" enterkeyhint="go"><button type="button" class="ghost" id="loadBtn">확인</button></div>
+      <span class="hint" id="pinMsg" role="status">이 기기에서는 다음부터 자동으로 입력됩니다.</span>
     </div>
   </section>
 
@@ -170,13 +170,25 @@ async function api(body){
   const r = await fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
   return r.json();
 }
-const pin = () => { const v = $("#pin").value.trim(); try{ localStorage.setItem("tl_pin", v); }catch(e){} return v; };
+const pin = () => $("#pin").value.trim();
+function pinState(ok, text){
+  const m = $("#pinMsg"); m.textContent = text; m.style.color = ok === false ? "var(--err)" : ok ? "var(--ok)" : "";
+  $("#pin").style.borderColor = ok === false ? "var(--err)" : "";
+  try{ if(ok) localStorage.setItem("tl_pin", pin()); else if(ok === false) localStorage.removeItem("tl_pin"); }catch(e){}
+}
 
 async function load(){
+  if(!pin()){ pinState(false, "비밀번호를 입력해 주세요."); $("#pin").focus(); return; }
   $("#list").innerHTML = `<p class="lead">불러오는 중…</p>`;
   try{
     const j = await api({action:"list", pin:pin()});
-    if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
+    if(!j.ok && j.error === "pin"){
+      pinState(false, "비밀번호가 틀렸습니다. 다시 입력해 주세요.");
+      $("#list").innerHTML = `<p class="lead">비밀번호를 확인하면 목록이 나옵니다.</p>`; $("#listSum").hidden = true;
+      $("#pin").select(); return;
+    }
+    if(!j.ok) throw new Error(j.error);
+    pinState(true, "확인되었습니다. 이 기기에서는 다음부터 자동으로 입력됩니다.");
     if(!j.items.length){ $("#list").innerHTML = `<p class="lead">아직 만든 계약이 없습니다.</p>`; return; }
     const cnt = s => j.items.filter(it => it.status === s).length;
     $("#listSum").textContent = `서명대기 ${cnt("서명대기")}건 · 서명완료 ${cnt("서명완료")}건 (최근 50건)`; $("#listSum").hidden = false;
@@ -192,6 +204,9 @@ async function load(){
   }catch(e){ $("#list").innerHTML = `<p class="error">${esc(e.message || "목록을 불러오지 못했습니다.")}</p>`; }
 }
 $("#loadBtn").onclick = load;
+$("#pin").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); load(); } });
+$("#pin").addEventListener("input", () => pinState(null, "입력 후 확인을 누르세요."));
+if(pin()) load();   // 저장된 비밀번호가 있으면 바로 확인
 
 async function copy(text, btn){
   const old = btn.textContent;
@@ -229,7 +244,8 @@ $("#newForm").addEventListener("submit", async e => {
     const contract = { customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
       install:v("#n-install"), retrieve:v("#n-retrieve"), price };
     const j = await api({action:"create", pin:pin(), contract});
-    if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
+    if(!j.ok && j.error === "pin"){ pinState(false, "비밀번호가 틀렸습니다. 다시 입력해 주세요."); $("#pin").scrollIntoView({block:"center"}); $("#pin").focus(); throw new Error("비밀번호가 틀려서 링크를 만들지 못했습니다. 맨 위 비밀번호를 확인해 주세요."); }
+    if(!j.ok) throw new Error(j.error);
     $("#r-msg").value = msg(j.url, contract); $("#openLink").href = j.url; $("#result").hidden = false;
     e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
     trees = []; renderTrees(); priceHint(); clearDraft();
