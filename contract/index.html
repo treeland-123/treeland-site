@@ -205,7 +205,7 @@ const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f
 
 const SAMPLE = {
   id: "DEMO", place: "서울 성북구 ○○카페 1층 입구", size: "180cm 트리 1대", color: "레드·골드",
-  extra: "트리 스커트, 선물상자 3개", install: "2026-11-24", retrieve: "2027년 1월~2월 초 중 협의",
+  extra: "", install: "2026-11-24", retrieve: "2027-01-12",
   price: 450000, customer: ""
 };
 
@@ -223,7 +223,11 @@ function hangulAmount(n){
   }
   return out;
 }
-function fmtDate(iso){ if(!/^\d{4}-\d{2}-\d{2}$/.test(iso||"")) return iso||""; const [y,m,d]=iso.split("-"); return `${y}년 ${+m}월 ${+d}일`; }
+function fmtDate(v){
+  v = String(v ?? "");
+  if(/^\d{4}-\d{2}-\d{2}T/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = d.toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"}); }
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; const [y,m,d] = v.split("-"); return `${y}년 ${+m}월 ${+d}일`;
+}
 
 const TERMS = [
  ["제1조 (목적)", ["본 계약은 을이 갑에게 트리 및 장식물(이하 \"임대물\"이라 한다)을 임대하고 이를 설치·철거·회수함에 있어 갑과 을의 권리와 의무를 정함을 목적으로 한다."]],
@@ -244,8 +248,8 @@ const TERMS = [
 
 let C = null;   // 계약 데이터 (트리랜드가 미리 입력)
 const contentRows = c => [
-  ["설치 장소", c.place], ["임대물 크기·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", c.extra || "없음"],
-  ["설치 예정일", fmtDate(c.install)], ["회수 예정일", c.retrieve || "1월~2월 초 중 협의"],
+  ["설치 장소", c.place], ["임대물 크기·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
+  ["설치 예정일", fmtDate(c.install)], ["회수 예정일", fmtDate(c.retrieve) || "1월~2월 초 중 협의"],
   ["임대료", `금 ${hangulAmount(c.price)}원정 (₩${won(c.price)}) · 부가가치세 별도, 운임 포함`],
 ];
 

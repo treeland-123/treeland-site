@@ -87,12 +87,13 @@ a{color:var(--ink)}
           <div class="field"><label for="n-size">임대물 크기·수량</label><input type="text" id="n-size" placeholder="예: 180cm 트리 1대"></div>
           <div class="field"><label for="n-color">장식 색상</label><input type="text" id="n-color" placeholder="예: 레드·골드"></div>
         </div>
-        <div class="field"><label for="n-extra">추가 장식·소품</label><input type="text" id="n-extra" placeholder="없으면 비워 두세요"></div>
+        <div class="field"><label for="n-extra-fixed">추가 장식·소품</label><input type="text" id="n-extra-fixed" value="견적서와 같습니다" readonly tabindex="-1" style="color:var(--sub);background:var(--soft)"></div>
+        <div class="field"><label for="n-note">비고 (선택, 고객 화면과 계약서에 표시)</label><textarea id="n-note" rows="2" style="min-height:64px" placeholder="예: 영업 종료 후 설치, 주차는 건물 뒤편"></textarea></div>
         <div class="grid2">
           <div class="field"><label for="n-install">설치 예정일</label><input type="date" id="n-install"></div>
-          <div class="field"><label for="n-price">임대료 (부가세 별도, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450000"></div>
+          <div class="field"><label for="n-retrieve">회수 예정일</label><input type="date" id="n-retrieve"></div>
         </div>
-        <div class="field"><label for="n-retrieve">회수 예정일</label><input type="text" id="n-retrieve" value="1월~2월 초 중 협의"></div>
+        <div class="field"><label for="n-price">임대료 (부가세 별도, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450000"></div>
         <p class="error" id="newErr" role="alert" hidden></p>
         <button type="submit" class="primary" id="newBtn">링크 만들기</button>
       </div>
@@ -178,16 +179,18 @@ $("#newForm").addEventListener("submit", async e => {
   if(!v("#n-place")) return err("설치 장소를 입력해 주세요.");
   if(!v("#n-size")) return err("임대물 크기·수량을 입력해 주세요.");
   if(!v("#n-install")) return err("설치 예정일을 골라 주세요.");
+  if(!v("#n-retrieve")) return err("회수 예정일을 골라 주세요.");
+  if(v("#n-retrieve") <= v("#n-install")) return err("회수 예정일이 설치 예정일보다 뒤여야 합니다.");
   if(!(price > 0)) return err("임대료를 숫자로 입력해 주세요.");
   $("#newErr").hidden = true;
   const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
   try{
     const j = await api({action:"create", pin:pin(), contract:{
-      customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-extra"),
+      customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
       install:v("#n-install"), retrieve:v("#n-retrieve"), price}});
     if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
     $("#r-msg").value = msg(j.url); $("#result").hidden = false;
-    e.target.reset(); $("#n-retrieve").value = "1월~2월 초 중 협의";
+    e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
     load();
   }catch(ex){ err(ex.message || "링크를 만들지 못했습니다."); }
   finally{ btn.disabled = false; btn.textContent = "링크 만들기"; }
