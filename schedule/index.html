@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<title>트리랜드 일정표</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 계약 관리 화면(contract/admin.html)과 같은 색 토큰. 폰 한 칼럼 기준 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --ok:#2e6b3a; --wait:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:22px;margin:0}
+a{color:var(--ink)}
+button{font:inherit;cursor:pointer;color:var(--ink)}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:10px 16px;font-size:14px;font-weight:700}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.lead{margin:0;color:var(--sub);font-size:14px}
+.error{color:var(--err);font-size:14px;margin:0}
+.box{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.row{display:flex;gap:8px;align-items:center}
+.row input{flex:1;min-width:0}
+
+/* 상단 도구줄: 필터 + 새로고침 */
+.tools{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin:-6px 0 -4px;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid transparent}
+.tools.stuck{border-bottom-color:var(--line)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--paper)}
+.seg button{border:0;background:none;border-radius:999px;padding:5px 12px;font-size:13.5px;color:var(--sub)}
+.seg button[aria-pressed="true"]{background:var(--act);color:var(--act-ink)}
+.stamp{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* 날짜 묶음 */
+.day{display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.day.hot{border-color:var(--ink);border-width:1.5px}
+.dhead:last-child{border-bottom:0}
+.dhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+.dhead b{font-size:16px}
+.dhead .tag{font-size:12px;font-weight:700;background:var(--act);color:var(--act-ink);border-radius:4px;padding:1px 7px;margin-right:6px;vertical-align:2px}
+.dhead .cnt{font-size:12.5px;color:var(--sub);white-space:nowrap;font-variant-numeric:tabular-nums}
+.ev{display:grid;grid-template-columns:52px 1fr auto;gap:2px 12px;padding:12px 16px;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%;align-items:start}
+.ev:first-of-type{border-top:0}
+.ev:active{background:var(--soft)}
+.ev .tm{font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;line-height:1.5}
+.ev .kind{grid-column:1;grid-row:2;font-size:12px;font-weight:700;justify-self:start;border-radius:4px;padding:0 6px;line-height:1.7}
+.ev .kind.in{background:var(--act);color:var(--act-ink)}
+.ev .kind.out{border:1px solid var(--ink);line-height:1.55}
+.ev .who{grid-column:2;grid-row:1;font-weight:500;min-width:0;overflow-wrap:anywhere}
+.ev .what{grid-column:2;grid-row:2;color:var(--sub);font-size:13px;min-width:0;overflow-wrap:anywhere}
+.ev .area{grid-column:3;grid-row:1;font-size:12px;color:var(--sub);white-space:nowrap;padding-top:2px}
+.ev.tbd{opacity:.5}
+.ev.tbd .who::after{content:" · 미확정";font-weight:400;font-size:12.5px;color:var(--wait)}
+.gap{grid-column:1/-1;font-size:12px;color:var(--sub)}
+.empty{padding:28px 16px;text-align:center;color:var(--sub);font-size:14px}
+
+details.past{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+details.past>summary{padding:12px 16px;cursor:pointer;color:var(--sub);font-size:14px;list-style:none;display:flex;justify-content:space-between}
+details.past>summary::-webkit-details-marker{display:none}
+details.past>summary::after{content:"펼치기"}
+details.past[open]>summary::after{content:"접기"}
+details.past .inner{display:flex;flex-direction:column;gap:12px;padding:0 12px 12px}
+h2.sec{font-size:14px;color:var(--sub);margin:8px 2px 0;font-weight:500}
+
+/* 상세: 아래에서 올라오는 시트 */
+dialog{border:0;padding:0;margin:auto auto 0;width:100%;max-width:720px;max-height:88dvh;border-radius:14px 14px 0 0;background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.4)}
+@media (min-width:760px){dialog{margin:auto;border-radius:14px;max-height:85dvh}}
+.sheet{display:flex;flex-direction:column;gap:14px;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px))}
+.shead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.shead h3{margin:0;font-size:18px;overflow-wrap:anywhere}
+.shead .when{font-size:14px;color:var(--sub);margin-top:2px}
+.x{border:0;background:var(--soft);border-radius:999px;width:34px;height:34px;font-size:18px;line-height:1;flex:none}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14.5px}
+dt{color:var(--sub);white-space:nowrap}
+dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acts a,.acts button{justify-content:center;padding:11px 8px;font-size:14px;border-radius:8px}
+.acts .primary{text-decoration:none;display:inline-flex;align-items:center}
+.pill{font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid currentColor;white-space:nowrap}
+.pill.done{color:var(--ok)} .pill.wait{color:var(--wait)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="brand">TREELAND</div><h1>설치·회수 일정</h1></div>
+    <a class="ghost" href="/contract/admin.html">계약 관리</a>
+  </header>
+
+  <div class="box" id="pinBox" hidden>
+    <label for="pin" class="lead">관리자 비밀번호 (계약 관리 화면과 같습니다)</label>
+    <div class="row"><input type="password" id="pin" autocomplete="current-password"><button type="button" class="primary" id="pinBtn">열기</button></div>
+    <p class="error" id="pinErr" hidden></p>
+  </div>
+
+  <div class="tools" id="tools" hidden>
+    <div class="seg" role="group" aria-label="보기">
+      <button type="button" data-f="all" aria-pressed="true">전체</button><button type="button" data-f="in" aria-pressed="false">설치</button><button type="button" data-f="out" aria-pressed="false">회수</button>
+    </div>
+    <button type="button" class="ghost" id="reload"><span id="stamp" class="stamp"></span> 새로고침</button>
+  </div>
+
+  <p class="error" id="err" hidden></p>
+  <div id="board" class="wrap" style="gap:12px"></div>
+</div>
+
+<dialog id="dlg" aria-labelledby="d-name"><div class="sheet" id="sheet"></div></dialog>
+
+<script>
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
+const DEMO = new URLSearchParams(location.search).has("demo");
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n || 0).toLocaleString("ko-KR");
+const WD = ["일","월","화","수","목","금","토"];
+const pad = n => String(n).padStart(2, "0");
+
+// "2026-11-24T14:00" 또는 시트가 돌려준 UTC ISO → 한국 시간 {key:"2026-11-24", hm:"14:00" | "", label}
+function parts(v){
+  v = String(v ?? "").trim();
+  if(/Z$|[+-]\d\d:\d\d$/.test(v)){ const d = new Date(v);
+    if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T"); }
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/); if(!m) return null;
+  const hm = m[4] && !(m[4] === "00" && m[5] === "00") ? `${m[4]}:${m[5]}` : "";
+  const wd = WD[new Date(+m[1], +m[2]-1, +m[3]).getDay()];
+  return { key:`${m[1]}-${m[2]}-${m[3]}`, hm, y:+m[1], m:+m[2], d:+m[3], wd };
+}
+const dayLabel = p => `${p.m}월 ${p.d}일 (${p.wd})`;
+function todayKey(offset = 0){
+  const d = new Date(Date.now() + offset * 864e5);
+  return new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d);
+}
+// 설치 장소에서 구·군 이름만 뽑아 동선 참고용으로 표시
+function area(place){
+  const w = String(place || "").split(/\s+/);
+  return w.find(x => /^[가-힣]{1,5}(구|군)$/.test(x)) || w.find(x => /^[가-힣]{2,4}시$/.test(x)) || "";
+}
+
+/* ---------- 데이터 ---------- */
+let items = [], filter = "all", loadedAt = 0;
+const SAMPLE = (() => {
+  const k = o => todayKey(o);
+  return [
+    {id:"d1", status:"서명완료", name:"달빛카페", place:"서울 성북구 동소문로 12 1층 입구", size:"2.3m 트리 1대", color:"레드 & 골드", note:"영업 종료 후 설치, 주차는 건물 뒤편", install:`${k(0)}T10:00`, retrieve:"2027-01-12T01:00:00.000Z", contact:"김민지", tel:"01012345678", pay:"계좌이체", price:680000, pdf:"#"},
+    {id:"d2", status:"서명완료", name:"한빛치과", place:"서울 강북구 도봉로 300 2층 대기실", size:"1.95m 슬림 트리 1대", color:"화이트 & 샴페인", note:"", install:`${k(0)}T14:30`, retrieve:"2027-01-20T10:00", contact:"박지훈 실장", tel:"010-2222-3333", pay:"카드 결제", price:500000, pdf:"#"},
+    {id:"d3", status:"서명대기", name:"성북구청", place:"서울 성북구 보문로 168 민원실", size:"2.9m 트리 1대", color:"네이비 & 골드", note:"", install:`${k(1)}T09:00`, retrieve:"1월~2월 초 중 협의", contact:"", tel:"", pay:"", price:1275000, pdf:""},
+    {id:"d4", status:"서명완료", name:"오름 스터디카페", place:"서울 노원구 동일로 1400", size:"1.35m 트리 2대", color:"세이지 그린 & 골드", note:"입구 양쪽에 한 대씩", install:`${k(4)}T11:00`, retrieve:"2027-02-03T11:00", contact:"이수현", tel:"01055556666", pay:"계좌이체", price:520200, pdf:"#"},
+    {id:"d5", status:"서명완료", name:"주식회사 원엔드", place:"경기 성남시 분당구 판교역로 166 로비", size:"2.3m 트리 2대", color:"레드 & 골드", note:"", install:`${k(-3)}T13:00`, retrieve:"2027-01-15T13:00", contact:"최영호 대리", tel:"0312223333", pay:"계좌이체", price:1292000, pdf:"#"},
+  ];
+})();
+
+async function api(body){
+  if(DEMO) return {ok:true, items:SAMPLE};
+  const r = await fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
+  return r.json();
+}
+const getPin = () => { try{ return localStorage.getItem("tl_pin") || ""; }catch(e){ return ""; } };
+const setPin = v => { try{ localStorage.setItem("tl_pin", v); }catch(e){} };
+
+async function load(){
+  const pin = DEMO ? "demo" : getPin();
+  if(!pin){ showPin(); return; }
+  $("#reload").disabled = true; $("#stamp").textContent = "불러오는 중";
+  try{
+    const j = await api({action:"schedule", pin});
+    if(!j.ok){
+      if(j.error === "pin"){ showPin("비밀번호가 맞지 않습니다."); return; }
+      if(j.error === "bad_action") throw new Error("저장 서버가 아직 예전 버전입니다. Apps Script를 새 버전으로 배포하면 보입니다.");
+      throw new Error(j.error);
+    }
+    items = j.items || []; loadedAt = Date.now();
+    try{ localStorage.setItem("tl_sched_cache", JSON.stringify({at:loadedAt, items})); }catch(e){}
+    $("#err").hidden = true; $("#pinBox").hidden = true; $("#tools").hidden = false;
+    render();
+  }catch(e){
+    $("#err").textContent = (e.message || "일정을 불러오지 못했습니다.") + (items.length ? " 마지막으로 받아 둔 일정을 보여 드립니다." : "");
+    $("#err").hidden = false;
+  }finally{ $("#reload").disabled = false; stamp(); }
+}
+function stamp(){
+  if(!loadedAt){ $("#stamp").textContent = ""; return; }
+  const d = new Date(loadedAt); $("#stamp").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())} 기준`;
+}
+function showPin(msg){
+  $("#pinBox").hidden = false; $("#tools").hidden = true; $("#board").innerHTML = "";
+  $("#pinErr").textContent = msg || ""; $("#pinErr").hidden = !msg;
+  $("#pin").focus();
+}
+$("#pinBtn").onclick = () => { const v = $("#pin").value.trim(); if(!v) return; setPin(v); load(); };
+$("#pin").addEventListener("keydown", e => { if(e.key === "Enter") $("#pinBtn").click(); });
+$("#reload").onclick = load;
+
+/* ---------- 화면 ---------- */
+function events(){
+  const out = [], undated = [];
+  for(const it of items){
+    for(const kind of ["in","out"]){
+      if(filter !== "all" && filter !== kind) continue;
+      const raw = kind === "in" ? it.install : it.retrieve, p = parts(raw);
+      if(p) out.push({it, kind, p}); else if(kind === "out") undated.push({it, kind, raw});
+    }
+  }
+  out.sort((a, b) => (a.p.key + (a.p.hm || "99:99")).localeCompare(b.p.key + (b.p.hm || "99:99")) || (a.kind === "out") - (b.kind === "out"));
+  return {out, undated};
+}
+function evRow(e, i){
+  const it = e.it, tbd = it.status !== "서명완료";
+  const what = [it.size, it.color].filter(Boolean).join(" · ");
+  return `<button type="button" class="ev${tbd ? " tbd" : ""}" data-i="${i}">
+    <span class="tm">${esc(e.p && e.p.hm || "--:--")}</span>
+    <span class="kind ${e.kind}">${e.kind === "in" ? "설치" : "회수"}</span>
+    <span class="who">${esc(it.name || it.place)}</span>
+    <span class="what">${esc(what || it.place)}</span>
+    <span class="area">${esc(area(it.place))}</span>
+  </button>`;
+}
+let shown = [];
+function dayBlock(key, list, hot){
+  const p = list[0].p, nIn = list.filter(e => e.kind === "in").length, nOut = list.length - nIn;
+  const cnt = [nIn && `설치 ${nIn}`, nOut && `회수 ${nOut}`].filter(Boolean).join(" · ");
+  const rows = list.map(e => { shown.push(e); return evRow(e, shown.length - 1); }).join("");
+  return `<div class="day${hot ? " hot" : ""}"><div class="dhead"><b>${hot ? `<span class="tag">${hot}</span>` : ""}${dayLabel(p)}</b><span class="cnt">${cnt}</span></div>${rows}</div>`;
+}
+function render(){
+  shown = [];
+  const {out, undated} = events(), t0 = todayKey(0), t1 = todayKey(1);
+  const byDay = new Map();
+  out.forEach(e => { if(!byDay.has(e.p.key)) byDay.set(e.p.key, []); byDay.get(e.p.key).push(e); });
+  const past = [], html = [];
+  // 오늘·내일은 일정이 없어도 맨 위에 자리를 둠
+  for(const [k, label] of [[t0, "오늘"], [t1, "내일"]]){
+    if(byDay.has(k)) html.push(dayBlock(k, byDay.get(k), label));
+    else { const p = parts(k); html.push(`<div class="day hot"><div class="dhead"><b><span class="tag">${label}</span>${dayLabel(p)}</b><span class="cnt">없음</span></div></div>`); }
+  }
+  const later = [...byDay.keys()].filter(k => k > t1);
+  if(later.length){
+    html.push(`<h2 class="sec">다음 일정</h2>`);
+    later.forEach(k => html.push(dayBlock(k, byDay.get(k))));
+  }
+  if(undated.length){
+    html.push(`<h2 class="sec">회수일 미정</h2><div class="day">${undated.map(e => { shown.push(e); return evRow(e, shown.length - 1); }).join("")}</div>`);
+  }
+  [...byDay.keys()].filter(k => k < t0).reverse().forEach(k => past.push(dayBlock(k, byDay.get(k))));
+  if(past.length) html.push(`<details class="past"><summary>지난 일정 ${past.length}일</summary><div class="inner">${past.join("")}</div></details>`);
+  if(!items.length) html.push(`<div class="day"><p class="empty">아직 일정이 없습니다. 계약 링크를 만들면 여기에 같이 뜹니다.</p></div>`);
+  $("#board").innerHTML = html.join("");
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  filter = b.dataset.f;
+  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  render();
+});
+
+/* ---------- 상세 ---------- */
+const fmtFull = v => { const p = parts(v); return p ? `${dayLabel(p)}${p.hm ? " " + p.hm : ""}` : (String(v || "") || "미정"); };
+const telHref = t => String(t || "").replace(/[^\d+]/g, "");
+const telShow = t => { const d = telHref(t);
+  if(/^02\d{7,8}$/.test(d)) return d.replace(/^(02)(\d{3,4})(\d{4})$/, "$1-$2-$3");
+  if(/^0\d{9,10}$/.test(d)) return d.replace(/^(0\d{2})(\d{3,4})(\d{4})$/, "$1-$2-$3");
+  return t; };
+function openDetail(e){
+  const it = e.it, done = it.status === "서명완료";
+  const map = `https://map.naver.com/p/search/${encodeURIComponent(it.place || "")}`;
+  const other = e.kind === "in" ? ["회수", it.retrieve] : ["설치", it.install];
+  const rows = [
+    ["장소", esc(it.place)],
+    ["트리", esc(it.size)],
+    ["장식 색상", esc(it.color)],
+    it.note ? ["비고", esc(it.note)] : null,
+    ["담당자", esc(it.contact || "서명 전")],
+    ["연락처", it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전"],
+    [other[0], esc(fmtFull(other[1]))],
+    ["임대료", `${won(it.price)}원 <span style="color:var(--sub)">(부가세 별도)</span>`],
+    it.pay ? ["결제", esc(it.pay)] : null,
+  ].filter(Boolean);
+  $("#sheet").innerHTML = `
+    <div class="shead"><div>
+      <h3 id="d-name">${esc(it.name || it.place)}</h3>
+      <div class="when">${e.kind === "in" ? "설치" : "회수"} · ${esc(fmtFull(e.kind === "in" ? it.install : it.retrieve))} <span class="pill ${done ? "done" : "wait"}">${done ? "서명완료" : "서명 전 · 미확정"}</span></div>
+    </div><button type="button" class="x" id="close" aria-label="닫기">×</button></div>
+    <dl>${rows.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl>
+    <div class="acts">
+      ${it.tel ? `<a class="primary" href="tel:${esc(telHref(it.tel))}">전화 걸기</a>` : ""}
+      <a class="ghost" href="${map}" target="_blank" rel="noopener">네이버지도</a>
+      ${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
+      <button type="button" class="ghost" id="copyPlace">주소 복사</button>
+    </div>`;
+  $("#close").onclick = () => $("#dlg").close();
+  $("#copyPlace").onclick = async ev => { const b = ev.currentTarget;
+    try{ await navigator.clipboard.writeText(it.place || ""); b.textContent = "복사됨"; }catch(x){ b.textContent = "복사 안 됨"; }
+    setTimeout(() => b.textContent = "주소 복사", 1500); };
+  $("#dlg").showModal();
+}
+$("#board").addEventListener("click", ev => { const b = ev.target.closest(".ev"); if(b) openDetail(shown[+b.dataset.i]); });
+$("#dlg").addEventListener("click", ev => { if(ev.target === ev.currentTarget) ev.currentTarget.close(); });
+
+/* 도구줄이 붙으면 아래 선 */
+new IntersectionObserver(([en]) => $("#tools").classList.toggle("stuck", en.intersectionRatio < 1), {threshold:[1], rootMargin:"-1px 0px 0px 0px"}).observe($("#tools"));
+/* 다시 열었을 때 5분 넘었으면 새로고침 */
+document.addEventListener("visibilitychange", () => { if(!document.hidden && loadedAt && Date.now() - loadedAt > 3e5) load(); });
+
+/* 시작: 받아 둔 일정을 먼저 보여 주고 바로 새로 받음 */
+if(!DEMO){ try{ const c = JSON.parse(localStorage.getItem("tl_sched_cache") || "null");
+  if(c && getPin()){ items = c.items || []; loadedAt = c.at; $("#tools").hidden = false; render(); stamp(); } }catch(e){} }
+load();
+</script>
+</body>
+</html>
