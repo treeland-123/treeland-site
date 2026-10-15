@@ -58,6 +58,13 @@ button{font:inherit;cursor:pointer}
 .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid currentColor;align-self:start;white-space:nowrap}
 .pill.done{color:var(--ok)} .pill.wait{color:var(--wait)} .pill.stop{color:var(--sub)}
 a{color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
+.chips button{font-size:13.5px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px}
+.chips button.on{background:var(--act);color:var(--act-ink);border-color:var(--act)}
+.chips i{width:10px;height:10px;border-radius:50%;border:1px solid var(--line);display:inline-block}
+.qty{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--sub);white-space:nowrap}
+.qty input{width:72px}
+#n-size{flex:1 1 100%}
 </style>
 </head>
 <body>
@@ -83,9 +90,18 @@ a{color:var(--ink)}
       <div class="wrap" style="gap:12px">
         <div class="field"><label for="n-customer">고객 상호 (선택, 미리 채워짐)</label><input type="text" id="n-customer"></div>
         <div class="field"><label for="n-place">설치 장소</label><input type="text" id="n-place" placeholder="예: 서울 성북구 ○○카페 1층 입구"></div>
-        <div class="grid2">
-          <div class="field"><label for="n-size">임대물 크기·수량</label><input type="text" id="n-size" placeholder="예: 180cm 트리 1대"></div>
-          <div class="field"><label for="n-color">장식 색상</label><input type="text" id="n-color" placeholder="예: 레드·골드"></div>
+        <div class="field"><label for="n-size">임대물 크기·수량</label>
+          <div class="chips" id="sizeChips" role="group" aria-label="트리 크기">
+            <button type="button" data-v="1.35m">1.35m</button><button type="button" data-v="1.95m 슬림">1.95m 슬림</button><button type="button" data-v="2.3m">2.3m</button><button type="button" data-v="2.3m 스노우">2.3m 스노우</button><button type="button" data-v="2.9m">2.9m</button>
+          </div>
+          <div class="row"><input type="text" id="n-size" placeholder="크기를 누르면 채워집니다. 직접 써도 됩니다"><label class="qty" for="n-qty">수량<input type="number" id="n-qty" min="1" value="1"></label></div>
+          <span class="hint">다른 크기를 이어서 누르면 함께 추가됩니다. 예: 2.3m 트리 1대, 1.35m 트리 2대</span>
+        </div>
+        <div class="field"><label for="n-color">장식 색상</label>
+          <div class="chips" id="colorChips" role="group" aria-label="장식 색상">
+            <button type="button" data-v="레드 & 골드"><i style="background:#9e2330"></i>레드 &amp; 골드</button><button type="button" data-v="네이비 & 골드"><i style="background:#1d2d45"></i>네이비 &amp; 골드</button><button type="button" data-v="세이지 그린 & 골드"><i style="background:#93a68a"></i>세이지 그린 &amp; 골드</button><button type="button" data-v="화이트 & 샴페인"><i style="background:#f1eee7"></i>화이트 &amp; 샴페인</button>
+          </div>
+          <input type="text" id="n-color" placeholder="색상을 누르면 채워집니다. 직접 써도 됩니다">
         </div>
         <div class="field"><label for="n-extra-fixed">추가 장식·소품</label><input type="text" id="n-extra-fixed" value="견적서와 같습니다" readonly tabindex="-1" style="color:var(--sub);background:var(--soft)"></div>
         <div class="field"><label for="n-note">비고 (선택, 고객 화면과 계약서에 표시)</label><textarea id="n-note" rows="2" style="min-height:64px" placeholder="예: 영업 종료 후 설치, 주차는 건물 뒤편"></textarea></div>
@@ -191,10 +207,35 @@ $("#newForm").addEventListener("submit", async e => {
     if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 맞지 않습니다." : j.error);
     $("#r-msg").value = msg(j.url); $("#result").hidden = false;
     e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
+    sizeParts = []; markSize(); document.querySelectorAll("#colorChips button").forEach(x => x.classList.remove("on"));
     load();
   }catch(ex){ err(ex.message || "링크를 만들지 못했습니다."); }
   finally{ btn.disabled = false; btn.textContent = "링크 만들기"; }
 });
+// 크기·수량 / 색상 빠른 선택
+let sizeParts = [];   // [{size, qty}]
+const sizeText = () => sizeParts.map(p => `${p.size} 트리 ${p.qty}대`).join(", ");
+function markSize(){ document.querySelectorAll("#sizeChips button").forEach(b => b.classList.toggle("on", sizeParts.some(p => p.size === b.dataset.v))); }
+$("#sizeChips").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if($("#n-size").value.trim() !== sizeText()) sizeParts = [];   // 직접 고친 내용이 있으면 새로 시작
+  const i = sizeParts.findIndex(p => p.size === b.dataset.v);
+  if(i >= 0) sizeParts.splice(i, 1); else { sizeParts.push({ size:b.dataset.v, qty:1 }); $("#n-qty").value = 1; }
+  $("#n-size").value = sizeText(); markSize();
+});
+$("#n-qty").addEventListener("input", () => {
+  if(!sizeParts.length || $("#n-size").value.trim() !== sizeText()) return;
+  sizeParts[sizeParts.length - 1].qty = Math.max(1, +$("#n-qty").value || 1);
+  $("#n-size").value = sizeText();
+});
+$("#n-size").addEventListener("input", () => { if($("#n-size").value.trim() !== sizeText()){ sizeParts = []; markSize(); } });
+$("#colorChips").addEventListener("click", e => {
+  const b = e.target.closest("button"); if(!b) return;
+  $("#n-color").value = b.dataset.v;
+  document.querySelectorAll("#colorChips button").forEach(x => x.classList.toggle("on", x === b));
+});
+$("#n-color").addEventListener("input", () => document.querySelectorAll("#colorChips button").forEach(x => x.classList.toggle("on", x.dataset.v === $("#n-color").value.trim())));
+
 $("#copyBtn").onclick = e => copy($("#r-msg").value, e.currentTarget);
 </script>
 
