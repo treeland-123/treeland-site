@@ -3,4 +3,5 @@ Allow: /
 Disallow: /src/
 Disallow: /build/
 Disallow: /contract/
+Disallow: /admin/
 Sitemap: https://treeland.kr/sitemap.xml
