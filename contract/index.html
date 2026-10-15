@@ -204,8 +204,8 @@ footer{font-size:12px;color:var(--sub);text-align:center}
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
 
 const SAMPLE = {
-  id: "DEMO", place: "서울 성북구 ○○카페 1층 입구", size: "180cm 트리 1대", color: "레드·골드",
-  extra: "", install: "2026-11-24", retrieve: "2027-01-12",
+  id: "DEMO", place: "서울 성북구 ○○카페 1층 입구", size: "2.3m 트리 1대, 1.35m 트리 2대", color: "2.3m 레드 & 골드, 1.35m 2대 네이비 & 골드",
+  extra: "", install: "2026-11-24T14:00", retrieve: "2027-01-12T10:00",
   price: 450000, customer: ""
 };
 
@@ -225,8 +225,14 @@ function hangulAmount(n){
 }
 function fmtDate(v){
   v = String(v ?? "");
-  if(/^\d{4}-\d{2}-\d{2}T/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = d.toLocaleDateString("sv-SE",{timeZone:"Asia/Seoul"}); }
-  if(!/^\d{4}-\d{2}-\d{2}$/.test(v)) return v; const [y,m,d] = v.split("-"); return `${y}년 ${+m}월 ${+d}일`;
+  if(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d+)?)?Z$/.test(v)){   // 시트가 날짜로 바꿔 돌려준 값
+    const d = new Date(v);
+    if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T");
+  }
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/); if(!m) return v;
+  const t = m[4] && !(m[4] === "00" && m[5] === "00") ? ` ${m[4]}:${m[5]}` : "";
+  const wd = "일월화수목금토"[new Date(+m[1], +m[2]-1, +m[3]).getDay()];
+  return `${m[1]}년 ${+m[2]}월 ${+m[3]}일(${wd})${t}`;
 }
 
 const TERMS = [
