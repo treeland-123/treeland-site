@@ -125,7 +125,6 @@ footer{font-size:12px;color:var(--sub);text-align:center}
       <div class="field"><label for="f-tel">연락처 <span class="req">*</span></label><input type="tel" id="f-tel" autocomplete="tel" inputmode="tel" required></div>
       <div class="field"><label for="f-email">이메일 <span class="req">*</span></label><input type="email" id="f-email" autocomplete="email" required></div>
     </div>
-    <div class="field"><label for="f-addr">주소 <span class="req">*</span></label><input type="text" id="f-addr" autocomplete="street-address" required></div>
     <fieldset>
       <legend>결제 방법 <span class="req" style="color:var(--err)">*</span></legend>
       <div class="opts">
@@ -172,7 +171,7 @@ footer{font-size:12px;color:var(--sub);text-align:center}
   <section aria-labelledby="h-sign">
     <h2 id="h-sign"><span class="n">5</span>동의 및 서명</h2>
     <label class="check"><input type="checkbox" id="c-privacy"><span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
-    <p class="privacy">수집 항목: 상호, 대표자, 사업자등록번호, 주소, 담당자, 연락처, 이메일, 서명 · 이용 목적: 계약 체결과 이행, 세금계산서·현금영수증 발행 · 보유 기간: 계약 종료 후 5년(세법상 장부 보관 기간) · 동의하지 않을 수 있으나, 이 경우 전자계약을 진행할 수 없습니다.</p>
+    <p class="privacy">수집 항목: 상호, 대표자, 사업자등록번호, 담당자, 연락처, 이메일, 서명 · 이용 목적: 계약 체결과 이행, 세금계산서·현금영수증 발행 · 보유 기간: 계약 종료 후 5년(세법상 장부 보관 기간) · 동의하지 않을 수 있으나, 이 경우 전자계약을 진행할 수 없습니다.</p>
     <label class="check"><input type="checkbox" id="c-agree"><span>결제·취소·배상 조항을 포함한 계약서 전문을 확인했으며, 위 내용으로 계약을 체결합니다. (필수)</span></label>
     <div class="row"><span>아래 서명란에 서명해 주세요</span><button type="button" class="ghost" id="clearSig">다시 쓰기</button></div>
     <div class="pad" id="pad"><canvas id="sig" aria-label="서명란"></canvas><div class="ph" id="sigPh">여기에 서명</div></div>
@@ -292,7 +291,7 @@ function radio(n){ return document.querySelector(`input[name=${n}]:checked`)?.va
 function showErr(m, focusEl){ const e = $("#err"); e.textContent = m; e.hidden = false; if(focusEl) focusEl.focus(); }
 
 function collect(){
-  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"],["#f-addr","주소를"]];
+  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"]];
   for(const [id,label] of req) if(!val(id)) return showErr(`${label} 입력해 주세요.`, $(id));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#f-email"))) return showErr("이메일 주소 형식을 확인해 주세요.", $("#f-email"));
   if(!radio("pay")) return showErr("결제 방법을 골라 주세요.", $("#pay-1"));
@@ -304,7 +303,7 @@ function collect(){
   $("#err").hidden = true;
   return {
     name: val("#f-name"), rep: val("#f-rep"), biz: val("#f-biz"), contact: val("#f-contact"), tel: val("#f-tel"),
-    email: val("#f-email"), addr: val("#f-addr"), pay: radio("pay"), photo: radio("photo"),
+    email: val("#f-email"), addr: "", pay: radio("pay"), photo: radio("photo"),
     tag: radio("photo")==="동의함" ? radio("tag") : "해당 없음", ig: val("#f-ig")
   };
 }
@@ -327,7 +326,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
     <tr><th>상호(성명)</th><td>${esc(g.name)}</td><th>상호</th><td>트리랜드 (TREELAND)</td></tr>
     <tr><th>대표자</th><td>${esc(g.rep)}</td><th>대표자</th><td>홍준서</td></tr>
     <tr><th>사업자등록번호</th><td>${esc(g.biz || "-")}</td><th>사업자등록번호</th><td>360-69-00592</td></tr>
-    <tr><th>주소</th><td>${esc(g.addr)}</td><th>주소</th><td>서울 성북구 아리랑로19길 87</td></tr>
+    <tr><th>주소</th><td>-</td><th>주소</th><td>서울 성북구 아리랑로19길 87</td></tr>
     <tr><th>담당자·연락처</th><td>${esc(g.contact)} / ${esc(g.tel)}</td><th>전화</th><td>070-4571-7467</td></tr>
     <tr><th>이메일</th><td>${esc(g.email)}</td><th>이메일</th><td>info@treeland.kr</td></tr></table>`;
   $("#paper").innerHTML = `<h1>트리 임대차 계약서</h1><div class="subt">대여 · 설치 · 회수</div>
