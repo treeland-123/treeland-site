@@ -55,7 +55,8 @@ button{font:inherit;cursor:pointer}
 .item .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .item .m{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
 .item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.item .del-btn{margin-left:auto;color:var(--sub)}
+.item .hd{display:flex;align-items:center;gap:8px;align-self:start}
+.item .del-btn{background:none;border:0;padding:2px 4px;font-size:12px;color:var(--sub);text-decoration:underline;text-underline-offset:2px}
 .confirm{grid-column:1/-1;margin-top:8px;border:1px solid var(--err);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:13.5px}
 .confirm strong{color:var(--err)}
 .confirm .row button{flex:1}
@@ -201,11 +202,10 @@ async function load(){
       const cls = it.status === "서명완료" ? "done" : it.status === "서명대기" ? "wait" : "stop";
       const days = Math.floor((Date.now() - new Date(it.created).getTime()) / 864e5);
       const label = it.status === "서명대기" && days >= 2 ? `서명대기 · ${days}일째` : it.status;
-      return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="pill ${cls}">${esc(label)}</span>
+      return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
         <span class="m">설치 ${esc(fmtDT(it.install))} · ₩${won(it.price)} · 생성 ${esc(fmtCreated(it.created))}</span><span></span>
         <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
-        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}
-        <button type="button" class="ghost del-btn" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}">삭제</button></div>
+        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div>
         <div class="confirm" hidden></div></div>`;
     }).join("");
   }catch(e){ $("#list").innerHTML = `<p class="error">${esc(e.message || "목록을 불러오지 못했습니다.")}</p>`; }
