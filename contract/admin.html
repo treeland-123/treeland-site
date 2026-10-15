@@ -55,6 +55,11 @@ button{font:inherit;cursor:pointer}
 .item .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .item .m{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
 .item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.item .del-btn{margin-left:auto;color:var(--sub)}
+.confirm{grid-column:1/-1;margin-top:8px;border:1px solid var(--err);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:13.5px}
+.confirm strong{color:var(--err)}
+.confirm .row button{flex:1}
+.danger{background:var(--err);color:var(--paper);border:0;border-radius:6px;padding:9px 12px;font-weight:700}
 .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid currentColor;align-self:start;white-space:nowrap}
 .pill.done{color:var(--ok)} .pill.wait{color:var(--wait)} .pill.stop{color:var(--sub)}
 a{color:var(--ink)}
@@ -199,7 +204,9 @@ async function load(){
       return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="pill ${cls}">${esc(label)}</span>
         <span class="m">설치 ${esc(fmtDT(it.install))} · ₩${won(it.price)} · 생성 ${esc(fmtCreated(it.created))}</span><span></span>
         <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
-        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div></div>`;
+        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}
+        <button type="button" class="ghost del-btn" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}">삭제</button></div>
+        <div class="confirm" hidden></div></div>`;
     }).join("");
   }catch(e){ $("#list").innerHTML = `<p class="error">${esc(e.message || "목록을 불러오지 못했습니다.")}</p>`; }
 }
@@ -221,6 +228,31 @@ $("#list").addEventListener("click", async e => {
     if(s.dataset.armed !== "1"){ s.dataset.armed = "1"; s.textContent = "한 번 더 누르면 중지"; return; }
     const j = await api({action:"cancel", pin:pin(), id:s.dataset.stop});
     if(!j.ok) s.textContent = j.error; else load();
+    return;
+  }
+  // 삭제: 서명대기·링크중지는 한 번 확인, 서명완료는 경고 후 한 번 더 확인
+  const d = e.target.closest("[data-del]");
+  if(d){
+    const box = d.closest(".item").querySelector(".confirm"), signed = d.dataset.signed === "1";
+    box.hidden = false; box.dataset.step = "1";
+    box.innerHTML = signed
+      ? `<strong>서명완료된 계약입니다.</strong><span>삭제하면 계약 목록에서 사라지고, 서명본 PDF는 드라이브 휴지통으로 옮겨집니다(30일 안에는 휴지통에서 복구 가능). 서명된 계약서는 분쟁·세무 증빙이라 보관을 권합니다.</span><div class="row"><button type="button" class="ghost" data-cancel>취소</button><button type="button" class="danger" data-go="${d.dataset.del}" data-signed="1">계속</button></div>`
+      : `<span>「${esc(d.dataset.name)}」 계약을 목록에서 삭제할까요?</span><div class="row"><button type="button" class="ghost" data-cancel>취소</button><button type="button" class="danger" data-go="${d.dataset.del}" data-signed="0">삭제</button></div>`;
+    return;
+  }
+  if(e.target.closest("[data-cancel]")){ const box = e.target.closest(".confirm"); box.hidden = true; box.innerHTML = ""; return; }
+  const go = e.target.closest("[data-go]");
+  if(go){
+    const box = go.closest(".confirm"), signed = go.dataset.signed === "1";
+    if(signed && box.dataset.step === "1"){
+      box.dataset.step = "2";
+      box.innerHTML = `<strong>정말 삭제할까요? 되돌릴 수 없습니다.</strong><span>계약 목록의 기록은 복구할 수 없습니다.</span><div class="row"><button type="button" class="ghost" data-cancel>취소</button><button type="button" class="danger" data-go="${go.dataset.go}" data-signed="1">서명완료 계약 삭제</button></div>`;
+      return;
+    }
+    go.disabled = true; go.textContent = "삭제하는 중…";
+    const j = await api({action:"delete", pin:pin(), id:go.dataset.go, confirmSigned: signed});
+    if(!j.ok){ go.disabled = false; go.textContent = j.error === "pin" ? "비밀번호가 틀렸습니다" : "삭제하지 못했습니다"; return; }
+    load();
   }
 });
 
