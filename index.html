@@ -440,7 +440,7 @@ select{min-height:46px;padding:8px 12px;border:1px solid var(--line);background:
 .why p{color:var(--muted)}
 
 /* steps */
-.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:24px;counter-reset:s}
+.steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:24px;counter-reset:s}
 .steps li{counter-increment:s;display:grid;gap:6px;padding-top:16px;border-top:2px solid var(--ink);min-width:0}
 .steps li::before{content:counter(s);font-family:var(--display);font-size:15px;font-weight:600;color:var(--berry)}
 .steps b{font-size:17px}
@@ -1044,6 +1044,7 @@ dialog.lb{z-index:50}
 .pdf-dl b{font-size:15px;font-weight:700}
 .pdf-dl small{font-size:12px;color:var(--muted)}
 .pdf-dl:hover{background:color-mix(in srgb,var(--pine) 6%,#fff)}
+.steps li{align-content:start}
 </style>
 </head>
 <body>
@@ -1301,7 +1302,7 @@ dialog.lb{z-index:50}
         <div class="sheet-row" role="row" data-size-card="230s" tabindex="0" aria-label="2.3m 스노우 자세히 보기"><img role="cell" src="img/size-230s.webp" width="600" height="800" loading="lazy" alt="2.3m 스노우 트리 설치 예"><div class="sz" role="cell"><b class="num">2.3m 스노우<span class="pop pop-ltd">한정 수량</span></b><span>잎 끝에 눈이 덮인 트리 · 하단 지름 140cm</span><span class="sz-box">시그니처 상자 5개 포함</span></div><span class="list-price num" role="cell">900,000원</span><span class="pre-price num" role="cell">765,000원<small class="save">135,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row" role="row" data-size-card="290" tabindex="0" aria-label="2.9m 자세히 보기"><img role="cell" src="img/size-290.webp" width="600" height="800" loading="lazy" alt="2.9m 설치 예"><div class="sz" role="cell"><b class="num">2.9m</b><span>하단 지름 155cm · 천장이 높은 로비</span><span class="sz-box">시그니처 상자 8개 포함</span></div><span class="list-price num" role="cell">1,500,000원</span><span class="pre-price num" role="cell">1,275,000원<small class="save">225,000원 할인</small></span><span class="row-more" aria-hidden="true">›</span></div>
       </div>
-      <p class="sheet-note">부가세 별도 · 세금계산서 발행, 카드 결제 가능</p>
+      <p class="sheet-note">부가세 별도 · <strong>계약금 없이 설치 후 결제</strong> · 세금계산서 발행, 카드·현금 결제 가능</p>
       <p class="safe-note"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 2.5 3.6v4c0 3.3 2.3 5.8 5.5 6.9 3.2-1.1 5.5-3.6 5.5-6.9v-4Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="m5.6 8 1.7 1.7L10.6 6.4" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>모든 트리에는 화재 예방을 위해 KC 인증 전기안정기(SMPS)를 설치합니다.</p>
       <ol class="tl" aria-label="예약과 설치 일정">
         <li class="on"><b class="num">~10.30</b><span>1차 얼리버드 예약<br>15% 할인</span></li>
@@ -1413,6 +1414,7 @@ dialog.lb{z-index:50}
       <ol class="steps">
         <li><b>사진 보내기</b><span>카카오톡으로 공간 사진과 지역, 희망 날짜를 보내주세요.</span></li>
         <li><b>견적 확인</b><span>맞는 크기와 색상을 제안하고 운임까지 넣은 금액을 알려드립니다.</span></li>
+        <li><b>전자계약</b><span>받으신 링크에서 휴대폰으로 바로 서명하시면 예약이 확정됩니다.</span></li>
         <li><b>설치</b><span>11월부터 약속한 날짜에 방문해 설치하며, 약 1시간이면 끝납니다. 영업 중에도 설치할 수 있습니다.</span></li>
         <li><b>회수</b><span>1월~2월 초, 협의한 날짜에 방문해 철거·회수합니다.</span></li>
       </ol>
@@ -1424,15 +1426,16 @@ dialog.lb{z-index:50}
       <div class="sec-head"><h2>자주 묻는 질문</h2></div>
       <div class="faq">
         <details><summary>언제까지 예약해야 하나요?</summary><p>1차 얼리버드 할인(15%)은 10월 30일까지 예약하시는 분께 적용됩니다. 이후에는 할인율을 조정한 2차 얼리버드로 예약하실 수 있습니다. 원하시는 설치 날짜가 있으시면 상담하실 때 함께 말씀해 주세요.</p></details>
+        <details><summary>예약 후 취소할 수 있나요?</summary><p>계약일로부터 7일 안에는 비용 없이 취소하실 수 있습니다. 그 뒤에는 설치일에 가까울수록 위약금이 생기며, 자세한 기준은 계약서에 적어 드립니다.</p></details>
         <details><summary>10월에 예약하면 바로 설치되나요?</summary><p>10월 30일은 1차 얼리버드 예약 마감일이며, 설치는 11월부터 진행됩니다. 예약하실 때 원하시는 설치 날짜를 알려 주시면 일정에 맞춰 설치해 드립니다.</p></details>
         <details><summary>전기 안전은 괜찮나요?</summary><p>네, 안심하셔도 됩니다. 모든 트리에는 화재 예방을 위해 KC 인증을 받은 전기안정기(SMPS)를 설치해 드립니다.</p></details>
         <details><summary>대여 기간은 어떻게 되나요?</summary><p>설치한 날부터 1월~2월 초까지 이용하실 수 있습니다. 기간에 따른 추가요금은 없으며, 회수 날짜는 편하신 날로 협의해 정합니다.</p></details>
         <details><summary>영업 중에 설치해도 되나요?</summary><p>네, 가능합니다. 설치는 약 1시간 정도 걸리며, 매장 동선과 영업에 방해가 되지 않도록 진행해 드립니다.</p></details>
-        <details><summary>결제와 세금계산서는 어떻게 하나요?</summary><p>카드 결제와 세금계산서 발행 모두 가능합니다. 안내해 드린 금액은 모두 부가세 별도인 점 참고해 주세요.</p></details>
+        <details><summary>결제와 세금계산서는 어떻게 하나요?</summary><p>계약금은 받지 않습니다. 설치가 끝난 뒤 3일 안에 결제해 주시면 되고, 카드·현금 결제와 세금계산서 발행 모두 가능합니다. 기관·법인은 결재 일정에 맞춰 조정해 드립니다. 안내해 드린 금액은 모두 부가세 별도입니다.</p></details>
         <details><summary>얼리버드 할인은 어디에 적용되나요?</summary><p>얼리버드 할인은 트리 구성 가격에 적용됩니다. 운임과 추가 장식은 할인에서 제외되는 점 양해 부탁드립니다.</p></details>
         <details><summary>트리를 여러 개 설치하면 할인되나요?</summary><p>네, 가능합니다. 얼리버드 할인가에서 2개 설치하시면 5%, 3개 설치하시면 10%를 추가로 할인해 드립니다. 4개 이상은 별도 견적으로 안내해 드리며, 한 곳에 설치하시는 경우 운임은 한 번만 받습니다.</p></details>
         <details><summary>크기는 어떻게 고르나요?</summary><p>천장 높이와 설치하실 공간의 폭, 주변 통로를 함께 보고 정하시면 됩니다. 고르기 어려우시면 공간 사진을 보내 주세요. 알맞은 크기를 제안해 드립니다.</p></details>
-        <details><summary>사용 중 파손되면 어떻게 하나요?</summary><p>상태를 확인할 수 있는 사진과 함께 연락 주시면 빠르게 확인해 드립니다. 고객님 부주의로 인한 분실·파손은 비용이 발생할 수 있으며, 자세한 기준은 계약 전에 미리 안내해 드립니다.</p></details>
+        <details><summary>사용 중 파손되면 어떻게 하나요?</summary><p>상태를 확인할 수 있는 사진과 함께 연락 주시면 빠르게 확인해 드립니다. 고객님 부주의로 인한 분실·파손은 비용이 발생할 수 있으며, 자세한 기준은 계약서에 적어 드립니다.</p></details>
       </div>
     </div>
   </section>
