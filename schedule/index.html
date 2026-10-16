@@ -47,7 +47,44 @@ input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--paper)}
 .seg button{border:0;background:none;border-radius:999px;padding:5px 12px;font-size:13.5px;color:var(--sub)}
 .seg button[aria-pressed="true"]{background:var(--act);color:var(--act-ink)}
-.stamp{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stamp{font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:0;font-weight:400}
+.tools .grp{display:flex;gap:6px;align-items:center;min-width:0}
+.seg button{padding:5px 11px}
+.icon{width:36px;height:34px;justify-content:center;padding:0;font-size:17px}
+
+/* 달력 */
+.cal{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden;touch-action:pan-y}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 6px}
+.chead .ttl{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;justify-content:center}
+.chead b{font-size:16px;font-variant-numeric:tabular-nums}
+.chead .sum{font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums}
+.chead .ghost{padding:2px 9px;font-size:12px}
+.nav{border:0;background:none;width:40px;height:36px;font-size:20px;border-radius:6px;flex:none}
+.nav:active{background:var(--soft)}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-top:1px solid var(--line)}
+.wk.names{border-top:0;font-size:12px;color:var(--sub);text-align:center;padding-bottom:4px}
+.cell{border:0;border-left:1px solid var(--line);background:none;min-height:66px;padding:4px 2px 6px;display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.cell:first-child{border-left:0}
+.cell .n{font-size:13px;font-variant-numeric:tabular-nums;width:26px;height:26px;line-height:26px;border-radius:50%;text-align:center}
+.cell.past .n{color:var(--sub)}
+.cell.oth .n{color:var(--sub);opacity:.4}
+.cell.today .n{box-shadow:inset 0 0 0 1.5px var(--ink);font-weight:700}
+.cell.sel{background:var(--soft)}
+.cell.sel .n{background:var(--act);color:var(--act-ink);box-shadow:none}
+.mk{display:flex;flex-direction:column;gap:2px;align-items:center}
+.mk span,.lines span{font-size:11px;font-weight:700;line-height:1.55;border-radius:3px;padding:0 4px;white-space:nowrap}
+.mk .in,.lines .in{background:var(--act);color:var(--act-ink)}
+.mk .out,.lines .out{box-shadow:inset 0 0 0 1px var(--ink)}
+.mk .dim,.lines .dim{opacity:.4}
+.lines{display:none}
+@media (min-width:640px){
+  .mk{display:none}
+  .cell{align-items:stretch;min-height:100px;padding:4px 4px 6px}
+  .cell .n{align-self:flex-start}
+  .lines{display:flex;flex-direction:column;gap:2px;width:100%;text-align:left}
+  .lines span{font-weight:500;overflow:hidden;text-overflow:ellipsis}
+  .lines .more{color:var(--sub);font-weight:400}
+}
 
 /* 날짜 묶음 */
 .day{display:flex;flex-direction:column;background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden}
@@ -102,7 +139,7 @@ dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
 <body>
 <div class="wrap">
   <header>
-    <div><div class="brand">TREELAND</div><h1>설치·회수 일정</h1></div>
+    <div><div class="brand">TREELAND <span id="stamp" class="stamp"></span></div><h1>설치·회수 일정</h1></div>
     <a class="ghost" href="/contract/admin.html">계약 관리</a>
   </header>
 
@@ -113,14 +150,15 @@ dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
   </div>
 
   <div class="tools" id="tools" hidden>
-    <div class="seg" role="group" aria-label="보기">
-      <button type="button" data-f="all" aria-pressed="true">전체</button><button type="button" data-f="in" aria-pressed="false">설치</button><button type="button" data-f="out" aria-pressed="false">회수</button>
+    <div class="grp">
+      <div class="seg" role="group" aria-label="보기 방식"><button type="button" data-v="list" aria-pressed="true">목록</button><button type="button" data-v="cal" aria-pressed="false">달력</button></div>
+      <div class="seg" role="group" aria-label="종류"><button type="button" data-f="all" aria-pressed="true">전체</button><button type="button" data-f="in" aria-pressed="false">설치</button><button type="button" data-f="out" aria-pressed="false">회수</button></div>
     </div>
-    <button type="button" class="ghost" id="reload"><span id="stamp" class="stamp"></span> 새로고침</button>
+    <button type="button" class="ghost icon" id="reload" aria-label="새로고침" title="새로고침">↻</button>
   </div>
 
   <p class="error" id="err" hidden></p>
-  <div id="board" class="wrap" style="gap:12px"></div>
+  <div id="board" class="wrap" style="gap:12px;width:100%"></div>
 </div>
 
 <dialog id="dlg" aria-labelledby="d-name"><div class="sheet" id="sheet"></div></dialog>
@@ -179,7 +217,7 @@ const setPin = v => { try{ localStorage.setItem("tl_pin", v); }catch(e){} };
 async function load(){
   const pin = DEMO ? "demo" : getPin();
   if(!pin){ showPin(); return; }
-  $("#reload").disabled = true; $("#stamp").textContent = "불러오는 중";
+  $("#reload").disabled = true; $("#stamp").textContent = "· 불러오는 중";
   try{
     const j = await api({action:"schedule", pin});
     if(!j.ok){
@@ -198,7 +236,7 @@ async function load(){
 }
 function stamp(){
   if(!loadedAt){ $("#stamp").textContent = ""; return; }
-  const d = new Date(loadedAt); $("#stamp").textContent = `${pad(d.getHours())}:${pad(d.getMinutes())} 기준`;
+  const d = new Date(loadedAt); $("#stamp").textContent = `· ${pad(d.getHours())}:${pad(d.getMinutes())} 기준`;
 }
 function showPin(msg){
   $("#pinBox").hidden = false; $("#tools").hidden = true; $("#board").innerHTML = "";
@@ -240,8 +278,8 @@ function dayBlock(key, list, hot){
   const rows = list.map(e => { shown.push(e); return evRow(e, shown.length - 1); }).join("");
   return `<div class="day${hot ? " hot" : ""}"><div class="dhead"><b>${hot ? `<span class="tag">${hot}</span>` : ""}${dayLabel(p)}</b><span class="cnt">${cnt}</span></div>${rows}</div>`;
 }
-function render(){
-  shown = [];
+function render(){ shown = []; if(view === "cal") renderCal(); else renderList(); }
+function renderList(){
   const {out, undated} = events(), t0 = todayKey(0), t1 = todayKey(1);
   const byDay = new Map();
   out.forEach(e => { if(!byDay.has(e.p.key)) byDay.set(e.p.key, []); byDay.get(e.p.key).push(e); });
@@ -264,11 +302,79 @@ function render(){
   if(!items.length) html.push(`<div class="day"><p class="empty">아직 일정이 없습니다. 계약 링크를 만들면 여기에 같이 뜹니다.</p></div>`);
   $("#board").innerHTML = html.join("");
 }
-document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+document.querySelectorAll("[data-f]").forEach(b => b.onclick = () => {
   filter = b.dataset.f;
-  document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  document.querySelectorAll("[data-f]").forEach(x => x.setAttribute("aria-pressed", x === b));
   render();
 });
+
+/* ---------- 달력 ---------- */
+let view = "list";
+try{ view = localStorage.getItem("tl_sched_view") === "cal" ? "cal" : "list"; }catch(e){}
+let calMonth = todayKey(0).slice(0, 7), selDay = todayKey(0);
+const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function setView(v, draw = true){
+  view = v; try{ localStorage.setItem("tl_sched_view", v); }catch(e){}
+  document.querySelectorAll("[data-v]").forEach(x => x.setAttribute("aria-pressed", x.dataset.v === v));
+  if(draw) render();
+}
+document.querySelectorAll("[data-v]").forEach(b => b.onclick = () => setView(b.dataset.v));
+setView(view, false);
+function byDayMap(out){ const m = new Map(); out.forEach(e => { if(!m.has(e.p.key)) m.set(e.p.key, []); m.get(e.p.key).push(e); }); return m; }
+function moveMonth(n){
+  const [y, m] = calMonth.split("-").map(Number), d = new Date(y, m - 1 + n, 1);
+  calMonth = keyOf(d).slice(0, 7);
+  const t0 = todayKey(0);
+  if(t0.startsWith(calMonth)) selDay = t0;
+  else { const days = [...byDayMap(events().out).keys()].filter(k => k.startsWith(calMonth)).sort(); selDay = days[0] || `${calMonth}-01`; }
+  render();
+}
+function renderCal(){
+  const {out, undated} = events(), byDay = byDayMap(out), t0 = todayKey(0), t1 = todayKey(1);
+  const [y, m] = calMonth.split("-").map(Number), lead = new Date(y, m - 1, 1).getDay(), last = new Date(y, m, 0).getDate();
+  let nIn = 0, nOut = 0;
+  for(const [k, l] of byDay) if(k.startsWith(calMonth)) l.forEach(e => e.kind === "in" ? nIn++ : nOut++);
+  const allTbd = arr => arr.every(e => e.it.status !== "서명완료");
+  let rows = "";
+  for(let w = 0; w < Math.ceil((lead + last) / 7); w++){
+    rows += `<div class="wk">`;
+    for(let i = 0; i < 7; i++){
+      const d = new Date(y, m - 1, 1 - lead + w * 7 + i), k = keyOf(d), l = byDay.get(k) || [];
+      const ins = l.filter(e => e.kind === "in"), outs = l.filter(e => e.kind === "out");
+      const cls = ["cell", k.slice(0, 7) !== calMonth && "oth", k < t0 && "past", k === t0 && "today", k === selDay && "sel"].filter(Boolean).join(" ");
+      const mk = (ins.length ? `<span class="in${allTbd(ins) ? " dim" : ""}">설${ins.length}</span>` : "") + (outs.length ? `<span class="out${allTbd(outs) ? " dim" : ""}">회${outs.length}</span>` : "");
+      const lines = l.slice(0, 3).map(e => `<span class="${e.kind}${e.it.status !== "서명완료" ? " dim" : ""}">${e.p.hm ? e.p.hm + " " : ""}${esc(e.it.name || e.it.place)}</span>`).join("") + (l.length > 3 ? `<span class="more">외 ${l.length - 3}건</span>` : "");
+      const label = `${d.getMonth() + 1}월 ${d.getDate()}일` + (ins.length ? `, 설치 ${ins.length}건` : "") + (outs.length ? `, 회수 ${outs.length}건` : "");
+      rows += `<button type="button" class="${cls}" data-day="${k}" aria-label="${label}"${k === selDay ? ' aria-current="date"' : ""}><span class="n">${d.getDate()}</span><span class="mk">${mk}</span><span class="lines">${lines}</span></button>`;
+    }
+    rows += `</div>`;
+  }
+  const html = [`<div class="cal" id="cal"><div class="chead">
+    <button type="button" class="nav" data-mv="-1" aria-label="이전 달">‹</button>
+    <div class="ttl"><b>${y}년 ${m}월</b><span class="sum">${nIn || nOut ? [nIn && `설치 ${nIn}`, nOut && `회수 ${nOut}`].filter(Boolean).join(" · ") : "일정 없음"}</span>${t0.startsWith(calMonth) ? "" : `<button type="button" class="ghost" data-today>오늘</button>`}</div>
+    <button type="button" class="nav" data-mv="1" aria-label="다음 달">›</button></div>
+    <div class="wk names" aria-hidden="true">${WD.map(x => `<span>${x}</span>`).join("")}</div>${rows}</div>`];
+  // 고른 날의 일정 (목록과 같은 모양)
+  const tag = selDay === t0 ? "오늘" : selDay === t1 ? "내일" : "";
+  const l = byDay.get(selDay);
+  html.push(`<div id="selday">${l ? dayBlock(selDay, l, tag) : `<div class="day${tag ? " hot" : ""}"><div class="dhead"><b>${tag ? `<span class="tag">${tag}</span>` : ""}${dayLabel(parts(selDay))}</b><span class="cnt">일정 없음</span></div></div>`}</div>`);
+  if(undated.length) html.push(`<h2 class="sec">회수일 미정</h2><div class="day">${undated.map(e => { shown.push(e); return evRow(e, shown.length - 1); }).join("")}</div>`);
+  $("#board").innerHTML = html.join("");
+}
+$("#board").addEventListener("click", ev => {
+  const c = ev.target.closest(".cell");
+  if(c){ selDay = c.dataset.day; if(!selDay.startsWith(calMonth)) calMonth = selDay.slice(0, 7); render();
+    const s = $("#selday"); if(s && s.getBoundingClientRect().top > innerHeight - 120) s.scrollIntoView({behavior:"smooth", block:"nearest"}); return; }
+  const n = ev.target.closest("[data-mv]"); if(n) return moveMonth(+n.dataset.mv);
+  if(ev.target.closest("[data-today]")){ calMonth = todayKey(0).slice(0, 7); selDay = todayKey(0); render(); }
+});
+// 달력 좌우로 밀어서 달 넘기기
+let sx = null, sy = 0;
+$("#board").addEventListener("touchstart", e => { if(view !== "cal" || !e.target.closest("#cal")) { sx = null; return; } sx = e.touches[0].clientX; sy = e.touches[0].clientY; }, {passive:true});
+$("#board").addEventListener("touchend", e => {
+  if(sx === null) return; const dx = e.changedTouches[0].clientX - sx, dy = e.changedTouches[0].clientY - sy; sx = null;
+  if(Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) moveMonth(dx < 0 ? 1 : -1);
+}, {passive:true});
 
 /* ---------- 상세 ---------- */
 const fmtFull = v => { const p = parts(v); return p ? `${dayLabel(p)}${p.hm ? " " + p.hm : ""}` : (String(v || "") || "미정"); };
