@@ -135,19 +135,13 @@ footer{font-size:12px;color:var(--sub);text-align:center}
 
   <section aria-labelledby="h-photo">
     <h2 id="h-photo"><span class="n">4</span>설치 사진 활용</h2>
-    <p class="lead" style="font-size:14px;color:var(--ink)">설치 사진은 트리랜드 홈페이지와 인스타그램에 시공 사례로 게시합니다. 상호 표기에 동의하시면 게시물에 상호와 인스타 계정을 함께 표기합니다. 동의 여부는 계약에 영향을 주지 않습니다. (제12조)</p>
+    <p class="lead" style="font-size:14px;color:var(--ink)">설치 사진은 트리랜드 홈페이지와 인스타그램에 시공 사례로 게시합니다. 설치 사진 원본은 게시 여부와 관계없이 보내드리며, 매장 SNS에 자유롭게 쓰셔도 됩니다. 게시 여부는 계약에 영향을 주지 않습니다. (제12조)</p>
     <fieldset>
-      <legend>사진 활용</legend>
+      <legend>사진 게시</legend>
       <div class="opts">
-        <label class="opt"><input type="radio" name="photo" value="동의함" id="ph-1"><span>동의함</span></label>
-        <label class="opt"><input type="radio" name="photo" value="동의하지 아니함" id="ph-2"><span>동의하지 않음</span></label>
-      </div>
-    </fieldset>
-    <fieldset id="tagSet">
-      <legend>상호 표기</legend>
-      <div class="opts">
-        <label class="opt"><input type="radio" name="tag" value="상호·SNS 계정 표기에 동의함" id="tg-1"><span>상호·인스타 계정 표기</span></label>
-        <label class="opt"><input type="radio" name="tag" value="상호 없이 공간 유형만 표기" id="tg-2"><span>상호 없이 표기 (예: 성북구 카페)</span></label>
+        <label class="opt"><input type="radio" name="photo" value="tag" id="ph-1"><span>상호·인스타 태그와 함께 게시</span></label>
+        <label class="opt"><input type="radio" name="photo" value="plain" id="ph-2"><span>상호 없이 사진만 게시</span></label>
+        <label class="opt"><input type="radio" name="photo" value="later" id="ph-3"><span>설치된 모습 보고 정할게요</span></label>
       </div>
       <div class="field" id="igField"><label for="f-ig">인스타 계정</label><input type="text" id="f-ig" placeholder="@ 계정 (선택)"></div>
     </fieldset>
@@ -232,7 +226,7 @@ const TERMS = [
  ["제9조 (하자의 처리)", ["① 임대기간 중 임대물에 이상이 발생한 경우, 갑은 사진 등 확인 자료를 첨부하여 지체 없이 을에게 통지하여야 하며, 을은 이를 확인한 후 조치 방법을 안내한다.","② 임대물 자체의 결함으로 인한 하자는 을이 그 비용을 부담하여 수리하거나 교체한다."]],
  ["제10조 (손해배상)", ["① 통상의 사용에 따른 자연 마모 및 임대물 자체의 결함에 대하여 을은 갑에게 손해배상을 청구하지 아니한다.","② 갑의 고의 또는 과실로 임대물이 멸실되거나 훼손된 경우, 을은 실제 수리비 또는 동종 물품의 구입 비용을 갑에게 청구할 수 있다.","③ 을은 제2항에 따른 청구 시 멸실·훼손의 내용 및 금액을 사진 등 근거 자료와 함께 갑에게 통지하여야 한다."]],
  ["제11조 (계약의 해제 및 위약금)", ["① 갑이 본 계약을 해제하는 경우, 해제 통지일을 기준으로 다음 각 호의 위약금을 을에게 지급하여야 한다. 위약금은 부가가치세를 제외한 임대료를 기준으로 산정한다.","§1. 계약일로부터 7일 이내 : 없음","§2. 계약일로부터 7일이 경과한 날부터 설치 예정일 3일 전까지 : 임대료의 100분의 20","§3. 설치 예정일 2일 전부터 당일까지 : 임대료의 100분의 30","§다만, 설치 예정일 2일 전부터 당일까지 해제하는 경우에는 계약일로부터의 경과 기간과 관계없이 제3호에 따른다.","② 해제의 통지는 카카오톡, 문자메시지, 전자우편 등 기록이 남는 방법으로 하여야 하며, 을이 이를 수령한 날을 해제 통지일로 본다.","③ 을이 설치를 위하여 설치 장소를 방문하였으나 갑의 사유로 설치하지 못한 경우에는 설치 예정일 당일에 해제한 것으로 본다.","④ 갑은 을로부터 위약금 청구를 받은 날로부터 3일 이내에 이를 지급하여야 한다.","⑤ 을의 사유로 설치가 불가능하게 된 경우, 갑은 위약금 없이 본 계약을 해제할 수 있다.","⑥ 제1항의 위약금은 손해배상액의 예정으로 본다."]],
- ["제12조 (사진의 활용)", ["을은 갑의 동의를 얻어 임대물이 설치된 모습을 촬영한 사진을 을의 홈페이지, SNS 등에 시공 사례로 게시할 수 있다. 갑은 이에 동의하지 아니할 수 있으며, 동의 여부는 본 계약의 효력에 영향을 미치지 아니한다. 갑이 상호 표기에 동의한 경우, 을은 게시물에 갑의 상호와 SNS 계정을 함께 표기한다.","@PHOTO"]],
+ ["제12조 (사진의 활용)", ["을은 갑의 동의를 얻어 임대물이 설치된 모습을 촬영한 사진을 을의 홈페이지, SNS 등에 시공 사례로 게시할 수 있다. 갑은 설치 완료 후 사진을 확인한 뒤 동의 여부를 정할 수 있으며, 동의하지 아니할 수 있다. 동의 여부는 본 계약의 효력에 영향을 미치지 아니한다. 갑이 상호 표기에 동의한 경우, 을은 게시물에 갑의 상호와 SNS 계정을 함께 표기한다. 을은 게시 여부와 관계없이 설치 사진 원본을 갑에게 제공하며, 갑은 이를 자유롭게 사용할 수 있다.","@PHOTO"]],
  ["제13조 (분쟁의 해결)", ["① 본 계약에 정하지 아니한 사항은 갑과 을이 협의하여 정하며, 협의가 이루어지지 아니한 경우에는 민법 등 관계 법령 및 일반 상관례에 따른다.","② 본 계약과 관련하여 분쟁이 발생한 경우, 민사소송법에 따른 관할 법원을 관할 법원으로 한다."]],
  ["제14조 (계약의 체결)", ["본 계약은 전자서명의 방법으로 체결하며, 갑과 을은 전자서명이 완료된 계약서를 각 1부씩 보관한다."]],
 ];
@@ -275,12 +269,12 @@ window.addEventListener("resize", sizePad);
 
 // 사진 동의에 따라 상호 표기 칸 표시
 function syncPhoto(){
-  const v = document.querySelector('input[name=photo]:checked')?.value;
-  $("#tagSet").hidden = v !== "동의함";
-  $("#igField").hidden = document.querySelector('input[name=tag]:checked')?.value !== "상호·SNS 계정 표기에 동의함";
+  $("#igField").hidden = document.querySelector('input[name=photo]:checked')?.value !== "tag";
 }
-document.querySelectorAll('input[name=photo],input[name=tag]').forEach(r => r.addEventListener("change", syncPhoto));
+document.querySelectorAll('input[name=photo]').forEach(r => r.addEventListener("change", syncPhoto));
 
+// 사진 게시 선택 → 시트·메일에 기록되는 값 [사진활용, 상호표기]
+const PHOTO = { tag:["동의함","상호·SNS 계정 표기에 동의함"], plain:["동의함","상호 없이 공간 유형만 표기"], later:["설치 후 결정","해당 없음"] };
 function val(id){ return $(id).value.trim(); }
 function radio(n){ return document.querySelector(`input[name=${n}]:checked`)?.value || ""; }
 function showErr(m, focusEl){ const e = $("#err"); e.textContent = m; e.hidden = false; if(focusEl) focusEl.focus(); }
@@ -290,16 +284,15 @@ function collect(){
   for(const [id,label] of req) if(!val(id)) return showErr(`${label} 입력해 주세요.`, $(id));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#f-email"))) return showErr("이메일 주소 형식을 확인해 주세요.", $("#f-email"));
   if(!radio("pay")) return showErr("결제 방법을 골라 주세요.", $("#pay-1"));
-  if(!radio("photo")) return showErr("설치 사진 활용 동의 여부를 골라 주세요.", $("#ph-1"));
-  if(radio("photo")==="동의함" && !radio("tag")) return showErr("상호 표기 방법을 골라 주세요.", $("#tg-1"));
+  if(!radio("photo")) return showErr("설치 사진 게시 방법을 골라 주세요.", $("#ph-1"));
   if(!$("#c-privacy").checked) return showErr("개인정보 수집·이용에 동의해 주세요.", $("#c-privacy"));
   if(!$("#c-agree").checked) return showErr("계약 체결 동의에 체크해 주세요.", $("#c-agree"));
   if(!signed) return showErr("서명란에 서명해 주세요.", cv);
   $("#err").hidden = true;
   return {
     name: val("#f-name"), rep: val("#f-rep"), biz: val("#f-biz"), contact: val("#f-contact"), tel: val("#f-tel"),
-    email: val("#f-email"), addr: "", pay: radio("pay"), photo: radio("photo"),
-    tag: radio("photo")==="동의함" ? radio("tag") : "해당 없음", ig: val("#f-ig")
+    email: val("#f-email"), addr: "", pay: radio("pay"), photo: PHOTO[radio("photo")][0],
+    tag: PHOTO[radio("photo")][1], ig: radio("photo") === "tag" ? val("#f-ig") : ""
   };
 }
 
@@ -313,7 +306,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
   const box = (on) => on ? "■" : "□";
   const body = TERMS.map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>` + ps.map(t => {
     if(t === "@TABLE") return `<table>${cRows.map(([k,v]) => `<tr><th style="width:130px">${esc(k)}</th><td>${esc(v)}</td></tr>`).join("")}</table>`;
-    if(t === "@PHOTO") return `<table><tr><th style="width:130px">사진 활용</th><td>${box(g.photo==="동의함")} 동의함　${box(g.photo!=="동의함")} 동의하지 아니함</td></tr><tr><th>상호 표기</th><td>${box(g.tag==="상호·SNS 계정 표기에 동의함")} 상호·SNS 계정 표기에 동의함${g.ig?` (${esc(g.ig)})`:""}　${box(g.tag==="상호 없이 공간 유형만 표기")} 상호 없이 공간 유형만 표기</td></tr></table>`;
+    if(t === "@PHOTO") return `<table><tr><th style="width:130px">사진 게시</th><td>${box(g.tag==="상호·SNS 계정 표기에 동의함")} 상호·SNS 계정과 함께 게시${g.ig?` (${esc(g.ig)})`:""}　${box(g.tag==="상호 없이 공간 유형만 표기")} 상호 없이 사진만 게시　${box(g.photo==="설치 후 결정")} 설치 후 사진 확인 뒤 결정</td></tr></table>`;
     return para(t);
   }).join("") + `</div>`).join("");
   const d = new Date(signedAt);
