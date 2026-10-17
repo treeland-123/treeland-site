@@ -32,9 +32,12 @@ PAGES = [
      ['detail', 'light', 'colors', 'set'], '잎과 조명, 장식 색상, 올해 새로 더한 구성을 차례로 보실 수 있습니다.'),
     ('faq', '자주 묻는 질문', '자주 묻는 질문',
      '크리스마스트리 대여 예약 시기, 설치와 회수, 대여 기간, 결제와 세금계산서, 취소 기준 등 자주 묻는 질문을 모았습니다.',
-     ['faq', 'process'], None),
+     ['faq'], None),
+    ('contact', '상담 안내', '상담 안내',
+     '카카오톡으로 공간 사진을 보내주시면 맞는 크기와 위치를 제안해 드립니다. 전화·이메일 상담 방법과 예약부터 설치·회수까지의 진행 순서를 안내합니다.',
+     ['contact', 'process'], '카카오톡, 전화, 이메일로 상담하실 수 있습니다. 예약부터 설치와 회수까지 어떻게 진행되는지도 함께 보실 수 있습니다.'),
 ]
-TOC_ITEMS = [('/cases/', '설치 사례', 'cases'), ('/trees/', '트리 소개', 'trees'), ('/#price', '가격', None), ('/faq/', 'Q&amp;A', 'faq')]
+TOC_ITEMS = [('/cases/', '설치 사례', 'cases'), ('/trees/', '트리 소개', 'trees'), ('/#price', '가격', None), ('/faq/', 'Q&amp;A', 'faq'), ('/contact/', '상담', 'contact')]
 
 head_end = src.index('<main id="top">')
 main_end = src.index('</main>') + len('</main>')
@@ -76,7 +79,6 @@ def make(slug, label, h1, desc, secs, intro):
     head = head.replace('</head>', STYLE + '</head>', 1)
     # 목차: 하위 페이지 링크
     lis = ''.join(f'<li><a href="{h}"{" class=\"is-on\" aria-current=\"page\"" if s == slug else ""}>{t}</a></li>' for h, t, s in TOC_ITEMS)
-    lis += f'<li><a href="/{slug}/#contact">상담</a></li>'
     toc = re.sub(r'<ul>.*?</ul>', '<ul>' + lis + '</ul>', toc_html, count=1, flags=re.S)
     body = []
     crumb = f'<div class="wrap sub-crumb"><a href="/">트리랜드</a> › {label}</div>'
@@ -93,7 +95,8 @@ def make(slug, label, h1, desc, secs, intro):
     others = [(f'/{s}/', l) for s, l, *_ in PAGES if s != slug] + [('/', '처음 화면')]
     body.append('<section class="sub-next"><div class="wrap"><p class="label">다른 안내 보기</p><ul>' +
                 ''.join(f'<li><a href="{h}">{t}</a></li>' for h, t in others) + '</ul></div></section>')
-    body.append(block(src, SEC['contact']))
+    if 'contact' not in secs:
+        body.append(block(src, SEC['contact']))
     main = '<main id="top">\n' + toc + '\n' + crumb + '\n' + '\n'.join(body) + '\n</main>'
     out = head + main + src[main_end:]
     os.makedirs(os.path.join(ROOT, slug), exist_ok=True)
