@@ -1667,7 +1667,12 @@ dialog.lb{z-index:50}
   document.querySelectorAll('.ba .ba-frame').forEach(fr => {
     const s = baSlider(fr);
     if ('IntersectionObserver' in window) {
-      const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) { io.disconnect(); setTimeout(s.sweep, 300); } }), { threshold: .6 });
+      // replays every time it comes back into view (like the count-up numbers)
+      let shown = false, tm = 0;
+      const io = new IntersectionObserver(es => es.forEach(en => {
+        if (en.intersectionRatio >= .6 && !shown) { shown = true; clearTimeout(tm); tm = setTimeout(s.sweep, 300); }
+        else if (!en.isIntersecting && shown) { shown = false; clearTimeout(tm); s.reset(); }
+      }), { threshold: [0, .6] });
       io.observe(fr);
     }
   });
