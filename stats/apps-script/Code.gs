@@ -1,11 +1,11 @@
 /**
- * 트리랜드 통계 서버 (Apps Script, 계정 hongbn9ytt@gmail.com — GA4 소유 계정)
- * - GA4(속성 559409322)에서 날짜·유입 경로별 방문과 문의 클릭을 읽어 옴 (Analytics Data API, 고급 서비스 AnalyticsData)
+ * 트리랜드 통계 서버 (Apps Script, 계정 hongjs100418@gmail.com — 계약·장부와 같은 계정)
+ * - GA4(속성 559412298)에서 날짜·유입 경로별 방문과 문의 클릭을 읽어 옴 (Analytics Data API, 고급 서비스 AnalyticsData)
  * - 당근 광고 숫자, 실제 상담 기록은 드라이브 시트 「트리랜드 통계」에 저장
  * - 비밀번호: 따로 없음. 계약 서버(전자계약)에 schedule 액션으로 물어보고 맞으면 6시간 캐시 (장부와 같은 방식)
  * - 재배포: 배포 → 배포 관리 → 연필 → 버전: 새 버전 (새 배포 금지, 주소 바뀜)
  */
-const PROPERTY_ID = '559409322';
+const PROPERTY_ID = '559412298';
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const DATA_START = '2026-10-18'; // 10/17 설치 확인용 방문은 제외
 const EVENTS = { kakao_popup_open: 'popup_opens', kakao_click: 'kakao_clicks', phone_click: 'phone_clicks', email_click: 'email_clicks', company_pdf_click: 'pdf_clicks' };
