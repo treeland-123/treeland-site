@@ -26,3 +26,9 @@
 ## 유입 경로 꼬리표(UTM)
 - 당근 비즈프로필 홈페이지 링크: `https://treeland.kr/?utm_source=daangn&utm_medium=bizprofile&utm_campaign=2026_earlybird`
 - GA4 → 보고서 → 획득 → 트래픽 획득에서 세션 소스 `daangn`으로 확인
+
+
+## 하위 페이지 (2026-10-18)
+- /cases/(설치 사례) · /trees/(트리 소개) · /faq/(자주 묻는 질문): 검색 결과 하위 링크용. 페이지 제목에 "가격"은 넣지 않음(대표님 결정).
+- 메인 index.html에서 섹션을 잘라 자동 생성하므로 직접 고치지 말 것. 빌드 순서: `python3 build/build.py` → `python3 build/pages.py`
+- 메인 하단에 세 페이지 링크, sitemap.xml에 네 주소 등록.

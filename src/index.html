@@ -1047,6 +1047,9 @@ dialog.lb{z-index:50}
 .kq-pre{margin:2px 0 0;max-height:min(30vh,200px);overflow:auto;padding:12px 14px;border:1px dashed #CFC6B2;background:#FFFDF8;font-family:var(--body);font-size:12.5px;line-height:1.6;color:var(--ink);white-space:pre-wrap;word-break:keep-all;-webkit-user-select:text;user-select:text}
 .kq-go{width:100%;min-height:52px;font-size:16px}
 .kq-re{justify-self:center;padding:6px 8px;border:0;background:none;color:var(--muted);font-family:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.ft-links{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:13px}
+.ft-links a{color:var(--muted);text-underline-offset:3px}
+.ft-links a:hover{color:var(--ink)}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -1492,6 +1495,7 @@ dialog.lb{z-index:50}
   <div class="wrap">
     <div class="ft-brand"><img src="img/logo-full.png" width="671" height="180" alt="TREELAND 트리랜드" loading="lazy"></div>
     <div class="ft-info"><span>전화 070-4571-7467</span><span>이메일 info@treeland.kr</span><span>www.treeland.kr</span></div>
+    <p class="ft-links"><a href="https://treeland.kr/cases/">설치 사례</a><a href="https://treeland.kr/trees/">트리 소개</a><a href="https://treeland.kr/faq/">자주 묻는 질문</a></p>
     <p class="ft-biz"><span>상호 트리랜드</span><span>대표 홍준서</span><span>사업자등록번호 360-69-00592</span><span>주소 서울 성북구 아리랑로19길 87</span></p>
     <p class="ft-copy"><span>© 2026 트리랜드(TREELAND). All rights reserved.</span><span>이 사이트의 사진과 글은 허가 없이 복제·배포하거나 상업적으로 이용할 수 없으며, 무단 사용 시 저작권법에 따라 민·형사상 책임을 질 수 있습니다.</span></p>
   </div>
@@ -2016,6 +2020,7 @@ dialog.lb{z-index:50}
 
   // case filter + mobile collapse
   const grid = document.querySelector('#cases .grid'), feat = document.querySelector('#cases .featured'), more = $('#caseMore');
+  if (grid) { // (sub-pages without the cases section skip this)
   const smallCases = [...grid.querySelectorAll('.case')];
   const phone = matchMedia('(max-width:640px)');
   let curF = 'all', expanded = false;
@@ -2040,6 +2045,7 @@ dialog.lb{z-index:50}
   more.addEventListener('click', () => { expanded = true; applyCases(); });
   (phone.addEventListener ? phone.addEventListener('change', applyCases) : phone.addListener(applyCases));
   applyCases();
+  }
 
   // institution documents dialog
   const docDlg = $('#docDlg'); let docBack = null;
@@ -2048,7 +2054,8 @@ dialog.lb{z-index:50}
   docDlg.addEventListener('click', e => { if (e.target === docDlg) docDlg.close(); });
   docDlg.addEventListener('close', () => { if (docBack) docBack.focus(); });
 
-  // estimator
+  // estimator (only on the page that has it)
+  if ($('#estForm')) {
   const DISC = 0.15, MULTI = { 2: 0.05, 3: 0.10 };
   let gifts = 0, pristine = true;
   const form = $('#estForm');
@@ -2192,6 +2199,7 @@ dialog.lb{z-index:50}
   $('#kqX').addEventListener('click', () => kq.close());
   kq.addEventListener('click', e => { if (e.target === kq) kq.close(); });
   kq.addEventListener('close', () => { if (kqBack && kqBack.isConnected) kqBack.focus({ preventScroll: true }); });
+  }
   document.querySelectorAll('.ch-copy[data-copy]').forEach(btn => btn.addEventListener('click', () => {
     const v = document.getElementById(btn.dataset.copy).textContent, label = btn.textContent;
     navigator.clipboard.writeText(v).then(() => { btn.textContent = '복사됨'; }, () => {
