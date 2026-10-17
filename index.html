@@ -1609,21 +1609,22 @@ dialog.lb{z-index:50}
     const stop = () => { if (anim) { cancelAnimationFrame(anim); anim = 0; } used = true; };
     el.addEventListener('pointerdown', e => {
       if (e.button > 0 || e.target.closest('.ba-open')) return;
-      id = e.pointerId; sx = e.clientX; sy = e.clientY; drag = e.pointerType === 'mouse' || e.target === knob || knob.contains(e.target);
-      stop();
-      if (drag) { el.setPointerCapture(id); if (e.pointerType === 'mouse') { set(at(e.clientX)); e.preventDefault(); } }
+      id = e.pointerId; sx = e.clientX; sy = e.clientY;
+      // mouse: grab right away. touch/pen: wait — a vertical swipe is page scrolling and must not stop the motion
+      drag = e.pointerType === 'mouse';
+      if (drag) { stop(); el.setPointerCapture(id); set(at(e.clientX)); e.preventDefault(); }
     });
     el.addEventListener('pointermove', e => {
       if (e.pointerId !== id) return;
       if (!drag) {
         const dx = Math.abs(e.clientX - sx), dy = Math.abs(e.clientY - sy);
-        if (dx > 6 && dx > dy) { drag = true; el.setPointerCapture(id); } else return;
+        if (dx > 6 && dx > dy) { drag = true; stop(); el.setPointerCapture(id); } else return;
       }
       set(at(e.clientX));
     });
     const end = e => {
       if (e.pointerId !== id) return;
-      if (e.type === 'pointerup' && !drag && Math.abs(e.clientX - sx) < 6 && Math.abs(e.clientY - sy) < 6) set(at(e.clientX));
+      if (e.type === 'pointerup' && !drag && Math.abs(e.clientX - sx) < 6 && Math.abs(e.clientY - sy) < 6) { stop(); set(at(e.clientX)); }
       id = null; drag = false;
     };
     el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
