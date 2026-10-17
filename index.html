@@ -1697,7 +1697,7 @@ dialog.lb{z-index:50}
     lbPair.querySelector('.ba-knob').setAttribute('aria-label', name + ' 설치 전후 비교, 좌우로 밀어 보기');
     lbCap.textContent = name; lbS.reset();
     if (lb.showModal) lb.showModal();
-    setTimeout(lbS.hint, 350);
+    setTimeout(lbS.sweep, 350);
   }
   document.querySelectorAll('[data-zoom]').forEach(b => b.addEventListener('click', () => {
     const img = b.querySelector('img'); openLb(b.dataset.zoom, img ? img.alt : '', b);
