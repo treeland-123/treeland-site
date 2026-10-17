@@ -17,7 +17,7 @@
 - 가비아 DNS의 TXT 레코드 2개(GitHub Pages 인증, 구글 서치콘솔 인증)
 - `build/head_prefix.html`의 `naver-site-verification` 메타 태그(네이버 서치어드바이저 인증)
 - `CNAME` 파일
-- `build/head_prefix.html`의 Google 애널리틱스(GA4) 태그 `G-V50XVDJ6WZ`와 문의 버튼 클릭 추적 스크립트. 2026-10-17 추가.
+- `build/head_prefix.html`의 Google 애널리틱스(GA4) 태그 `G-75S6VN6PP6`(계정 hongjs100418@gmail.com, 속성 559412298)와 문의 버튼 클릭 추적 스크립트. 2026-10-17 추가.
   - kakao_popup_open: 카톡 상담 버튼 → 안내 팝업 열림 (popup_type: ask=일반, quote=견적)
   - kakao_click: 팝업의 "카카오톡 열기" 또는 바로가기 링크로 실제 카카오톡 열림 (via: ask_popup / quote_popup / direct)
   - phone_click · email_click · instagram_click · company_pdf_click
