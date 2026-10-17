@@ -261,6 +261,7 @@ const ENDPOINT="https://script.google.com/macros/s/AKfycbxWKsBAM0X_VcJ5bAJ70UXVw
 const DATA_START="2026-10-17";
 const SRC={daangn:"당근",instagram:"인스타",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
 const SRC_ORDER=Object.keys(SRC);
+const AD_COLORS=["var(--s-card)","var(--s-proposal)","var(--s-company_profile)","var(--s-instagram)","var(--s-kakao)"];
 const METRICS=[
   {k:"sessions",l:"방문"},{k:"popup_opens",l:"카톡 팝업"},{k:"kakao_clicks",l:"카톡 열림"},
   {k:"phone_clicks",l:"전화"},{k:"inq",l:"실제 상담"},{k:"rate",l:"카톡 전환율",rate:true}
@@ -366,20 +367,30 @@ $("metricChips").onclick=e=>{const b=e.target.closest("[data-k]");if(!b)return;S
 
 function dates(){const out=[];for(let d=S.from;d<=S.to;d=addDays(d,1))out.push(d);return out}
 function renderTrend(){
-  const TM=METRICS.filter(x=>!x.rate);
+  const TM=[...METRICS.filter(x=>!x.rate),{k:"ad_clk",l:"당근 광고 클릭"},{k:"ad_imp",l:"당근 광고 노출"}];
   $("trendMetric").innerHTML=TM.map(x=>`<option value="${x.k}"${x.k===S.trend?" selected":""}>${x.l}</option>`).join("");
-  const ds=dates(),k=S.trend;
-  const series={};
+  const ds=dates(),k=S.trend,isAd=k==="ad_clk"||k==="ad_imp";
+  const series={},names={},colors={};
   const add=(s,d,v)=>{(series[s]||(series[s]={}))[d]=((series[s]||{})[d]||0)+v};
-  if(k==="inq")S.inq.filter(r=>inRange(r.date)).forEach(r=>add(SRC[r.source]?r.source:"other",r.date,1));
+  if(isAd){
+    const adNames=[...new Set(S.ads.map(r=>r.ad))];
+    adsIn().forEach(r=>add("ad:"+r.ad,String(r.date).slice(0,10),num(k==="ad_clk"?r.clicks:r.impressions)));
+    adNames.forEach((n,i)=>{names["ad:"+n]=n;colors["ad:"+n]=AD_COLORS[i%AD_COLORS.length]});
+  }
+  else if(k==="inq")S.inq.filter(r=>inRange(r.date)).forEach(r=>add(SRC[r.source]?r.source:"other",r.date,1));
   else S.ga.filter(r=>inRange(r.date)).forEach(r=>add(r.source,r.date,num(r[k])));
   const totals=Object.keys(series).map(s=>[s,Object.values(series[s]).reduce((a,b)=>a+b,0)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
   const avail=totals.map(x=>x[0]);
-  if(!S.trendSrc)S.trendSrc=new Set(["__all",...avail.slice(0,3)]);
-  $("trendSrc").innerHTML=[["__all","합계"],...avail.map(s=>[s,SRC[s]||s])].map(([s,l])=>`<button class="chip" data-s="${s}" aria-pressed="${S.trendSrc.has(s)}">${s==="__all"?"":`<i class="dot" style="background:${col(s)}"></i>`}${esc(l)}</button>`).join("");
+  /* 광고 클릭을 볼 때는 같은 날 당근에서 사이트로 넘어온 방문을 비교선으로 같이 그린다 (둘 다 '횟수'라 한 축에 둠) */
+  const cmp=k==="ad_clk"?ds.map(d=>S.ga.filter(r=>r.date===d&&r.source==="daangn").reduce((a,r)=>a+num(r.sessions),0)):null;
+  if(!S.trendSrc)S.trendSrc=new Set(["__all",...(isAd?[]:avail.slice(0,3)),...(cmp?["__visit"]:[])]);
+  const lab=s=>names[s]||SRC[s]||s, c=s=>colors[s]||col(s);
+  const chips=[["__all",isAd?"광고 합계":"합계"],...(cmp?[["__visit","당근 → 사이트 방문"]]:[]),...avail.map(s=>[s,lab(s)])];
+  $("trendSrc").innerHTML=chips.map(([s,l])=>`<button class="chip" data-s="${esc(s)}" aria-pressed="${S.trendSrc.has(s)}">${s==="__all"?"":`<i class="dot" style="background:${s==="__visit"?col("daangn"):c(s)}"></i>`}${esc(l)}</button>`).join("");
   const lines=[];
-  if(S.trendSrc.has("__all"))lines.push({s:"__all",l:"합계",c:"var(--ink)",v:ds.map(d=>avail.reduce((a,s)=>a+((series[s]||{})[d]||0),0)),dash:"4 3"});
-  avail.filter(s=>S.trendSrc.has(s)).slice(0,6).forEach(s=>lines.push({s,l:SRC[s]||s,c:col(s),v:ds.map(d=>(series[s]||{})[d]||0)}));
+  if(S.trendSrc.has("__all"))lines.push({s:"__all",l:isAd?"광고 합계":"합계",c:"var(--ink)",v:ds.map(d=>avail.reduce((a,s)=>a+((series[s]||{})[d]||0),0)),dash:"4 3"});
+  if(cmp&&S.trendSrc.has("__visit"))lines.push({s:"__visit",l:"당근 → 사이트 방문",c:col("daangn"),v:cmp});
+  avail.filter(s=>S.trendSrc.has(s)).slice(0,6).forEach(s=>lines.push({s,l:lab(s),c:c(s),v:ds.map(d=>(series[s]||{})[d]||0)}));
   const W=Math.max(300,$("trend").clientWidth||820),H=W<500?200:230,P={l:34,r:12,t:10,b:24},iw=W-P.l-P.r,ih=H-P.t-P.b;
   const max=Math.max(4,...lines.flatMap(x=>x.v));const top=Math.ceil(max/4)*4;
   const X=i=>P.l+(ds.length<2?iw/2:i*iw/(ds.length-1)),Y=v=>P.t+ih-(v/top)*ih;
@@ -393,7 +404,7 @@ function renderTrend(){
     if(ds.length<=31)L.v.forEach((v,i)=>{if(v)g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="${L.c}" stroke="var(--paper)" stroke-width="1.5"/>`});
   });
   g+=`<line id="cross" y1="${P.t}" y2="${P.t+ih}" stroke="var(--muted)" stroke-width="1" opacity="0"/><rect x="${P.l}" y="${P.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/>`;
-  $("trend").innerHTML=lines.length&&ds.length?`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 추이">${g}</svg><div class="tip" id="tip" hidden></div><div class="legend">${lines.map(L=>`<span><i class="dot" style="background:${L.c}"></i>${esc(L.l)}</span>`).join("")}</div>`:`<p class="empty">표시할 데이터가 없습니다.</p>`;
+  $("trend").innerHTML=lines.length&&ds.length?`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 추이">${g}</svg><div class="tip" id="tip" hidden></div><div class="legend">${lines.map(L=>`<span><i class="dot" style="background:${L.c}"></i>${esc(L.l)}</span>`).join("")}</div>${k==="ad_clk"?`<p class="note" style="margin-top:6px">광고 클릭은 당근 안의 소식·프로필로 가는 클릭입니다. 거기서 홈페이지 링크까지 누른 사람만 사이트 방문으로 잡혀서, 방문선이 클릭선보다 낮은 게 정상입니다.</p>`:""}`:`<p class="empty">표시할 데이터가 없습니다.</p>`;
   const svg=$("trend").querySelector("svg");if(!svg)return;
   const hit=$("hit"),tip=$("tip"),cross=$("cross");
   const move=ev=>{
@@ -406,7 +417,7 @@ function renderTrend(){
   };
   hit.addEventListener("pointermove",move);hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("opacity","0")});
 }
-$("trendMetric").onchange=e=>{S.trend=e.target.value;pref("trend",S.trend);renderTrend()};
+$("trendMetric").onchange=e=>{S.trend=e.target.value;pref("trend",S.trend);S.trendSrc=null;renderTrend()};
 $("trendSrc").onclick=e=>{const b=e.target.closest("[data-s]");if(!b)return;const s=b.dataset.s;S.trendSrc.has(s)?S.trendSrc.delete(s):S.trendSrc.add(s);renderTrend()};
 
 function renderFunnel(m,ads){
