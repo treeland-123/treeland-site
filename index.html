@@ -3,6 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!-- Google tag (gtag.js) : GA4 측정 ID G-V50XVDJ6WZ (2026-10-17 추가) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V50XVDJ6WZ"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());gtag('config','G-V50XVDJ6WZ');
+/* 문의 버튼 클릭 추적: kakao_click / phone_click / email_click / instagram_click / company_pdf_click */
+document.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('a[href]');if(!a)return;var h=a.getAttribute('href')||'',n='';
+if(h.indexOf('pf.kakao.com')>-1)n='kakao_click';else if(h.indexOf('tel:')===0)n='phone_click';else if(h.indexOf('mailto:')===0)n='email_click';else if(h.indexOf('instagram.com')>-1)n='instagram_click';else if(/\.pdf($|\?)/i.test(h))n='company_pdf_click';
+if(n)gtag('event',n,{link_url:h,link_text:(a.textContent||'').trim().slice(0,40)});},true);
+</script>
 <meta name="naver-site-verification" content="77a4ade2e9e2c11a5e459f6d00eb87f7dad8cd6e" />
 <link rel="canonical" href="https://treeland.kr/">
 <meta property="og:type" content="website">
