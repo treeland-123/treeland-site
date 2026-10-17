@@ -7,6 +7,7 @@
 <title>트리랜드 전자계약</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex">
+<script>if(/[?&]id=/.test(location.search))document.documentElement.classList.add("loading")</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -80,9 +81,25 @@ button{font:inherit;cursor:pointer}
 footer{font-size:12px;color:var(--sub);text-align:center}
 /* PDF용 서류 — 화면 밖, 색 고정 */
 @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+#loadingView{display:none;min-height:70vh;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+html.loading #loadingView{display:flex}
+html.loading #app{display:none}
+#loadingView p{margin:0}
+#loadingView .msg{font-size:16px;font-weight:500}
+#loadingView .sub{font-size:13px;color:var(--sub)}
+.spin{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none;border-top-color:var(--line)}}
 </style>
 </head>
 <body>
+
+<div class="wrap" id="loadingView" role="status" aria-live="polite">
+  <div class="brand">TREELAND</div>
+  <div class="spin" aria-hidden="true"></div>
+  <p class="msg">계약 내용을 불러오는 중입니다</p>
+  <p class="sub">잠시만 기다려 주세요</p>
+</div>
 
 <div class="wrap" id="app">
   <header>
@@ -190,8 +207,6 @@ footer{font-size:12px;color:var(--sub);text-align:center}
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // 구글 Apps Script 웹앱 주소. 비어 있으면 미리보기 모드로 동작합니다.
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
@@ -374,7 +389,18 @@ const PAPER_CSS = `#paper{width:794px;background:#fff;color:#000;font-family:"No
 #paper .sig img.stamp{position:absolute;left:-1px;top:-5px;width:28px;height:28px;max-width:none}
 #paper .avoid{break-inside:avoid;page-break-inside:avoid}
 #paper .audit{margin-top:14px;font-size:10px;color:#444;border-top:1px solid #999;padding-top:6px;overflow-wrap:anywhere}`;
+// PDF 도구는 화면이 뜬 뒤 뒤에서 받음 (첫 화면을 늦추지 않도록)
+const LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"];
+let libsP = null;
+function loadLibs(){
+  if(!libsP) libsP = Promise.all(LIBS.map(src => new Promise((res, rej) => {
+    const sc = document.createElement("script"); sc.src = src; sc.async = true; sc.onload = res;
+    sc.onerror = () => { libsP = null; rej(new Error("lib")); }; document.head.appendChild(sc);
+  })));
+  return libsP;
+}
 async function makePdf(html){
+  await loadLibs();
   const W = 794, PAGE = Math.round(W * 297 / 210), M = 45;   // A4 한 쪽 높이(px), 위아래 여백
   const fr = document.createElement("iframe");
   fr.setAttribute("aria-hidden", "true"); fr.tabIndex = -1;
@@ -442,17 +468,27 @@ $("#form").addEventListener("submit", async e => {
   }finally{ btn.disabled = false; btn.textContent = "서명하고 계약하기"; }
 });
 
+function showApp(){ document.documentElement.classList.remove("loading"); }
+function failView(title, msg, retry){
+  showApp();
+  $("#app").innerHTML = `<header><div class="brand">TREELAND</div><h1>${title}</h1><p class="lead">${msg}</p></header>` + (retry ? `<button type="button" class="primary" onclick="location.reload()">다시 불러오기</button>` : "");
+}
 async function init(){
   const id = new URLSearchParams(location.search).get("id");
   if(ENDPOINT && id){
+    let j;
     try{
-      const r = await fetch(`${ENDPOINT}?action=get&id=${encodeURIComponent(id)}`); const j = await r.json();
-      if(!j.ok) throw new Error(j.error);
-      if(j.signed){ $("#app").hidden = true; $("#doneView").hidden = false; $("#doneView h1").textContent = "이미 서명된 계약입니다"; $("#doneMsg").textContent = "서명한 계약서는 서명 당시 입력하신 이메일로 발송되었습니다. 다시 받으셔야 하면 070-4571-7467로 연락해 주세요."; return; }
-      C = j.contract; if(j.stamp) C.stamp = j.stamp;
-    }catch(e){ $("#app").innerHTML = `<header><div class="brand">TREELAND</div><h1>계약서를 찾을 수 없습니다</h1><p class="lead">링크 주소가 정확한지 확인해 주세요. 문의 070-4571-7467</p></header>`; return; }
+      const r = await fetch(`${ENDPOINT}?action=get&id=${encodeURIComponent(id)}`); j = await r.json();
+    }catch(e){
+      return failView("계약 내용을 불러오지 못했습니다", "인터넷 연결을 확인한 뒤 다시 불러와 주세요. 계속 안 되면 070-4571-7467로 연락해 주세요.", true);
+    }
+    if(!j.ok) return failView("계약서를 찾을 수 없습니다", "링크 주소가 정확한지 확인해 주세요. 문의 070-4571-7467");
+    if(j.signed){ showApp(); $("#app").hidden = true; $("#doneView").hidden = false; $("#doneView h1").textContent = "이미 서명된 계약입니다"; $("#doneMsg").textContent = "서명한 계약서는 서명 당시 입력하신 이메일로 발송되었습니다. 다시 받으셔야 하면 070-4571-7467로 연락해 주세요."; return; }
+    C = j.contract; if(j.stamp) C.stamp = j.stamp;
   } else { C = SAMPLE; $("#demoNote").hidden = false; }
+  showApp();
   renderSummary(); renderTerms(); syncPhoto(); sizePad();
+  setTimeout(() => loadLibs().catch(() => {}), 300);
 }
 init();
 </script>
