@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<meta name="robots" content="noindex,nofollow">
+<title>트리랜드 유입 통계</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+/* 장부·일정표와 같은 색과 글꼴. 위에서 아래로: 기간 → 핵심 숫자 → 경로 비교 → 일별 추이 → 퍼널 → 제안서별 → 당근 광고 → 상담 기록 */
+:root{
+  --bg:#f7f8f5; --paper:#ffffff; --ink:#1d2621; --muted:#6a756e; --line:#e2e6df; --grid:#eef0ec;
+  --pine:#1f4a3a; --pine-soft:#e7efe9; --brass:#a8823a; --brass-soft:#f4ecdc;
+  --bad:#a6402f; --bad-soft:#f7e6e2;
+  --s-daangn:#eb6834; --s-instagram:#e87ba4; --s-card:#2a78d6; --s-proposal:#1baf7a;
+  --s-kakao:#eda100; --s-naver_store:#008300; --s-company_profile:#6250d6; --s-search:#e34948;
+  --s-direct:#8c948f; --s-other:#b9bfba;
+  --f-display:"Gowun Batang","Nanum Myeongjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f; --grid:#232a26;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
+  --bad:#e58b78; --bad-soft:#2f1f1b;
+  --s-daangn:#d95926; --s-instagram:#d55181; --s-card:#3987e5; --s-proposal:#199e70;
+  --s-kakao:#c98500; --s-naver_store:#008300; --s-company_profile:#9085e9; --s-search:#e66767;
+  --s-direct:#7b847f; --s-other:#555d58; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f; --grid:#232a26;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
+  --bad:#e58b78; --bad-soft:#2f1f1b;
+  --s-daangn:#d95926; --s-instagram:#d55181; --s-card:#3987e5; --s-proposal:#199e70;
+  --s-kakao:#c98500; --s-naver_store:#008300; --s-company_profile:#9085e9; --s-search:#e66767;
+  --s-direct:#7b847f; --s-other:#555d58; color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:880px;margin:0 auto;padding-inline:16px;padding-block:20px 64px;display:flex;flex-direction:column;gap:20px}
+.num{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand small{font-size:11px;letter-spacing:.18em;color:var(--brass);font-weight:600}
+.brand h1{font-family:var(--f-display);font-size:26px;margin:0;letter-spacing:-.01em}
+.links{display:flex;gap:12px;font-size:13px}
+.links a{color:var(--muted);text-decoration:none}.links a:hover{color:var(--ink)}
+select,input,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%}
+select:focus,input:focus,textarea:focus,button:focus-visible{outline:2px solid var(--pine);outline-offset:1px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;min-width:0}
+h2{font-size:13px;letter-spacing:.08em;color:var(--muted);margin:0;font-weight:600}
+.head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 11px;font:inherit;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
+.btn{border:0;border-radius:8px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--pine);color:var(--paper)}
+.btn.ghost{background:none;color:var(--muted);border:1px solid var(--line)}
+.btn.small{padding:6px 12px;font-size:13px}
+.note{font-size:12px;color:var(--muted);margin:0}
+.status{padding:12px 14px;border-radius:10px;background:var(--brass-soft);font-size:14px}
+
+/* 기간 */
+.range{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.range .dates{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.range .dates input{width:142px;padding:6px 8px;font-size:13px}
+
+/* 핵심 숫자 */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);background:var(--paper);border:1px solid var(--line);border-radius:12px}
+.kpis div{padding:14px 14px 12px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpis div+div{border-left:1px solid var(--line)}
+.kpis span{font-size:12px;color:var(--muted)}
+.kpis b{font-family:var(--f-num);font-weight:500;font-size:22px;font-variant-numeric:tabular-nums}
+.kpis em{font-style:normal;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 경로 비교 막대 */
+.bars{display:flex;flex-direction:column;gap:2px}
+.bar-row{display:grid;grid-template-columns:110px 1fr 90px;gap:10px;align-items:center;padding:5px 0;border-radius:6px;position:relative}
+.bar-row .lab{font-size:14px;display:flex;align-items:center;gap:7px;min-width:0;white-space:nowrap}
+.bar-row .track{height:14px;position:relative}
+.bar-row .fill{height:100%;border-radius:0 4px 4px 0;min-width:2px}
+.bar-row .val{font-family:var(--f-num);font-size:13px;text-align:right;white-space:nowrap}
+.bar-row .val small{color:var(--muted);font-family:var(--f-body)}
+.bar-row:hover{background:var(--pine-soft)}
+
+/* 추이 */
+.chart{position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--f-num);font-size:11px;fill:var(--muted)}
+.tip{position:absolute;pointer-events:none;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;box-shadow:0 4px 14px rgba(0,0,0,.08);min-width:130px;z-index:2}
+.tip b{display:block;margin-bottom:4px;font-size:12px}
+.tip div{display:flex;align-items:center;gap:6px;justify-content:space-between}
+.tip div span{display:flex;align-items:center;gap:6px}
+.legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--muted);margin-top:8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* 퍼널 */
+.funnel{display:flex;flex-direction:column;gap:6px}
+.step{display:grid;grid-template-columns:130px 1fr 110px;gap:10px;align-items:center}
+.step .lab{font-size:14px}
+.step .track{height:26px;background:var(--grid);border-radius:4px;overflow:hidden}
+.step .fill{height:100%;background:var(--pine);border-radius:0 4px 4px 0}
+.step .val{font-family:var(--f-num);font-size:13px;text-align:right}
+.step .val small{color:var(--muted);font-family:var(--f-body);display:block;font-size:11px}
+.step.src .fill{background:var(--brass)}
+
+/* 표 */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:right;font-weight:500;color:var(--muted);font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tbl td{text-align:right;padding:8px;border-bottom:1px solid var(--line);font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tbl th:first-child,.tbl td:first-child{text-align:left;font-family:var(--f-body);white-space:normal}
+.tbl tr:last-child td{border-bottom:0}
+.tbl .best{color:var(--pine);font-weight:600}
+.scroll{overflow-x:auto}
+
+/* 입력 */
+form.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:end}
+form.grid label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);min-width:0}
+form.grid .w2{grid-column:span 2} form.grid .w3{grid-column:span 3} form.grid .w4{grid-column:span 4} form.grid .w6{grid-column:1/-1}
+details summary{cursor:pointer;font-size:14px;font-weight:500;color:var(--pine)}
+details[open] summary{margin-bottom:12px}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:baseline;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .d{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.item small{display:block;color:var(--muted);font-size:12px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:var(--brass-soft);color:var(--brass);margin-left:6px}
+.tag.done{background:var(--pine-soft);color:var(--pine)}
+.x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 6px}
+.x:hover{color:var(--bad)}
+.empty{color:var(--muted);font-size:14px;padding:12px 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:5}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:720px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .kpis div+div{border-left:0}
+  .kpis div{border-top:1px solid var(--line)}
+  .kpis div:nth-child(-n+2){border-top:0}
+  .kpis div:nth-child(even){border-left:1px solid var(--line)}
+  .kpis div:last-child{grid-column:1/-1;border-left:0}
+  .two{grid-template-columns:1fr}
+  form.grid{grid-template-columns:repeat(2,1fr)}
+  form.grid .w2,form.grid .w3{grid-column:span 1} form.grid .w4{grid-column:1/-1} form.grid .w6{grid-column:1/-1}
+  .step{grid-template-columns:96px 1fr 84px}
+  .bar-row{grid-template-columns:92px 1fr 78px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><small>TREELAND</small><h1>유입 통계</h1></div>
+    <span class="links"><a href="/admin">계약 관리</a><a href="/schedule">일정표</a><a href="/ledger">장부</a></span>
+  </header>
+
+  <div id="status" class="status" hidden></div>
+
+  <div class="card" id="pinBox" hidden>
+    <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted)">관리자 비밀번호 (계약 관리 화면과 같습니다)
+      <span style="display:flex;gap:8px"><input type="password" id="pin" autocomplete="current-password"><button type="button" class="btn small" id="pinBtn">열기</button></span>
+    </label>
+    <p class="note" style="margin-top:8px">이 기기에서는 다음부터 자동으로 열립니다.</p>
+    <p class="note" id="pinErr" style="color:var(--bad)" hidden></p>
+  </div>
+
+  <div id="main" hidden style="display:flex;flex-direction:column;gap:20px">
+
+  <div class="range">
+    <div class="chips" id="presets" role="group" aria-label="기간">
+      <button class="chip" data-days="7">7일</button>
+      <button class="chip" data-days="14">14일</button>
+      <button class="chip" data-days="30">30일</button>
+      <button class="chip" data-days="0">시즌 전체</button>
+    </div>
+    <div class="dates"><input type="date" id="dFrom" aria-label="시작일"> ~ <input type="date" id="dTo" aria-label="종료일"></div>
+  </div>
+
+  <div class="kpis" aria-label="기간 합계">
+    <div><span>사이트 방문</span><b id="kVisit">0</b><em id="kVisitSub">&nbsp;</em></div>
+    <div><span>카톡 상담 팝업</span><b id="kPopup">0</b><em id="kPopupSub">&nbsp;</em></div>
+    <div><span>카톡 열림</span><b id="kKakao">0</b><em id="kKakaoSub">&nbsp;</em></div>
+    <div><span>실제 상담</span><b id="kInq">0</b><em id="kInqSub">&nbsp;</em></div>
+    <div><span>당근 광고비</span><b id="kSpend">0</b><em id="kSpendSub">&nbsp;</em></div>
+  </div>
+
+  <section class="card">
+    <div class="head"><h2>경로별 비교</h2>
+      <div class="chips" id="metricChips" role="group" aria-label="비교 기준"></div>
+    </div>
+    <div class="bars" id="bars"></div>
+    <p class="note" id="barsNote" style="margin-top:10px"></p>
+  </section>
+
+  <section class="card">
+    <div class="head"><h2>일별 추이</h2>
+      <select id="trendMetric" style="width:auto;padding:5px 8px;font-size:13px"></select>
+    </div>
+    <div class="chips" id="trendSrc" style="margin-bottom:10px" role="group" aria-label="표시할 경로"></div>
+    <div class="chart" id="trend"></div>
+  </section>
+
+  <div class="two">
+    <section class="card">
+      <div class="head"><h2>상담까지 이어진 비율</h2>
+        <select id="funnelSrc" style="width:auto;padding:5px 8px;font-size:13px"></select>
+      </div>
+      <div class="funnel" id="funnel"></div>
+      <p class="note" style="margin-top:10px">카톡 열림 이후 실제로 메시지를 보냈는지는 GA로 알 수 없어서, 실제 상담은 아래 기록 기준입니다.</p>
+    </section>
+    <section class="card">
+      <div class="head"><h2>제안서·캠페인별</h2></div>
+      <div class="scroll"><table class="tbl" id="campTbl"></table></div>
+      <p class="note" style="margin-top:10px">링크 꼬리표(utm_campaign) 기준. 제안서는 업장마다 따로 잡힙니다.</p>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="head"><h2>당근 광고 비교</h2><span class="note" id="adNote"></span></div>
+    <div class="scroll"><table class="tbl" id="adTbl"></table></div>
+    <details style="margin-top:14px" id="adForm">
+      <summary>광고 숫자 입력</summary>
+      <form class="grid" id="adF">
+        <label class="w2">날짜<input type="date" name="date" required></label>
+        <label class="w4">광고<input name="ad" list="adNames" required placeholder="광고 이름"></label>
+        <label>노출<input name="impressions" inputmode="numeric" required></label>
+        <label>클릭<input name="clicks" inputmode="numeric" required></label>
+        <label>반응<input name="reactions" inputmode="numeric" value="0"></label>
+        <label>비용(원)<input name="spend" inputmode="numeric" required></label>
+        <div class="w2" style="display:flex;justify-content:flex-end;gap:8px;align-items:end"><button class="btn" type="submit">저장</button></div>
+      </form>
+      <datalist id="adNames"></datalist>
+      <p class="note" style="margin-top:8px">당근 광고 관리 → 광고 상세에서 날짜별 숫자를 옮겨 적습니다. 같은 날짜·같은 광고는 덮어씁니다.</p>
+      <div class="list" id="adList" style="margin-top:10px"></div>
+    </details>
+  </section>
+
+  <section class="card">
+    <div class="head"><h2>상담 기록</h2><span class="note">문의가 오면 "어디서 보셨어요?" 답을 같이 적어 주세요</span></div>
+    <form class="grid" id="inqF">
+      <label class="w2">날짜<input type="date" name="date" required></label>
+      <label class="w2">들어온 곳<select name="channel"><option>카톡</option><option>전화</option><option>당근 채팅</option><option>인스타 DM</option><option>이메일</option><option>기타</option></select></label>
+      <label class="w2">어디서 보셨는지<select name="source" id="inqSource"></select></label>
+      <label class="w3">메모<input name="note" placeholder="업장명, 원하는 크기 등"></label>
+      <label class="w2">상태<select name="status"><option>문의</option><option>견적 발송</option><option>계약</option><option>안 됨</option></select></label>
+      <div style="display:flex;justify-content:flex-end;align-items:end"><button class="btn" type="submit">추가</button></div>
+    </form>
+    <div class="list" id="inqList" style="margin-top:12px"></div>
+  </section>
+
+  <p class="note" id="updated"></p>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbxWKsBAM0X_VcJ5bAJ70UXVw20T7HpsPfKtDM8phFKBry_EL84-IZTcXAG7tvuUTqxt/exec";
+const DATA_START="2026-10-18";
+const SRC={daangn:"당근",instagram:"인스타",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
+const SRC_ORDER=Object.keys(SRC);
+const METRICS=[
+  {k:"sessions",l:"방문"},{k:"popup_opens",l:"카톡 팝업"},{k:"kakao_clicks",l:"카톡 열림"},
+  {k:"phone_clicks",l:"전화"},{k:"inq",l:"실제 상담"},{k:"rate",l:"카톡 전환율",rate:true}
+];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt=n=>(Math.round(n)||0).toLocaleString("ko-KR");
+const pct=(a,b)=>b?(a/b*100):0;
+const pctS=(a,b)=>b?pct(a,b).toFixed(1)+"%":"–";
+const num=v=>Number(String(v??"").replace(/[^\d.-]/g,""))||0;
+const col=s=>`var(--s-${SRC[s]?s:"other"})`;
+const ymd=d=>{d=new Date(d);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const today=()=>ymd(new Date());
+const addDays=(s,n)=>{const d=new Date(s+"T00:00:00");d.setDate(d.getDate()+n);return ymd(d)};
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2200)}
+function status(m){$("status").textContent=m||"";$("status").hidden=!m}
+const getPin=()=>{try{return localStorage.getItem("tl_pin")||""}catch(e){return ""}};
+const setPin=v=>{try{localStorage.setItem("tl_pin",v)}catch(e){}};
+const pref=(k,v)=>{try{if(v===undefined)return localStorage.getItem("tl_stats_"+k);localStorage.setItem("tl_stats_"+k,v)}catch(e){return null}};
+
+const S={ga:[],ads:[],inq:[],from:DATA_START,to:today(),days:pref("days")??"0",metric:pref("metric")||"sessions",trend:pref("trend")||"sessions",trendSrc:null,funnel:"all"};
+
+async function api(action,extra){
+  const r=await fetch(ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(Object.assign({action,pin:getPin()},extra||{}))});
+  const j=await r.json();
+  if(j.error){const e=new Error(j.error==="pin"?"비밀번호가 맞지 않습니다.":(j.message||j.error));e.code=j.error;throw e}
+  return j;
+}
+
+function showPin(msg){$("pinBox").hidden=false;$("main").hidden=true;$("pinErr").textContent=msg||"";$("pinErr").hidden=!msg;$("pin").focus()}
+$("pinBtn").onclick=()=>{const v=$("pin").value.trim();if(!v)return;setPin(v);load()};
+$("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("pinBtn").click()});
+
+async function load(){
+  if(!getPin()){showPin();return}
+  status("불러오는 중…");
+  try{
+    const j=await api("load",{start:DATA_START,end:today()});
+    S.ga=j.ga||[];S.ads=j.ads||[];S.inq=j.inquiries||[];
+    $("pinBox").hidden=true;$("main").hidden=false;
+    status(j.gaError?"GA 데이터를 읽지 못했습니다: "+j.gaError:"");
+    $("updated").textContent="GA 숫자는 보통 몇 시간 늦게 들어옵니다. 마지막 불러옴 "+new Date(j.updatedAt).toLocaleString("ko-KR");
+    render();
+  }catch(err){
+    status("");
+    if(err.code==="pin")showPin("비밀번호가 맞지 않습니다.");
+    else status("불러오지 못했습니다. 잠시 뒤 새로고침해 주세요. ("+err.message+")");
+  }
+}
+
+/* ---------- 기간 ---------- */
+function applyPreset(d){
+  S.days=String(d);pref("days",S.days);
+  S.to=today();S.from=d==0?DATA_START:addDays(S.to,-(d-1));
+  if(S.from<DATA_START)S.from=DATA_START;
+  $("dFrom").value=S.from;$("dTo").value=S.to;
+}
+$("presets").onclick=e=>{const b=e.target.closest("[data-days]");if(!b)return;applyPreset(+b.dataset.days);render()};
+["dFrom","dTo"].forEach(id=>$(id).addEventListener("change",()=>{S.from=$("dFrom").value||DATA_START;S.to=$("dTo").value||today();if(S.from>S.to)[S.from,S.to]=[S.to,S.from];S.days="custom";render()}));
+const inRange=d=>d>=S.from&&d<=S.to;
+
+/* ---------- 집계 ---------- */
+function blank(){return{sessions:0,users:0,popup_opens:0,kakao_clicks:0,phone_clicks:0,email_clicks:0,pdf_clicks:0,inq:0,deal:0}}
+function bySource(){
+  const m={};
+  S.ga.filter(r=>inRange(r.date)).forEach(r=>{const o=m[r.source]||(m[r.source]=blank());["sessions","users","popup_opens","kakao_clicks","phone_clicks","email_clicks","pdf_clicks"].forEach(k=>o[k]+=num(r[k]))});
+  S.inq.filter(r=>inRange(r.date)).forEach(r=>{const s=r.source&&SRC[r.source]?r.source:"other";const o=m[s]||(m[s]=blank());o.inq++;if(r.status==="계약")o.deal++});
+  return m;
+}
+function total(m){const t=blank();Object.values(m).forEach(o=>Object.keys(t).forEach(k=>t[k]+=o[k]));return t}
+function val(o,k){return k==="rate"?pct(o.kakao_clicks,o.sessions):o[k]}
+function adsIn(){return S.ads.filter(r=>inRange(String(r.date).slice(0,10)))}
+
+/* ---------- 그리기 ---------- */
+function render(){
+  document.querySelectorAll("#presets [data-days]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.days===S.days)));
+  $("dFrom").value=S.from;$("dTo").value=S.to;
+  const m=bySource(),t=total(m),ads=adsIn();
+  const spend=ads.reduce((a,r)=>a+num(r.spend),0),aImp=ads.reduce((a,r)=>a+num(r.impressions),0),aClk=ads.reduce((a,r)=>a+num(r.clicks),0);
+  $("kVisit").textContent=fmt(t.sessions);$("kVisitSub").textContent="방문자 "+fmt(t.users)+"명";
+  $("kPopup").textContent=fmt(t.popup_opens);$("kPopupSub").textContent="방문의 "+pctS(t.popup_opens,t.sessions);
+  $("kKakao").textContent=fmt(t.kakao_clicks);$("kKakaoSub").textContent="방문의 "+pctS(t.kakao_clicks,t.sessions);
+  $("kInq").textContent=fmt(t.inq);$("kInqSub").textContent="계약 "+fmt(t.deal)+"건";
+  $("kSpend").textContent=fmt(spend);
+  const dVisit=(m.daangn||blank()).sessions;
+  $("kSpendSub").textContent=dVisit?"당근 방문 1회당 "+fmt(spend/dVisit)+"원":(aClk?"클릭당 "+fmt(spend/aClk)+"원":"광고 숫자 입력 필요");
+  renderBars(m);renderTrend();renderFunnel(m,ads);renderCamp();renderAds(ads);renderInq();
+}
+
+function renderBars(m){
+  $("metricChips").innerHTML=METRICS.map(x=>`<button class="chip" data-k="${x.k}" aria-pressed="${x.k===S.metric}">${x.l}</button>`).join("");
+  const M=METRICS.find(x=>x.k===S.metric)||METRICS[0];
+  const rows=SRC_ORDER.filter(s=>m[s]&&(m[s].sessions||m[s].inq||m[s].popup_opens)).map(s=>({s,v:val(m[s],M.k),o:m[s]})).sort((a,b)=>b.v-a.v);
+  const max=Math.max(1,...rows.map(r=>r.v));
+  $("bars").innerHTML=rows.length?rows.map(r=>`<div class="bar-row" title="${esc(SRC[r.s])}: 방문 ${fmt(r.o.sessions)} · 팝업 ${fmt(r.o.popup_opens)} · 카톡 ${fmt(r.o.kakao_clicks)} · 전화 ${fmt(r.o.phone_clicks)} · 상담 ${fmt(r.o.inq)}">
+      <span class="lab"><i class="dot" style="background:${col(r.s)}"></i>${esc(SRC[r.s])}</span>
+      <span class="track"><span class="fill" style="display:block;width:${(r.v/max*100).toFixed(1)}%;background:${col(r.s)}"></span></span>
+      <span class="val">${M.rate?r.v.toFixed(1)+"%":fmt(r.v)}${M.rate?` <small>${fmt(r.o.kakao_clicks)}/${fmt(r.o.sessions)}</small>`:""}</span></div>`).join("")
+    :`<p class="empty">아직 이 기간에 들어온 데이터가 없습니다. GA는 방문 후 몇 시간 뒤에 숫자가 잡힙니다.</p>`;
+  $("barsNote").textContent=M.rate?"카톡 전환율 = 카톡 열림 ÷ 방문. 방문이 적은 경로는 비율이 크게 흔들립니다.":"막대에 마우스를 올리면 그 경로의 숫자를 모두 볼 수 있습니다.";
+}
+$("metricChips").onclick=e=>{const b=e.target.closest("[data-k]");if(!b)return;S.metric=b.dataset.k;pref("metric",S.metric);render()};
+
+function dates(){const out=[];for(let d=S.from;d<=S.to;d=addDays(d,1))out.push(d);return out}
+function renderTrend(){
+  const TM=METRICS.filter(x=>!x.rate);
+  $("trendMetric").innerHTML=TM.map(x=>`<option value="${x.k}"${x.k===S.trend?" selected":""}>${x.l}</option>`).join("");
+  const ds=dates(),k=S.trend;
+  const series={};
+  const add=(s,d,v)=>{(series[s]||(series[s]={}))[d]=((series[s]||{})[d]||0)+v};
+  if(k==="inq")S.inq.filter(r=>inRange(r.date)).forEach(r=>add(SRC[r.source]?r.source:"other",r.date,1));
+  else S.ga.filter(r=>inRange(r.date)).forEach(r=>add(r.source,r.date,num(r[k])));
+  const totals=Object.keys(series).map(s=>[s,Object.values(series[s]).reduce((a,b)=>a+b,0)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]);
+  const avail=totals.map(x=>x[0]);
+  if(!S.trendSrc)S.trendSrc=new Set(["__all",...avail.slice(0,3)]);
+  $("trendSrc").innerHTML=[["__all","합계"],...avail.map(s=>[s,SRC[s]||s])].map(([s,l])=>`<button class="chip" data-s="${s}" aria-pressed="${S.trendSrc.has(s)}">${s==="__all"?"":`<i class="dot" style="background:${col(s)}"></i>`}${esc(l)}</button>`).join("");
+  const lines=[];
+  if(S.trendSrc.has("__all"))lines.push({s:"__all",l:"합계",c:"var(--ink)",v:ds.map(d=>avail.reduce((a,s)=>a+((series[s]||{})[d]||0),0)),dash:"4 3"});
+  avail.filter(s=>S.trendSrc.has(s)).slice(0,6).forEach(s=>lines.push({s,l:SRC[s]||s,c:col(s),v:ds.map(d=>(series[s]||{})[d]||0)}));
+  const W=Math.max(300,$("trend").clientWidth||820),H=W<500?200:230,P={l:34,r:12,t:10,b:24},iw=W-P.l-P.r,ih=H-P.t-P.b;
+  const max=Math.max(4,...lines.flatMap(x=>x.v));const top=Math.ceil(max/4)*4;
+  const X=i=>P.l+(ds.length<2?iw/2:i*iw/(ds.length-1)),Y=v=>P.t+ih-(v/top)*ih;
+  let g="";
+  for(let i=0;i<=4;i++){const v=top*i/4,y=Y(v);g+=`<line x1="${P.l}" x2="${W-P.r}" y1="${y}" y2="${y}" stroke="var(--grid)" stroke-width="1"/><text x="${P.l-6}" y="${y+4}" text-anchor="end">${fmt(v)}</text>`}
+  const step=Math.max(1,Math.ceil(ds.length/(W<500?4:8)));
+  ds.forEach((d,i)=>{if(i%step===0||i===ds.length-1)g+=`<text x="${X(i)}" y="${H-6}" text-anchor="middle">${+d.slice(5,7)}/${+d.slice(8)}</text>`});
+  lines.forEach(L=>{
+    const p=L.v.map((v,i)=>`${i?"L":"M"}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join("");
+    g+=`<path d="${p}" fill="none" stroke="${L.c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"${L.dash?` stroke-dasharray="${L.dash}"`:""}/>`;
+    if(ds.length<=31)L.v.forEach((v,i)=>{if(v)g+=`<circle cx="${X(i)}" cy="${Y(v)}" r="3" fill="${L.c}" stroke="var(--paper)" stroke-width="1.5"/>`});
+  });
+  g+=`<line id="cross" y1="${P.t}" y2="${P.t+ih}" stroke="var(--muted)" stroke-width="1" opacity="0"/><rect x="${P.l}" y="${P.t}" width="${iw}" height="${ih}" fill="transparent" id="hit"/>`;
+  $("trend").innerHTML=lines.length&&ds.length?`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="일별 추이">${g}</svg><div class="tip" id="tip" hidden></div><div class="legend">${lines.map(L=>`<span><i class="dot" style="background:${L.c}"></i>${esc(L.l)}</span>`).join("")}</div>`:`<p class="empty">표시할 데이터가 없습니다.</p>`;
+  const svg=$("trend").querySelector("svg");if(!svg)return;
+  const hit=$("hit"),tip=$("tip"),cross=$("cross");
+  const move=ev=>{
+    const r=svg.getBoundingClientRect(),x=(ev.clientX-r.left)*W/r.width;
+    const i=Math.max(0,Math.min(ds.length-1,Math.round(ds.length<2?0:(x-P.l)/iw*(ds.length-1))));
+    cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("opacity",".5");
+    tip.innerHTML=`<b>${ds[i]}</b>`+lines.map(L=>`<div><span><i class="dot" style="background:${L.c}"></i>${esc(L.l)}</span><span class="num">${fmt(L.v[i])}</span></div>`).join("");
+    tip.hidden=false;const px=X(i)*r.width/W;tip.style.top="8px";
+    tip.style.left=(px>r.width/2?px-tip.offsetWidth-12:px+12)+"px";
+  };
+  hit.addEventListener("pointermove",move);hit.addEventListener("pointerleave",()=>{tip.hidden=true;cross.setAttribute("opacity","0")});
+}
+$("trendMetric").onchange=e=>{S.trend=e.target.value;pref("trend",S.trend);renderTrend()};
+$("trendSrc").onclick=e=>{const b=e.target.closest("[data-s]");if(!b)return;const s=b.dataset.s;S.trendSrc.has(s)?S.trendSrc.delete(s):S.trendSrc.add(s);renderTrend()};
+
+function renderFunnel(m,ads){
+  const opts=[["all","전체 경로"],...SRC_ORDER.filter(s=>m[s]).map(s=>[s,SRC[s]])];
+  if(!opts.some(o=>o[0]===S.funnel))S.funnel="all";
+  $("funnelSrc").innerHTML=opts.map(([k,l])=>`<option value="${k}"${k===S.funnel?" selected":""}>${esc(l)}</option>`).join("");
+  const o=S.funnel==="all"?total(m):(m[S.funnel]||blank());
+  const steps=[];
+  if(S.funnel==="daangn"){
+    steps.push({l:"당근 광고 노출",v:ads.reduce((a,r)=>a+num(r.impressions),0),src:1});
+    steps.push({l:"당근 광고 클릭",v:ads.reduce((a,r)=>a+num(r.clicks),0),src:1});
+  }
+  steps.push({l:"사이트 방문",v:o.sessions},{l:"카톡 상담 팝업",v:o.popup_opens},{l:"카톡 열림",v:o.kakao_clicks},{l:"실제 상담",v:o.inq},{l:"계약",v:o.deal});
+  const max=Math.max(1,...steps.map(s=>s.v));
+  $("funnel").innerHTML=steps.map((s,i)=>{const prev=i?steps[i-1].v:0;return `<div class="step${s.src?" src":""}"><span class="lab">${s.l}</span><span class="track"><span class="fill" style="display:block;width:${(s.v/max*100).toFixed(1)}%"></span></span><span class="val">${fmt(s.v)}${i?`<small>앞 단계의 ${pctS(s.v,prev)}</small>`:""}</span></div>`}).join("");
+}
+$("funnelSrc").onchange=e=>{S.funnel=e.target.value;render()};
+
+function renderCamp(){
+  const m={};
+  S.ga.filter(r=>inRange(r.date)&&r.campaign).forEach(r=>{const k=r.source+"|"+r.campaign;const o=m[k]||(m[k]={s:r.source,c:r.campaign,...blank()});o.sessions+=num(r.sessions);o.popup_opens+=num(r.popup_opens);o.kakao_clicks+=num(r.kakao_clicks)});
+  const rows=Object.values(m).sort((a,b)=>b.sessions-a.sessions);
+  $("campTbl").innerHTML=rows.length?`<tr><th>캠페인</th><th>방문</th><th>팝업</th><th>카톡</th></tr>`+rows.map(r=>`<tr><td><i class="dot" style="background:${col(r.s)};margin-right:6px"></i>${esc(r.c)}<small style="color:var(--muted);margin-left:4px">${esc(SRC[r.s]||r.s)}</small></td><td>${fmt(r.sessions)}</td><td>${fmt(r.popup_opens)}</td><td>${fmt(r.kakao_clicks)}</td></tr>`).join(""):`<tr><td class="empty">아직 꼬리표 달린 방문이 없습니다.</td></tr>`;
+}
+
+function renderAds(ads){
+  const m={};
+  ads.forEach(r=>{const o=m[r.ad]||(m[r.ad]={ad:r.ad,imp:0,clk:0,re:0,sp:0,days:new Set()});o.imp+=num(r.impressions);o.clk+=num(r.clicks);o.re+=num(r.reactions);o.sp+=num(r.spend);o.days.add(String(r.date).slice(0,10))});
+  const rows=Object.values(m).sort((a,b)=>b.imp-a.imp);
+  const ctr=r=>r.imp?r.clk/r.imp:0,cpc=r=>r.clk?r.sp/r.clk:Infinity;
+  const bestCtr=Math.max(...rows.map(ctr)),bestCpc=Math.min(...rows.map(cpc));
+  const T=rows.reduce((a,r)=>({imp:a.imp+r.imp,clk:a.clk+r.clk,re:a.re+r.re,sp:a.sp+r.sp}),{imp:0,clk:0,re:0,sp:0});
+  $("adTbl").innerHTML=rows.length?`<tr><th>광고</th><th>노출</th><th>클릭</th><th>클릭률</th><th>반응</th><th>비용</th><th>클릭당</th></tr>`+rows.map(r=>`<tr><td>${esc(r.ad)}</td><td>${fmt(r.imp)}</td><td>${fmt(r.clk)}</td><td class="${rows.length>1&&ctr(r)===bestCtr&&r.clk?"best":""}">${pctS(r.clk,r.imp)}</td><td>${fmt(r.re)}</td><td>${fmt(r.sp)}</td><td class="${rows.length>1&&cpc(r)===bestCpc&&r.clk?"best":""}">${r.clk?fmt(r.sp/r.clk):"–"}</td></tr>`).join("")+`<tr><td><b>합계</b></td><td>${fmt(T.imp)}</td><td>${fmt(T.clk)}</td><td>${pctS(T.clk,T.imp)}</td><td>${fmt(T.re)}</td><td>${fmt(T.sp)}</td><td>${T.clk?fmt(T.sp/T.clk):"–"}</td></tr>`:`<tr><td class="empty">이 기간에 입력된 광고 숫자가 없습니다.</td></tr>`;
+  $("adNote").textContent=rows.length>1?"초록 글씨 = 가장 나은 광고":"";
+  const names=[...new Set(S.ads.map(r=>r.ad))];
+  $("adNames").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");
+  const list=[...S.ads].sort((a,b)=>String(b.date).localeCompare(String(a.date)));
+  $("adList").innerHTML=list.map((r,i)=>`<div class="item"><span class="d">${esc(String(r.date).slice(5,10).replace("-","/"))}</span><span>${esc(r.ad)}<small>노출 ${fmt(r.impressions)} · 클릭 ${fmt(r.clicks)} · 반응 ${fmt(r.reactions)} · ${fmt(r.spend)}원</small></span><button class="x" data-del-ad="${i}" aria-label="삭제">삭제</button></div>`).join("");
+  $("adList").onclick=async e=>{const b=e.target.closest("[data-del-ad]");if(!b)return;const r=list[+b.dataset.delAd];if(!confirmOnce(b))return;
+    try{await api("deleteAd",{row:{date:String(r.date).slice(0,10),ad:r.ad}});S.ads=S.ads.filter(x=>x!==r);render();toast("삭제했습니다")}catch(err){toast(err.message)}};
+}
+function confirmOnce(b){if(b.dataset.armed){return true}b.dataset.armed="1";b.textContent="한 번 더 누르면 삭제";setTimeout(()=>{if(b.isConnected){delete b.dataset.armed;b.textContent="삭제"}},3000);return false}
+
+$("adF").addEventListener("submit",async e=>{
+  e.preventDefault();const f=new FormData(e.target);
+  const row={date:f.get("date"),ad:String(f.get("ad")).trim(),impressions:num(f.get("impressions")),clicks:num(f.get("clicks")),reactions:num(f.get("reactions")),spend:num(f.get("spend"))};
+  try{await api("saveAd",{row});S.ads=S.ads.filter(x=>!(String(x.date).slice(0,10)===row.date&&x.ad===row.ad));S.ads.push(row);
+    e.target.reset();e.target.date.value=row.date;e.target.reactions.value=0;render();toast("저장했습니다")}catch(err){toast(err.message)}
+});
+
+function renderInq(){
+  $("inqSource").innerHTML=SRC_ORDER.filter(s=>s!=="other").map(s=>`<option value="${s}">${SRC[s]}</option>`).join("")+`<option value="other">기타·모름</option>`;
+  const list=[...S.inq].sort((a,b)=>String(b.date).localeCompare(String(a.date))||String(b.id).localeCompare(String(a.id)));
+  $("inqList").innerHTML=list.length?list.map((r,i)=>`<div class="item"><span class="d">${esc(String(r.date).slice(5,10).replace("-","/"))}</span><span><i class="dot" style="background:${col(r.source)};margin-right:6px"></i>${esc(SRC[r.source]||"기타")} · ${esc(r.channel)}<span class="tag${r.status==="계약"?" done":""}">${esc(r.status)}</span>${r.note?`<small>${esc(r.note)}</small>`:""}</span><button class="x" data-del-inq="${i}">삭제</button></div>`).join(""):`<p class="empty">아직 기록이 없습니다.</p>`;
+  $("inqList").onclick=async e=>{const b=e.target.closest("[data-del-inq]");if(!b)return;const r=list[+b.dataset.delInq];if(!confirmOnce(b))return;
+    try{await api("deleteInquiry",{row:{id:r.id}});S.inq=S.inq.filter(x=>x!==r);render();toast("삭제했습니다")}catch(err){toast(err.message)}};
+}
+$("inqF").addEventListener("submit",async e=>{
+  e.preventDefault();const f=new FormData(e.target);
+  const row={date:f.get("date"),channel:f.get("channel"),source:f.get("source"),note:String(f.get("note")||"").trim(),status:f.get("status")};
+  try{const j=await api("saveInquiry",{row});S.inq.push(j.row||row);e.target.note.value="";render();toast("추가했습니다")}catch(err){toast(err.message)}
+});
+
+$("adF").date.value=today();$("inqF").date.value=today();
+applyPreset(S.days==="custom"?0:+S.days);
+let rzT;addEventListener("resize",()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(!$("main").hidden)renderTrend()},200)});
+load();
+</script>
+</body>
+</html>
