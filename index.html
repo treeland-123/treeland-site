@@ -1058,6 +1058,16 @@ dialog.lb{z-index:50}
 .lb .lb-pair img{position:absolute;inset:0;width:100%;height:100%;max-height:none;margin:0;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
 .lb-pair[hidden]{display:none}
 #lbCap{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* estimate → Kakao: paste guide sheet */
+.kq .cc-in{gap:12px}
+.kq-t{font-family:var(--display);font-size:22px;font-weight:600;line-height:1.35;padding-right:36px}
+.kq-steps{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:8px;counter-reset:k}
+.kq-steps li{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:10px;font-size:15px;line-height:1.5}
+.kq-steps li::before{counter-increment:k;content:counter(k);width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:var(--pine);color:#F4F1EA;font-size:12px;font-weight:700}
+.kq-steps b{color:var(--berry)}
+.kq-pre{margin:2px 0 0;max-height:min(30vh,200px);overflow:auto;padding:12px 14px;border:1px dashed #CFC6B2;background:#FFFDF8;font-family:var(--body);font-size:12.5px;line-height:1.6;color:var(--ink);white-space:pre-wrap;word-break:keep-all;-webkit-user-select:text;user-select:text}
+.kq-go{width:100%;min-height:52px;font-size:16px}
+.kq-re{justify-self:center;padding:6px 8px;border:0;background:none;color:var(--muted);font-family:inherit;font-size:13px;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1413,7 +1423,6 @@ dialog.lb{z-index:50}
           </dl>
           <div class="total"><span>예상 합계</span><b class="num" id="rTotal" aria-live="polite"></b><span>부가세 별도 · 최종 금액은 상담 후 확정</span></div>
           <a class="btn btn-kakao" id="copyKakao" href="http://pf.kakao.com/_XqWFX/chat" target="_blank" rel="noopener noreferrer">이 견적으로 카카오톡 상담</a>
-          <p class="sum-note">누르면 견적 내용이 복사됩니다. 상담창에 붙여넣고 공간 사진과 함께 보내주세요.</p>
           <p class="copied" id="copyMsg" role="status"></p>
           <textarea class="copy-out" id="copyOut" readonly hidden aria-label="복사할 견적 내용"></textarea>
         </aside>
@@ -1525,6 +1534,22 @@ dialog.lb{z-index:50}
   </div>
 </dialog>
 
+<dialog class="cc info kq" id="kqDlg" aria-labelledby="kqT">
+  <div class="cc-in">
+    <button type="button" class="cc-x" id="kqX" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    <p class="cc-k">카카오톡 상담</p>
+    <h3 class="kq-t" id="kqT">견적 내용이 복사됐습니다</h3>
+    <ol class="kq-steps">
+      <li><span>카카오톡 상담창이 열리면</span></li>
+      <li><span id="kqPaste">입력칸을 <b>길게 눌러 붙여넣기</b></span></li>
+      <li><span><b>공간 사진</b>을 함께 보내주세요</span></li>
+    </ol>
+    <pre class="kq-pre" id="kqPre" tabindex="0" aria-label="복사된 견적 내용"></pre>
+    <a class="btn btn-kakao kq-go" id="kqGo" href="http://pf.kakao.com/_XqWFX/chat" target="_blank" rel="noopener noreferrer">카카오톡 열기</a>
+    <button type="button" class="kq-re" id="kqRe">복사가 안 됐나요? 다시 복사</button>
+    <img class="cc-mono" src="img/logo-mark.png" alt="" aria-hidden="true">
+  </div>
+</dialog>
 <dialog class="cc" id="ccDlg" aria-labelledby="ccT">
   <div class="cc-in">
     <button type="button" class="cc-x" id="ccClose" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
@@ -2162,11 +2187,34 @@ dialog.lb{z-index:50}
   }, { rootMargin: '-35% 0px -35% 0px' }).observe($('#estimate'));
   function copyNow(text) { let ok = false; try { const t = document.createElement('textarea'); t.value = text; t.setAttribute('readonly', ''); t.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px'; document.body.appendChild(t); t.select(); t.setSelectionRange(0, text.length); ok = document.execCommand('copy'); t.remove(); } catch (e) {} try { navigator.clipboard.writeText(text).catch(() => {}); ok = true; } catch (e) {} return ok; }
   function toast(msg) { let el = document.getElementById('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); } el.textContent = msg; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2600); }
-  barBtn.addEventListener('click', () => { if (!inEst) return; const ok = copyNow(quoteText()); toast(ok ? '견적 내용을 복사했습니다. 상담창에 붙여넣어 주세요.' : '복사가 되지 않았습니다. 견적 금액 아래 버튼을 이용해 주세요.'); });
-  $('#copyKakao').addEventListener('click', () => {
-    const text = quoteText(); copyNow(text);
-    copy(text, $('#copyMsg'), '견적 내용을 복사했습니다. 열린 상담창에 붙여넣어 주세요.', $('#copyOut'));
+  // "이 견적으로 상담": copy first, then a sheet that explains pasting before Kakao opens
+  const kq = $('#kqDlg'), kqT = $('#kqT'), kqPre = $('#kqPre');
+  const coarse = matchMedia('(pointer: coarse)').matches, mac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+  if (!coarse) $('#kqPaste').innerHTML = '입력칸에 <b>붙여넣기</b> (' + (mac ? '⌘' : 'Ctrl') + ' + V)';
+  let kqBack = null;
+  function kqCopy(text) {
+    const ok = copyNow(text);
+    kqT.textContent = ok ? '견적 내용이 복사됐습니다' : '아래 견적 내용을 복사해 주세요';
+    if (!ok && navigator.clipboard) navigator.clipboard.writeText(text).then(() => { kqT.textContent = '견적 내용이 복사됐습니다'; }, () => {
+      const r = document.createRange(); r.selectNodeContents(kqPre); const sl = getSelection(); sl.removeAllRanges(); sl.addRange(r);
+    });
+  }
+  function openKq(e, from) {
+    if (!kq.showModal) { copyNow(quoteText()); return; }
+    e.preventDefault(); kqBack = from;
+    const text = quoteText(); kqPre.textContent = text; kqCopy(text);
+    kq.showModal();
+  }
+  barBtn.addEventListener('click', e => { if (inEst) openKq(e, barBtn); });
+  $('#copyKakao').addEventListener('click', e => openKq(e, $('#copyKakao')));
+  $('#kqRe').addEventListener('click', () => {
+    const b = $('#kqRe'); kqCopy(kqPre.textContent);
+    setTimeout(() => { b.textContent = kqT.textContent === '견적 내용이 복사됐습니다' ? '다시 복사했습니다' : '위 내용을 길게 눌러 복사해 주세요'; clearTimeout(b._t); b._t = setTimeout(() => { b.textContent = '복사가 안 됐나요? 다시 복사'; }, 2500); }, 60);
   });
+  $('#kqGo').addEventListener('click', () => setTimeout(() => kq.close(), 400));
+  $('#kqX').addEventListener('click', () => kq.close());
+  kq.addEventListener('click', e => { if (e.target === kq) kq.close(); });
+  kq.addEventListener('close', () => { if (kqBack && kqBack.isConnected) kqBack.focus({ preventScroll: true }); });
   document.querySelectorAll('.ch-copy[data-copy]').forEach(btn => btn.addEventListener('click', () => {
     const v = document.getElementById(btn.dataset.copy).textContent, label = btn.textContent;
     navigator.clipboard.writeText(v).then(() => { btn.textContent = '복사됨'; }, () => {
