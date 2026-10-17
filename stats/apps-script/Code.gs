@@ -80,7 +80,8 @@ function gaRows(start, end) {
 
 function normSource(src, medium) {
   const s = String(src || '').toLowerCase(), m = String(medium || '').toLowerCase();
-  if (['daangn', 'instagram', 'card', 'proposal', 'kakao', 'naver_store', 'company_profile'].indexOf(s) > -1) return s;
+  if (['daangn', 'instagram', 'card', 'proposal', 'kakao', 'naver_store', 'company_profile', 'blog'].indexOf(s) > -1) return s;
+  if (/blog\.naver|blog\.me|tistory|brunch/.test(s)) return 'blog';
   if (s === '(direct)') return 'direct';
   if (s.indexOf('instagram') > -1) return 'instagram';
   if (s.indexOf('daangn') > -1 || s.indexOf('karrot') > -1) return 'daangn';

@@ -19,7 +19,7 @@ body{margin:0}
   --pine:#1f4a3a; --pine-soft:#e7efe9; --brass:#a8823a; --brass-soft:#f4ecdc;
   --bad:#a6402f; --bad-soft:#f7e6e2;
   --s-daangn:#eb6834; --s-instagram:#e87ba4; --s-card:#2a78d6; --s-proposal:#1baf7a;
-  --s-kakao:#eda100; --s-naver_store:#008300; --s-company_profile:#6250d6; --s-search:#e34948;
+  --s-kakao:#eda100; --s-blog:#008300; --s-naver_store:#a8823a; --s-company_profile:#6250d6; --s-search:#e34948;
   --s-direct:#8c948f; --s-other:#b9bfba;
   --f-display:"Gowun Batang","Nanum Myeongjo",serif;
   --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
@@ -30,14 +30,14 @@ body{margin:0}
   --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
   --bad:#e58b78; --bad-soft:#2f1f1b;
   --s-daangn:#d95926; --s-instagram:#d55181; --s-card:#3987e5; --s-proposal:#199e70;
-  --s-kakao:#c98500; --s-naver_store:#008300; --s-company_profile:#9085e9; --s-search:#e66767;
+  --s-kakao:#c98500; --s-blog:#008300; --s-naver_store:#d3ae66; --s-company_profile:#9085e9; --s-search:#e66767;
   --s-direct:#7b847f; --s-other:#555d58; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f; --grid:#232a26;
   --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c;
   --bad:#e58b78; --bad-soft:#2f1f1b;
   --s-daangn:#d95926; --s-instagram:#d55181; --s-card:#3987e5; --s-proposal:#199e70;
-  --s-kakao:#c98500; --s-naver_store:#008300; --s-company_profile:#9085e9; --s-search:#e66767;
+  --s-kakao:#c98500; --s-blog:#008300; --s-naver_store:#d3ae66; --s-company_profile:#9085e9; --s-search:#e66767;
   --s-direct:#7b847f; --s-other:#555d58; color-scheme:dark}
 
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
@@ -259,7 +259,7 @@ details[open] summary{margin-bottom:12px}
 <script>
 const ENDPOINT="https://script.google.com/macros/s/AKfycbxWKsBAM0X_VcJ5bAJ70UXVw20T7HpsPfKtDM8phFKBry_EL84-IZTcXAG7tvuUTqxt/exec";
 const DATA_START="2026-10-17";
-const SRC={daangn:"당근",instagram:"인스타",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
+const SRC={daangn:"당근",blog:"블로그",instagram:"인스타",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
 const SRC_ORDER=Object.keys(SRC);
 const AD_COLORS=["var(--s-card)","var(--s-proposal)","var(--s-company_profile)","var(--s-instagram)","var(--s-kakao)"];
 const METRICS=[
