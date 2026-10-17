@@ -17,3 +17,8 @@
 - 가비아 DNS의 TXT 레코드 2개(GitHub Pages 인증, 구글 서치콘솔 인증)
 - `build/head_prefix.html`의 `naver-site-verification` 메타 태그(네이버 서치어드바이저 인증)
 - `CNAME` 파일
+- `build/head_prefix.html`의 Google 애널리틱스(GA4) 태그 `G-V50XVDJ6WZ`와 문의 버튼 클릭 추적 스크립트(kakao_click·phone_click·email_click·instagram_click·company_pdf_click). 2026-10-17 추가.
+
+## 유입 경로 꼬리표(UTM)
+- 당근 비즈프로필 홈페이지 링크: `https://treeland.kr/?utm_source=daangn&utm_medium=bizprofile&utm_campaign=2026_earlybird`
+- GA4 → 보고서 → 획득 → 트래픽 획득에서 세션 소스 `daangn`으로 확인
