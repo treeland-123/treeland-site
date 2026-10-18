@@ -11,7 +11,8 @@
     "contact": "인스타 @cafe.20boon · 02-6371-3068",
     "page": "/p/cafe20boon/",
     "pdf": "/p/cafe20boon/treeland-cafe20boon.pdf",
-    "canvas": "https://claude.ai/artifact/G4W2QFBzoErBMHRjQiuvrm"
+    "canvas": "https://claude.ai/artifact/G4W2QFBzoErBMHRjQiuvrm",
+    "sian": "/p/cafe20boon/sian-cafe20boon.jpg"
   },
   {
     "name": "카페그랑주",
@@ -25,7 +26,8 @@
     "page": "/p/grange_hongdae/",
     "pdf": "/p/grange_hongdae/treeland-grange.pdf",
     "canvas": "https://claude.ai/artifact/D1Vk2JwnBzLaaiR4o8VPeY",
-    "place": "입구 계단"
+    "place": "입구 계단",
+    "sian": "/p/grange_hongdae/sian-grange.jpg"
   },
   {
     "name": "서울유병원",
@@ -38,7 +40,8 @@
     "contact": "",
     "page": "",
     "pdf": "",
-    "canvas": "https://claude.ai/artifact/8G8ifrGT24UD8XMTfyEWU4"
+    "canvas": "https://claude.ai/artifact/8G8ifrGT24UD8XMTfyEWU4",
+    "sian": ""
   },
   {
     "name": "위아르보 성신여대2호점",
@@ -51,6 +54,7 @@
     "contact": "",
     "page": "",
     "pdf": "",
-    "canvas": "https://claude.ai/artifact/YM4A4GqrYjWXh9Qq1CfpcH"
+    "canvas": "https://claude.ai/artifact/YM4A4GqrYjWXh9Qq1CfpcH",
+    "sian": ""
   }
 ]
