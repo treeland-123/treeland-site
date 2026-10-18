@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<meta name="robots" content="noindex,nofollow">
+<title>트리랜드 제안서 목록</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0}
+/* 제안서 목록: 업장별 카드. 발송 링크·DM 문구를 한 번에 복사하는 게 핵심 */
+:root{
+  --bg:#f7f8f5; --paper:#ffffff; --ink:#1d2621; --muted:#6a756e; --line:#e2e6df;
+  --pine:#1f4a3a; --pine-soft:#e7efe9; --brass:#a8823a; --brass-soft:#f4ecdc;
+  --bad:#a6402f;
+  --f-display:"Gowun Batang","Nanum Myeongjo",serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c; --bad:#e58b78; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121614; --paper:#1a201d; --ink:#e8ece8; --muted:#97a29b; --line:#2b332f;
+  --pine:#8cc3a7; --pine-soft:#1f2d27; --brass:#d3ae66; --brass-soft:#2c271c; --bad:#e58b78; color-scheme:dark}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-inline:16px;padding-block:20px 64px;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column;gap:2px}
+.brand small{font-size:11px;letter-spacing:.18em;color:var(--brass);font-weight:600}
+.brand h1{font-family:var(--f-display);font-size:26px;margin:0;letter-spacing:-.01em}
+.links{display:flex;gap:6px;flex-wrap:wrap}
+.links a{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tools input{flex:1;min-width:160px;font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.chip{font:inherit;font-size:13px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--paper);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:var(--paper)}
+.count{font-size:13px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.top h2{margin:0;font-size:18px;font-weight:600}
+.meta{font-size:13px;color:var(--muted)}
+.d{font-family:var(--f-num);font-size:12px;color:var(--muted)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px}
+.tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--pine-soft);color:var(--pine)}
+.tag.none{background:var(--brass-soft);color:var(--brass)}
+.url{font-family:var(--f-num);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;background:var(--pine);color:var(--paper);text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
+.btn.ghost{background:none;color:var(--ink);border:1px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.btn:focus-visible,.chip:focus-visible,input:focus{outline:2px solid var(--pine);outline-offset:1px}
+.note{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);font-size:14px;padding:18px 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand"><small>TREELAND</small><h1>제안서 목록</h1></div>
+    <span class="links"><a href="/admin">계약 관리</a><a href="/schedule">일정표</a><a href="/ledger">장부</a><a href="/stats">통계</a></span>
+  </header>
+
+  <div class="tools">
+    <input id="q" type="search" placeholder="업장명·지역 검색" aria-label="업장명·지역 검색">
+  </div>
+  <div class="tools" id="chips" role="group" aria-label="업종"></div>
+  <div class="count" id="count"></div>
+  <div class="list" id="list"><p class="empty">불러오는 중…</p></div>
+  <p class="note">발송 링크는 검색에 노출되지 않습니다(noindex). 열람·PDF 다운로드·홈페이지 클릭은 GA4 이벤트(proposal_open 등, proposal=업장 코드)로 기록됩니다. 캔버스는 대표님 계정에서만 열립니다.</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const SITE="https://treeland.kr";
+const EARLY_END="2026-10-30"; // 1차 얼리버드 마감. 지나면 DM 문구에서 할인 문장 자동 제외
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2000)}
+const S={items:[],type:"전체",q:""};
+
+function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
+const fullUrl=p=>SITE+p;
+const shortUrl=p=>"treeland.kr"+p.replace(/\/$/,"");
+
+function dmText(it){
+  const size=(it.spec||"").split("·")[0].trim();
+  const place=it.place||"매장";
+  const early=today()<=EARLY_END?"10월 30일까지 예약하시면 1차 얼리버드 15%가 적용되고, ":"";
+  return `(광고) 안녕하세요, 트리랜드입니다. 매장·기관에 크리스마스트리를 대여하고 설치부터 회수까지 맡고 있습니다.
+
+${it.name} ${place}에 맞춰 ${size} 트리 배치 시안과 제안서를 만들어 보았습니다. 아래 링크에서 확인하실 수 있습니다.
+${shortUrl(it.page)}
+
+${early}결제는 설치 완료 후 진행됩니다. 궁금하신 점은 이 DM이나 카카오톡 채널 @트리랜드로 편하게 남겨주세요.
+
+트리랜드 드림`;
+}
+
+async function copy(text,msg){
+  try{await navigator.clipboard.writeText(text)}
+  catch(e){const ta=document.createElement("textarea");ta.value=text;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();try{document.execCommand("copy")}catch(_){ }ta.remove()}
+  toast(msg);
+}
+
+function renderChips(){
+  const types=["전체",...new Set(S.items.map(i=>i.type).filter(Boolean))];
+  $("chips").innerHTML=types.map(t=>`<button type="button" class="chip" data-t="${esc(t)}" aria-pressed="${t===S.type}">${esc(t)}</button>`).join("");
+}
+function render(){
+  const q=S.q.trim().toLowerCase();
+  const rows=S.items.filter(i=>(S.type==="전체"||i.type===S.type)&&(!q||[i.name,i.area,i.campaign].join(" ").toLowerCase().includes(q)));
+  const sent=rows.filter(i=>i.page).length;
+  $("count").textContent=`${rows.length}곳 · 발송 링크 있음 ${sent}곳`;
+  if(!rows.length){$("list").innerHTML='<p class="empty">해당하는 제안서가 없습니다.</p>';return}
+  $("list").innerHTML=rows.map((it,k)=>{
+    const has=!!it.page;
+    return `<article class="card">
+      <div class="top"><h2>${esc(it.name)}</h2><span class="d">${esc(it.date)}</span></div>
+      <div class="row"><span class="tag">${esc(it.type)}</span>${it.area?`<span class="meta">${esc(it.area)}</span>`:""}<span class="meta">${esc(it.spec)} · ${esc(it.price)}</span>${has?"":'<span class="tag none">발송 링크 없음</span>'}</div>
+      ${it.contact?`<div class="meta">${esc(it.contact)}</div>`:""}
+      ${has?`<div class="url">${esc(shortUrl(it.page))}</div>`:""}
+      <div class="btns">
+        <button type="button" class="btn" data-a="link" data-k="${k}" ${has?"":"disabled"}>링크 복사</button>
+        <button type="button" class="btn ghost" data-a="dm" data-k="${k}" ${has?"":"disabled"}>DM 문구 복사</button>
+        ${has?`<a class="btn ghost" href="${esc(it.page)}" target="_blank" rel="noopener">열어 보기</a>`:""}
+        ${it.pdf?`<a class="btn ghost" href="${esc(it.pdf)}" download>PDF</a>`:""}
+        ${it.canvas?`<a class="btn ghost" href="${esc(it.canvas)}" target="_blank" rel="noopener">편집 캔버스</a>`:""}
+      </div>
+    </article>`;
+  }).join("");
+  $("list").onclick=e=>{
+    const b=e.target.closest("button[data-a]");if(!b)return;
+    const it=rows[+b.dataset.k];
+    if(b.dataset.a==="link")copy(fullUrl(it.page),"링크를 복사했습니다");
+    else copy(dmText(it),"DM 문구를 복사했습니다");
+  };
+}
+$("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;S.type=b.dataset.t;renderChips();render()};
+$("q").oninput=e=>{S.q=e.target.value;render()};
+
+fetch("/p/proposals.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{
+  S.items=d.sort((a,b)=>String(b.date).localeCompare(String(a.date)));renderChips();render();
+}).catch(()=>{$("list").innerHTML='<p class="empty">목록을 불러오지 못했습니다. 새로고침해 주세요.</p>'});
+</script>
+</body>
+</html>

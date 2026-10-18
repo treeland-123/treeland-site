@@ -8,4 +8,5 @@ Disallow: /schedule/
 Disallow: /ledger/
 Disallow: /stats/
 Disallow: /p/
+Disallow: /proposals/
 Sitemap: https://treeland.kr/sitemap.xml

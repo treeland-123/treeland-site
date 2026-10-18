@@ -1,0 +1,55 @@
+[
+  {
+    "name": "카페20BOON",
+    "type": "카페",
+    "area": "홍대",
+    "campaign": "cafe20boon",
+    "place": "홀",
+    "date": "2026-10-18",
+    "spec": "2.9m · 레드&골드",
+    "price": "1,275,000원",
+    "contact": "인스타 @cafe.20boon · 02-6371-3068",
+    "page": "/p/cafe20boon/",
+    "pdf": "/p/cafe20boon/treeland-cafe20boon.pdf",
+    "canvas": "https://claude.ai/artifact/G4W2QFBzoErBMHRjQiuvrm"
+  },
+  {
+    "name": "카페그랑주",
+    "type": "카페",
+    "area": "홍대",
+    "campaign": "grange_hongdae",
+    "date": "2026-10-18",
+    "spec": "2.3m · 레드&골드",
+    "price": "680,000원",
+    "contact": "02-325-3131",
+    "page": "",
+    "pdf": "",
+    "canvas": "https://claude.ai/artifact/D1Vk2JwnBzLaaiR4o8VPeY"
+  },
+  {
+    "name": "서울유병원",
+    "type": "병원",
+    "area": "",
+    "campaign": "seoul_yu",
+    "date": "2026-10-17",
+    "spec": "2.3m · 레드&골드",
+    "price": "680,000원",
+    "contact": "",
+    "page": "",
+    "pdf": "",
+    "canvas": "https://claude.ai/artifact/8G8ifrGT24UD8XMTfyEWU4"
+  },
+  {
+    "name": "위아르보 성신여대2호점",
+    "type": "미용실",
+    "area": "성신여대",
+    "campaign": "wearbo_sungshin2",
+    "date": "2026-10-16",
+    "spec": "1.95m 슬림 · 네이비&골드",
+    "price": "500,000원",
+    "contact": "",
+    "page": "",
+    "pdf": "",
+    "canvas": "https://claude.ai/artifact/YM4A4GqrYjWXh9Qq1CfpcH"
+  }
+]
