@@ -1,5 +1,20 @@
 [
   {
+    "name": "에이닐",
+    "type": "카페",
+    "area": "홍대",
+    "campaign": "aynil_hongdae",
+    "place": "창가",
+    "date": "2026-10-18",
+    "spec": "1.95m 슬림 · 레드&골드",
+    "price": "500,000원",
+    "contact": "인스타 @a_ynil · 010-3177-2703",
+    "page": "/p/aynil_hongdae/",
+    "pdf": "/p/aynil_hongdae/treeland-aynil.pdf",
+    "sian": "/p/aynil_hongdae/sian-aynil.jpg",
+    "canvas": "https://claude.ai/artifact/62NkYm2z5BeZGk3EZysxrG"
+  },
+  {
     "name": "카페20BOON",
     "type": "카페",
     "area": "홍대",
