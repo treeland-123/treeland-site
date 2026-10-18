@@ -49,6 +49,8 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
 .d{font-family:var(--f-num);font-size:12px;color:var(--muted)}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px}
 .tag{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--pine-soft);color:var(--pine)}
+.tag.sent{background:var(--line);color:var(--muted)}
+.card.is-sent{opacity:.7}
 .tag.none{background:var(--brass-soft);color:var(--brass)}
 .url{font-family:var(--f-num);font-size:13px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;overflow-wrap:anywhere;user-select:all}
 .btns{display:flex;gap:8px;flex-wrap:wrap}
@@ -72,9 +74,10 @@ header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-be
     <input id="q" type="search" placeholder="업장명·지역 검색" aria-label="업장명·지역 검색">
   </div>
   <div class="tools" id="chips" role="group" aria-label="업종"></div>
+  <div class="tools"><button type="button" class="chip" id="showSent" aria-pressed="false">보낸 곳도 보기</button></div>
   <div class="count" id="count"></div>
   <div class="list" id="list"><p class="empty">불러오는 중…</p></div>
-  <p class="note">발송 링크는 검색에 노출되지 않습니다(noindex). 열람·PDF 다운로드·홈페이지 클릭은 GA4 이벤트(proposal_open 등, proposal=업장 코드)로 기록됩니다. 캔버스는 대표님 계정에서만 열립니다.</p>
+  <p class="note">발송 링크는 검색에 노출되지 않습니다(noindex). 열람·PDF 다운로드·홈페이지 클릭은 GA4 이벤트(proposal_open 등, proposal=업장 코드)로 기록됩니다. 캔버스는 대표님 계정에서만 열립니다. "보냄 처리"는 이 기기 브라우저에 저장됩니다.</p>
 </div>
 <div class="toast" id="toast" hidden></div>
 
@@ -84,7 +87,12 @@ const EARLY_END="2026-10-30"; // 1차 얼리버드 마감. 지나면 DM 문구�
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2000)}
-const S={items:[],type:"전체",q:""};
+const S={items:[],type:"전체",q:"",showSent:false};
+// 보낸 곳 기록: 이 기기 브라우저에 저장(campaign → 보낸 날짜). proposals.json의 "sent" 값도 보낸 곳으로 침
+const loadSent=()=>{try{return JSON.parse(localStorage.getItem("tl_sent")||"{}")}catch(e){return {}}};
+const saveSent=v=>{try{localStorage.setItem("tl_sent",JSON.stringify(v))}catch(e){}};
+let SENT=loadSent();
+const sentOf=it=>SENT[it.campaign]||it.sent||"";
 
 function today(){const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)}
 const fullUrl=p=>SITE+p;
@@ -116,15 +124,18 @@ function renderChips(){
 }
 function render(){
   const q=S.q.trim().toLowerCase();
-  const rows=S.items.filter(i=>(S.type==="전체"||i.type===S.type)&&(!q||[i.name,i.area,i.campaign].join(" ").toLowerCase().includes(q)));
-  const sent=rows.filter(i=>i.page).length;
-  $("count").textContent=`${rows.length}곳 · 발송 링크 있음 ${sent}곳`;
+  const base=S.items.filter(i=>(S.type==="전체"||i.type===S.type)&&(!q||[i.name,i.area,i.campaign].join(" ").toLowerCase().includes(q)));
+  const sentN=base.filter(i=>sentOf(i)).length;
+  const rows=S.showSent?base:base.filter(i=>!sentOf(i));
+  $("showSent").textContent=S.showSent?`보낸 곳 숨기기 (${sentN})`:`보낸 곳도 보기 (${sentN})`;
+  $("showSent").setAttribute("aria-pressed",S.showSent);
+  $("count").textContent=`보낼 곳 ${base.length-sentN}곳 · 보낸 곳 ${sentN}곳`;
   if(!rows.length){$("list").innerHTML='<p class="empty">해당하는 제안서가 없습니다.</p>';return}
   $("list").innerHTML=rows.map((it,k)=>{
-    const has=!!it.page;
-    return `<article class="card">
+    const has=!!it.page,sd=sentOf(it);
+    return `<article class="card${sd?" is-sent":""}">
       <div class="top"><h2>${esc(it.name)}</h2><span class="d">${esc(it.date)}</span></div>
-      <div class="row"><span class="tag">${esc(it.type)}</span>${it.area?`<span class="meta">${esc(it.area)}</span>`:""}<span class="meta">${esc(it.spec)} · ${esc(it.price)}</span>${has?"":'<span class="tag none">발송 링크 없음</span>'}</div>
+      <div class="row"><span class="tag">${esc(it.type)}</span>${it.area?`<span class="meta">${esc(it.area)}</span>`:""}<span class="meta">${esc(it.spec)} · ${esc(it.price)}</span>${has?"":'<span class="tag none">발송 링크 없음</span>'}${sd?`<span class="tag sent">보냄 ${esc(sd)}</span>`:""}</div>
       ${it.contact?`<div class="meta">${esc(it.contact)}</div>`:""}
       ${has?`<div class="url">${esc(shortUrl(it.page))}</div>`:""}
       <div class="btns">
@@ -133,17 +144,24 @@ function render(){
         ${has?`<a class="btn ghost" href="${esc(it.page)}" target="_blank" rel="noopener">열어 보기</a>`:""}
         ${it.pdf?`<a class="btn ghost" href="${esc(it.pdf)}" download>PDF</a>`:""}
         ${it.canvas?`<a class="btn ghost" href="${esc(it.canvas)}" target="_blank" rel="noopener">편집 캔버스</a>`:""}
+        <button type="button" class="btn ghost" data-a="sent" data-k="${k}">${sd?"보냄 취소":"보냄 처리"}</button>
       </div>
     </article>`;
   }).join("");
   $("list").onclick=e=>{
     const b=e.target.closest("button[data-a]");if(!b)return;
     const it=rows[+b.dataset.k];
+    if(b.dataset.a==="sent"){
+      if(SENT[it.campaign]){delete SENT[it.campaign];toast(`${it.name} 보냄 취소`)}
+      else{SENT[it.campaign]=today();toast(`${it.name} 보냄 처리 · 목록에서 숨김`)}
+      saveSent(SENT);render();return;
+    }
     if(b.dataset.a==="link")copy(fullUrl(it.page),"링크를 복사했습니다");
     else copy(dmText(it),"DM 문구를 복사했습니다");
   };
 }
 $("chips").onclick=e=>{const b=e.target.closest(".chip");if(!b)return;S.type=b.dataset.t;renderChips();render()};
+$("showSent").onclick=()=>{S.showSent=!S.showSent;render()};
 $("q").oninput=e=>{S.q=e.target.value;render()};
 
 fetch("/p/proposals.json",{cache:"no-store"}).then(r=>r.json()).then(d=>{
