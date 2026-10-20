@@ -259,7 +259,7 @@ details[open] summary{margin-bottom:12px}
 <script>
 const ENDPOINT="https://script.google.com/macros/s/AKfycbxWKsBAM0X_VcJ5bAJ70UXVw20T7HpsPfKtDM8phFKBry_EL84-IZTcXAG7tvuUTqxt/exec";
 const DATA_START="2026-10-17";
-const SRC={daangn:"당근",blog:"블로그",instagram:"인스타",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
+const SRC={daangn:"당근",blog:"블로그",instagram:"인스타·페북",card:"명함 QR",proposal:"제안서",kakao:"카톡 채널",naver_store:"스마트스토어",company_profile:"회사소개서",search:"검색",direct:"직접 방문",other:"기타"};
 const SRC_ORDER=Object.keys(SRC);
 const AD_COLORS=["var(--s-card)","var(--s-proposal)","var(--s-company_profile)","var(--s-instagram)","var(--s-kakao)"];
 const METRICS=[
@@ -300,7 +300,9 @@ async function load(){
   status("불러오는 중…");
   try{
     const j=await api("load",{start:DATA_START,end:today()});
-    S.ga=j.ga||[];S.ads=j.ads||[];S.inq=j.inquiries||[];
+    /* 인스타 자체 링크 꼬리표(utm_source=ig)와 인스타·페북 앱 안 브라우저(facebook.com 추천)는 서버에서 '기타'로 와서 여기서 인스타로 묶음 */
+    S.ga=(j.ga||[]).map(r=>r.source==="other"&&/^(ig|fb)$|instagram|facebook/i.test(r.source_raw||"")?Object.assign({},r,{source:"instagram"}):r);
+    S.ads=j.ads||[];S.inq=j.inquiries||[];
     $("pinBox").hidden=true;$("main").hidden=false;
     status(j.gaError?"GA 데이터를 읽지 못했습니다: "+j.gaError:"");
     $("updated").textContent="GA 숫자는 보통 몇 시간 늦게 들어옵니다. 마지막 불러옴 "+new Date(j.updatedAt).toLocaleString("ko-KR");
