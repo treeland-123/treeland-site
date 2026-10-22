@@ -173,7 +173,8 @@ a.hdr-ico{text-decoration:none}
 
 /* cases */
 .cases{background:var(--surface)}
-.featured{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin-bottom:40px}
+.featured{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-bottom:40px}
+@media (max-width:900px){.featured{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .ba{margin:0;display:grid;gap:10px;min-width:0}
 .ba-frame{position:relative;aspect-ratio:3/4;overflow:hidden;background:var(--line)}
 .ba-frame img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
