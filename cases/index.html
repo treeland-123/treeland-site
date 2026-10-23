@@ -1092,6 +1092,99 @@ dialog.lb{z-index:50}
 .ft-links a{color:var(--muted);text-underline-offset:3px}
 .ft-links a:hover{color:var(--ink)}
 
+/* props: strip under tree intro + toc link */
+.props-strip{padding-block:8px 64px}
+.ps-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:860px}
+.ps-it{display:grid;gap:6px;padding:0;border:0;background:none;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink);min-width:0}
+.ps-it img{width:100%;aspect-ratio:3/4;object-fit:cover;background:#fff;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.ps-it span{font-size:14px;font-weight:600}
+.ps-it:hover img{transform:scale(1.02)}
+.ps-it img[src*="prop-lamp"]{object-position:50% 20%}
+.ps-more{display:inline-flex;align-items:center;gap:6px;margin-top:16px;min-height:44px;padding:8px 16px;border:1px solid var(--pine);background:transparent;color:var(--pine);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:2px}
+.ps-more span{font-size:18px;line-height:1}
+@media (max-width:640px){.props-strip{padding-block:0 48px}.ps-row{gap:6px}.ps-it span{font-size:12px;letter-spacing:-.02em}.ps-more{width:100%;justify-content:center}
+  .toc a{padding:0 4px;font-size:13.5px;letter-spacing:-.02em}.toc a::after{left:4px;right:4px}}
+
+/* ===== shorter page on phones (2026-10-23) ===== */
+.ft-tabs,.dt-tabs,.sg-open,.ct-more{display:none}
+@media (max-width:640px){
+  /* 1. featured cases: one at a time with place tabs */
+  .ft-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 calc(var(--gutter)*-1) 12px;padding:0 var(--gutter)}
+  .ft-tabs::-webkit-scrollbar{display:none}
+  .ft-tabs button,.dt-tabs button{flex:none;min-height:38px;padding:6px 12px;border:1px solid var(--line);background:var(--paper);color:var(--muted);font-family:inherit;font-size:13.5px;font-weight:600;border-radius:999px;cursor:pointer;white-space:nowrap}
+  .ft-tabs button[aria-selected="true"],.dt-tabs button[aria-selected="true"]{background:var(--pine);border-color:var(--pine);color:#F4F1EA}
+  .ft-tabs:empty{display:none}
+  .featured.ft-on>.ba:not(.is-cur){display:none}
+  .featured.ft-on{gap:0}
+  /* 2. size guide in a popup */
+  .price-sec .sguide:not(.in-dlg){display:none}
+  .sg-open{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;margin:0 0 28px;padding:14px 16px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;border-radius:2px}
+  .sg-open span:first-child{display:grid;gap:2px}
+  .sg-open b{font-size:15px}
+  .sg-open small{font-size:12.5px;color:var(--muted)}
+  .sg-open>span:last-child{font-size:22px;color:var(--muted);line-height:1}
+  #sgBody .sguide{margin:0;padding:6px 0 0;border:0}
+  /* 3. leaf / ornament / light as tabs */
+  .dt-tabs{display:flex;gap:6px;margin:-12px 0 16px}
+  .dt-tabs button{flex:1}
+  #detail[data-t="0"] .detail>figure:nth-child(2),#detail[data-t="1"] .detail>figure:nth-child(1),#detail[data-t="2"] .detail{display:none}
+  #detail[data-t]{padding-bottom:40px}
+  #detail[data-t]:not([data-t="2"])+#light{display:none}
+  #detail[data-t="2"]{padding-bottom:0}
+  #detail[data-t="2"]+#light{background:var(--paper);padding-top:4px}
+  #detail[data-t="2"]+#light .sec-head h2{font-size:20px}
+  /* 4. contact checklists folded */
+  .ct-more{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:48px;padding:0 16px;border:1px solid color-mix(in srgb,var(--on-pine) 30%,transparent);background:transparent;color:var(--on-pine);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;border-radius:2px}
+  .ct-more span{font-size:20px;line-height:1}
+  .ct-more[aria-expanded="true"] span{transform:rotate(45deg)}
+  .contact .ct-more[aria-expanded="false"]+.ct-grid{display:none}
+  .contact .wrap{gap:24px}
+  /* process: compact single column */
+  .steps{grid-template-columns:minmax(0,1fr);gap:0}
+  .steps li{grid-template-columns:22px minmax(0,1fr);column-gap:10px;row-gap:2px;padding:12px 0;border-top:1px solid var(--line)}
+  .steps li:first-child{border-top:2px solid var(--ink)}
+  .steps li::before{grid-row:span 2}
+  .steps b{font-size:16px}
+  .steps span{font-size:14px}
+}
+
+/* ===== motion: tabs, panels, popups (2026-10-23) ===== */
+@media (max-width:640px){
+  .dt-tabs{position:relative;gap:0;padding:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px}
+  .dt-tabs button{position:relative;z-index:1;border:0!important;background:transparent!important;transition:color .3s ease}
+  .dt-tabs button[aria-selected="true"]{color:#F4F1EA}
+  .ft-tabs{position:relative}
+  .ft-tabs button{position:relative;z-index:1;transition:color .3s ease,border-color .3s ease}
+  .ft-tabs.has-ind button[aria-selected="true"]{background:transparent;border-color:transparent}
+  .tab-ind{position:absolute;z-index:0;top:0;left:0;height:0;border-radius:999px;background:var(--pine);box-shadow:0 2px 8px rgba(31,61,48,.22);transition:transform .45s cubic-bezier(.3,.8,.2,1),width .45s cubic-bezier(.3,.8,.2,1);pointer-events:none}
+}
+@media (prefers-reduced-motion:no-preference){
+  .tab-in{animation:tabIn .55s cubic-bezier(.2,.7,.2,1) both}
+  .tab-in .pair-labels,.tab-in figcaption,#light.tab-in .lcol{animation:tabIn .6s cubic-bezier(.2,.7,.2,1) both}
+  .tab-in figcaption{animation-delay:.08s}
+  #light.tab-in .lcol:nth-child(2){animation-delay:.1s}
+  #light.tab-in .led-count{animation:tabIn .6s .05s cubic-bezier(.2,.7,.2,1) both}
+  .ba.tab-in .ba-knob{animation:knobHint 1.4s .35s cubic-bezier(.4,0,.2,1) both}
+  .contact .ct-more[aria-expanded="true"]+.ct-grid .ct-list li{animation:tabIn .5s cubic-bezier(.2,.7,.2,1) both}
+  .contact .ct-grid .ct-list li:nth-child(2){animation-delay:.05s}
+  .contact .ct-grid .ct-list li:nth-child(3){animation-delay:.1s}
+  .contact .ct-grid .ct-list li:nth-child(4){animation-delay:.15s}
+  .ct-more span{transition:transform .35s cubic-bezier(.3,.8,.2,1)}
+  .sguide.grow .sg>g:not(.sg-person){transform-box:fill-box;transform-origin:50% 100%;animation:sgGrow .8s cubic-bezier(.2,.8,.2,1) both}
+  .sguide.grow .sg>g:not(.sg-person):nth-of-type(3){animation-delay:.12s}
+  .sguide.grow .sg>g:not(.sg-person):nth-of-type(4){animation-delay:.24s}
+  .sguide.grow .sg>g:not(.sg-person):nth-of-type(5){animation-delay:.36s}
+  .sguide.grow .sg-h,.sguide.grow .sg-tag{animation:fadeUp .5s .7s ease both}
+  .ps-it img{transition:transform .7s cubic-bezier(.2,.7,.2,1),filter .4s ease}
+  .ps-it:active img{transform:scale(.98)}
+  .sg-open,.ct-more,.ps-more{transition:background-color .25s ease,border-color .25s ease,transform .15s ease}
+  .sg-open:active,.ct-more:active,.ps-more:active{transform:scale(.985)}
+}
+@keyframes tabIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes sgGrow{from{opacity:0;transform:scaleY(.2)}to{opacity:1;transform:none}}
+@keyframes knobHint{0%{transform:translateX(0)}30%{transform:translateX(-14px)}60%{transform:translateX(10px)}100%{transform:translateX(0)}}
+
 /* privacy policy */
 .ft-pv{padding:0;border:0;background:none;font:inherit;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
 .pv{gap:10px!important;font-size:13.5px;line-height:1.65;color:var(--ink)}
@@ -1162,7 +1255,17 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         <button type="button" data-f="public" aria-pressed="false">기관·공공</button>
         <button type="button" data-f="office" aria-pressed="false">사무실·가정</button>
       </div>
+      <div class="ft-tabs" id="ftTabs" role="tablist" aria-label="대표 사례"></div>
       <div class="featured">
+        <figure class="ba" data-cat="school">
+          <div class="ba-frame">
+            <img class="after" src="img/yonsei-dorm.webp" width="1000" height="1232" loading="lazy" alt="연세대학교 기숙사 로비 · 트리 설치 후">
+            <img class="before" src="img/yonsei-dorm-before.webp" width="1000" height="1232" loading="lazy" alt="연세대학교 기숙사 로비 · 트리 설치 전">
+            <div class="ba-line" aria-hidden="true"></div><div class="ba-knob" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="연세대학교 기숙사 로비 설치 전후 비교, 좌우로 밀어 보기"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M6 1 1 6l5 5M14 1l5 5-5 5"/></svg></div><span class="ba-lab l" aria-hidden="true">설치 전</span><span class="ba-lab r" aria-hidden="true">설치 후</span>
+            <button type="button" class="ba-open" aria-label="연세대학교 기숙사 로비 사진 크게 보기"><span class="zoom-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14M7 5v4M5 7h4"/></svg></span></button>
+          </div>
+          <figcaption class="ba-row"><p>연세대학교 기숙사 로비<br><span>2.9m · 대학</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></p></figcaption>
+        </figure>
         <figure class="ba" data-cat="shop">
           <div class="ba-frame">
             <img class="after" src="img/asan-gold.webp" width="1000" height="1333" loading="lazy" alt="아산 솔그림 베이커리카페 세이지 그린 앤 골드 구성 · 트리 설치 후">
@@ -1171,15 +1274,6 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
             <button type="button" class="ba-open" aria-label="아산 솔그림 베이커리카페 사진 크게 보기"><span class="zoom-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14M7 5v4M5 7h4"/></svg></span></button>
           </div>
           <figcaption class="ba-row"><p>아산 솔그림 베이커리카페<br><span>2.9m · 매장</span><em class="oc"><i style="background:#93a68a"></i><i style="background:#c7b182"></i>세이지 그린 &amp; 골드</em></p></figcaption>
-        </figure>
-        <figure class="ba" data-cat="school">
-          <div class="ba-frame">
-            <img class="after" src="img/yonsei-biz.webp" width="1000" height="1333" loading="lazy" alt="연세대학교 경영관 로비 · 트리 설치 후">
-            <img class="before" src="img/yonsei-biz-before.webp" width="1000" height="1333" loading="lazy" alt="연세대학교 경영관 로비 · 트리 설치 전">
-            <div class="ba-line" aria-hidden="true"></div><div class="ba-knob" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="연세대학교 경영관 로비 설치 전후 비교, 좌우로 밀어 보기"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M6 1 1 6l5 5M14 1l5 5-5 5"/></svg></div><span class="ba-lab l" aria-hidden="true">설치 전</span><span class="ba-lab r" aria-hidden="true">설치 후</span>
-            <button type="button" class="ba-open" aria-label="연세대학교 경영관 로비 사진 크게 보기"><span class="zoom-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14M7 5v4M5 7h4"/></svg></span></button>
-          </div>
-          <figcaption class="ba-row"><p>연세대학교 경영관 로비<br><span>2.9m · 대학</span><em class="oc"><i style="background:#1d2d45"></i><i style="background:#c7a463"></i>네이비 &amp; 골드</em></p></figcaption>
         </figure>
         <figure class="ba" data-cat="public">
           <div class="ba-frame">
@@ -1192,12 +1286,12 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         </figure>
         <figure class="ba" data-cat="school">
           <div class="ba-frame">
-            <img class="after" src="img/yonsei-dorm.webp" width="1000" height="1232" loading="lazy" alt="연세대학교 기숙사 로비 · 트리 설치 후">
-            <img class="before" src="img/yonsei-dorm-before.webp" width="1000" height="1232" loading="lazy" alt="연세대학교 기숙사 로비 · 트리 설치 전">
-            <div class="ba-line" aria-hidden="true"></div><div class="ba-knob" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="연세대학교 기숙사 로비 설치 전후 비교, 좌우로 밀어 보기"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M6 1 1 6l5 5M14 1l5 5-5 5"/></svg></div><span class="ba-lab l" aria-hidden="true">설치 전</span><span class="ba-lab r" aria-hidden="true">설치 후</span>
-            <button type="button" class="ba-open" aria-label="연세대학교 기숙사 로비 사진 크게 보기"><span class="zoom-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14M7 5v4M5 7h4"/></svg></span></button>
+            <img class="after" src="img/yonsei-biz.webp" width="1000" height="1333" loading="lazy" alt="연세대학교 경영관 로비 · 트리 설치 후">
+            <img class="before" src="img/yonsei-biz-before.webp" width="1000" height="1333" loading="lazy" alt="연세대학교 경영관 로비 · 트리 설치 전">
+            <div class="ba-line" aria-hidden="true"></div><div class="ba-knob" role="slider" tabindex="0" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50" aria-label="연세대학교 경영관 로비 설치 전후 비교, 좌우로 밀어 보기"><svg viewBox="0 0 20 12" aria-hidden="true"><path d="M6 1 1 6l5 5M14 1l5 5-5 5"/></svg></div><span class="ba-lab l" aria-hidden="true">설치 전</span><span class="ba-lab r" aria-hidden="true">설치 후</span>
+            <button type="button" class="ba-open" aria-label="연세대학교 경영관 로비 사진 크게 보기"><span class="zoom-ic" aria-hidden="true"><svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="4.6"/><path d="M10.5 10.5 14 14M7 5v4M5 7h4"/></svg></span></button>
           </div>
-          <figcaption class="ba-row"><p>연세대학교 기숙사 로비<br><span>2.9m · 대학</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></p></figcaption>
+          <figcaption class="ba-row"><p>연세대학교 경영관 로비<br><span>2.9m · 대학</span><em class="oc"><i style="background:#1d2d45"></i><i style="background:#c7a463"></i>네이비 &amp; 골드</em></p></figcaption>
         </figure>
       </div>
       <div class="grid">
@@ -1228,6 +1322,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         <h2>사진을 보내주시면<br><mark class="on-dark">30분 안에</mark> 답장드립니다</h2>
         <p>카카오톡으로 설치할 공간 사진을 보내주세요. 크기와 색상, 운임까지 넣은 금액을 알려드립니다.</p>
       </div>
+      <button type="button" class="ct-more" id="ctMore" aria-expanded="false">보내주실 것 · 받으시는 것 보기<span aria-hidden="true">+</span></button>
       <div class="ct-grid">
         <div class="ct-col">
           <h3>보내주실 것</h3>
@@ -1284,6 +1379,12 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
   <a data-sheet class="btn btn-kakao btn-sm" id="barBtn" role="button" tabindex="0">카카오톡 상담</a>
 </div>
 
+<dialog class="cc info" id="sgDlg" aria-label="사이즈 가이드">
+  <div class="cc-in">
+    <button type="button" class="cc-x" id="sgClose" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    <div class="cc-p" id="sgBody"></div>
+  </div>
+</dialog>
 <dialog class="cc info pv-dlg" id="pvDlg" aria-labelledby="pvT">
   <div class="cc-in">
     <button type="button" class="cc-x" id="pvClose" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
@@ -1805,7 +1906,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
   // ---------- motion ----------
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!calm && 'IntersectionObserver' in window) {
-    const sel = ['main section .sec-head', '.trust .count', '.trust .wrap > div', '.slots .slot', '.case-filter', '.featured .ba', '#cases .grid > *', '.jump .wrap', '.detail figure', '.light-grid .lcol', '.colors .color', '.why .wrap > *', '.sguide', '.sheet-title', '.sheet-row:not(.sheet-head)', '.est-form', '.sum', '.steps li', '.faq details', '.ct-head', '.ct-col', '.ch'];
+    const sel = ['.ps-row .ps-it', '.ps-more', '.sg-open', '.ct-more', '.dt-tabs', '.ft-tabs', 'main section .sec-head', '.trust .count', '.trust .wrap > div', '.slots .slot', '.case-filter', '.featured .ba', '#cases .grid > *', '.jump .wrap', '.detail figure', '.light-grid .lcol', '.colors .color', '.why .wrap > *', '.sguide', '.sheet-title', '.sheet-row:not(.sheet-head)', '.est-form', '.sum', '.steps li', '.faq details', '.ct-head', '.ct-col', '.ch'];
     const els = [...document.querySelectorAll(sel.join(','))];
     const fold = innerHeight;
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
@@ -2148,6 +2249,57 @@ var rows={};tops.forEach(function(t){var y=Math.round(t.closest('.xo').offsetTop
 Object.keys(rows).forEach(function(y){var m=Math.max.apply(null,rows[y].map(function(t){return t.offsetHeight}));rows[y].forEach(function(t){t.style.minHeight=m+'px'})})}
 fit();addEventListener('resize',fit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);addEventListener('load',fit)})();
 </script><script>
+(function(){var b=document.getElementById('propsBtn');if(!b)return;
+document.querySelectorAll('[data-props-open]').forEach(function(el){el.addEventListener('click',function(e){e.preventDefault();b.click()})})})();
+</script>
+<script>
+(function(){
+var phone=matchMedia('(max-width:640px)');
+/* 1. featured tabs */
+var feat=document.querySelector('#cases .featured'),ft=document.getElementById('ftTabs');
+if(feat&&ft){var items=[].slice.call(feat.querySelectorAll(':scope>.ba')),cur=0;
+ ft.innerHTML=items.map(function(f,i){var n=f.querySelector('.ba-row p').firstChild.textContent.trim();return '<button type="button" role="tab" data-i="'+i+'">'+n+'</button>'}).join('');
+ var bs=[].slice.call(ft.children);
+ function sel(i){cur=i;items.forEach(function(f,k){f.classList.toggle('is-cur',k===i)});bs.forEach(function(b,k){b.setAttribute('aria-selected',String(k===i))});}
+ function sync(){var vis=items.map(function(f){return !f.hidden});bs.forEach(function(b,k){b.hidden=!vis[k]});if(!vis[cur]){var j=vis.indexOf(true);if(j>=0)sel(j)}ft.style.display=vis.filter(Boolean).length>1?'':'none'}
+ bs.forEach(function(b,k){b.addEventListener('click',function(){sel(k);b.scrollIntoView({block:'nearest',inline:'nearest',behavior:'smooth'})})});
+ feat.classList.add('ft-on');sel(0);sync();
+ new MutationObserver(sync).observe(feat,{subtree:true,attributes:true,attributeFilter:['hidden']});}
+/* 2. size guide popup */
+var sgB=document.getElementById('sgOpen'),sgD=document.getElementById('sgDlg'),sg=document.querySelector('.price-sec .sguide');
+if(sgB&&sgD&&sg){var home=document.createComment('sg');sg.parentNode.insertBefore(home,sg);
+ sgB.addEventListener('click',function(){sg.classList.add('in-dlg');document.getElementById('sgBody').appendChild(sg);sgD.showModal();sgD.querySelector('.cc-in').scrollTop=0});
+ sgD.addEventListener('close',function(){sg.classList.remove('in-dlg');home.parentNode.insertBefore(sg,home.nextSibling);sgB.focus({preventScroll:true})});
+ document.getElementById('sgClose').addEventListener('click',function(){sgD.close()});
+ sgD.addEventListener('click',function(e){if(e.target===sgD)sgD.close()});}
+/* 3. detail tabs */
+var dt=document.getElementById('detail'),dtt=document.getElementById('dtTabs');
+if(dt&&dtt){dt.dataset.t='0';[].forEach.call(dtt.children,function(b){b.addEventListener('click',function(){dt.dataset.t=b.dataset.t;[].forEach.call(dtt.children,function(x){x.setAttribute('aria-selected',String(x===b))});
+ if(window.IntersectionObserver)document.querySelectorAll('#detail [class*="rv"],#light .rv, #light [class*="rv"]').forEach(function(e){e.classList.add('in')});})})}
+/* 4. contact checklist toggle */
+var cm=document.getElementById('ctMore');if(cm)cm.addEventListener('click',function(){cm.setAttribute('aria-expanded',String(cm.getAttribute('aria-expanded')!=='true'))});
+})();
+</script>
+<script>
+(function(){
+var calm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function replay(el){if(!el||calm)return;el.classList.remove('tab-in');void el.offsetWidth;el.classList.add('tab-in');}
+function ind(bar){var i=bar.querySelector('.tab-ind');if(!i){i=document.createElement('span');i.className='tab-ind';i.setAttribute('aria-hidden','true');bar.insertBefore(i,bar.firstChild);bar.classList.add('has-ind')}
+ var b=bar.querySelector('button[aria-selected="true"]');if(!b||!b.offsetWidth){i.style.opacity=0;return}
+ i.style.opacity=1;i.style.width=b.offsetWidth+'px';i.style.height=b.offsetHeight+'px';i.style.top=b.offsetTop+'px';i.style.transform='translateX('+b.offsetLeft+'px)';}
+var bars=[document.getElementById('dtTabs'),document.getElementById('ftTabs')].filter(Boolean);
+function all(){bars.forEach(ind)}
+bars.forEach(function(bar){bar.addEventListener('click',function(e){if(e.target.closest('button'))requestAnimationFrame(function(){ind(bar)})})});
+addEventListener('resize',all);addEventListener('load',all);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(all);all();
+var ft=document.getElementById('ftTabs');if(ft){ft.addEventListener('click',function(e){if(!e.target.closest('button'))return;replay(document.querySelector('#cases .featured>.ba.is-cur'))});
+ new MutationObserver(function(){requestAnimationFrame(function(){ind(ft)})}).observe(document.querySelector('#cases .featured'),{subtree:true,attributes:true,attributeFilter:['hidden','class']});}
+var dt=document.getElementById('dtTabs');if(dt)dt.addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;var t=b.dataset.t;
+ if(t==='2')replay(document.getElementById('light'));else replay(document.querySelector('#detail .detail>figure:nth-child('+(+t+1)+')'));});
+var sgB=document.getElementById('sgOpen');if(sgB)sgB.addEventListener('click',function(){var g=document.querySelector('.sguide');if(!g||calm)return;g.classList.remove('grow');void g.offsetWidth;g.classList.add('grow')});
+document.addEventListener('close',function(e){if(e.target.id==='sgDlg'){var g=document.querySelector('.sguide');if(g)g.classList.remove('grow')}},true);
+})();
+</script>
+<script>
 (function(){var d=document.getElementById('pvDlg'),o=document.getElementById('pvOpen');if(!d||!o)return;
 o.addEventListener('click',function(){d.showModal();d.querySelector('.cc-in').scrollTop=0});
 function c(){d.close()}document.getElementById('pvClose').addEventListener('click',c);document.getElementById('pvOk').addEventListener('click',c);
