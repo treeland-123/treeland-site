@@ -1091,6 +1091,20 @@ dialog.lb{z-index:50}
 .ft-links{grid-column:1 / -1;display:flex;flex-wrap:wrap;gap:4px 16px;margin:0;font-size:13px}
 .ft-links a{color:var(--muted);text-underline-offset:3px}
 .ft-links a:hover{color:var(--ink)}
+
+/* privacy policy */
+.ft-pv{padding:0;border:0;background:none;font:inherit;font-weight:700;color:var(--ink);text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.pv{gap:10px!important;font-size:13.5px;line-height:1.65;color:var(--ink)}
+.pv h4{margin:10px 0 0;font-size:14px;font-weight:700}
+.pv p{color:var(--muted)}
+.pv ul{margin:0;padding-left:18px;color:var(--muted)}
+.pv-t{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.5}
+.pv-t th,.pv-t td{padding:7px 6px;border-bottom:1px solid #E2DACA;text-align:left;vertical-align:top}
+.pv-t th{font-weight:700;color:var(--ink);white-space:nowrap}
+.pv-t td{color:var(--muted)}
+.pv-t td:first-child{font-weight:600;color:var(--ink);white-space:nowrap}
+@media (max-width:640px){.pv-t,.pv-t tbody,.pv-t tr,.pv-t td{display:block}.pv-t tr:first-child{display:none}.pv-t tr{padding:8px 0;border-bottom:1px solid #E2DACA}.pv-t td{padding:2px 0;border:0}}
+@media (min-width:641px){dialog.cc.pv-dlg{width:min(620px,92vw)}}
 </style>
 <style>
 .sub-crumb{padding-top:14px;font-size:13px;color:var(--muted)}
@@ -1258,7 +1272,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
   <div class="wrap">
     <div class="ft-brand"><img src="img/logo-full.png" width="671" height="180" alt="TREELAND 트리랜드" loading="lazy"></div>
     <div class="ft-info"><span>전화 070-4571-7467</span><span>이메일 info@treeland.kr</span><span>www.treeland.kr</span></div>
-    <p class="ft-links"><a href="https://treeland.kr/cases/">설치 사례</a><a href="https://treeland.kr/trees/">트리 소개</a><a href="https://treeland.kr/faq/">자주 묻는 질문</a><a href="https://treeland.kr/contact/">상담 안내</a></p>
+    <p class="ft-links"><a href="https://treeland.kr/cases/">설치 사례</a><a href="https://treeland.kr/trees/">트리 소개</a><a href="https://treeland.kr/faq/">자주 묻는 질문</a><a href="https://treeland.kr/contact/">상담 안내</a><button type="button" class="ft-pv" id="pvOpen">개인정보 처리방침</button></p>
     <p class="ft-biz"><span>상호 트리랜드</span><span>대표 홍준서</span><span>사업자등록번호 360-69-00592</span></p>
     <p class="ft-copy"><span>© 2026 트리랜드(TREELAND). All rights reserved.</span><span>이 사이트의 사진과 글은 허가 없이 복제·배포하거나 상업적으로 이용할 수 없으며, 무단 사용 시 저작권법에 따라 민·형사상 책임을 질 수 있습니다.</span></p>
   </div>
@@ -1270,6 +1284,43 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
   <a data-sheet class="btn btn-kakao btn-sm" id="barBtn" role="button" tabindex="0">카카오톡 상담</a>
 </div>
 
+<dialog class="cc info pv-dlg" id="pvDlg" aria-labelledby="pvT">
+  <div class="cc-in">
+    <button type="button" class="cc-x" id="pvClose" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    <div class="cc-p pv">
+      <p class="cc-k">TREELAND</p>
+      <p class="ic-title" id="pvT">개인정보 처리방침</p>
+      <p>트리랜드(이하 '회사')는 상담과 계약에 꼭 필요한 개인정보만 받으며, 「개인정보 보호법」에 따라 아래와 같이 처리합니다.</p>
+      <h4>1. 수집 항목, 목적, 보유 기간</h4>
+      <table class="pv-t">
+        <tr><th>구분</th><th>항목</th><th>목적</th><th>보유 기간</th></tr>
+        <tr><td>전자계약</td><td>상호 또는 성명, 대표자, 사업자등록번호(사업자만), 담당자, 연락처, 이메일, 서명, 인스타 계정(선택)</td><td>계약 체결과 이행, 세금계산서·현금영수증 발행</td><td>계약 종료 후 5년 (세법상 장부 보관 기간)</td></tr>
+        <tr><td>상담</td><td>이름 또는 상호, 연락처, 설치 지역·주소, 공간 사진</td><td>견적 안내와 상담 응대</td><td>상담 종료 후 1년. 계약으로 이어지면 위 전자계약 기준</td></tr>
+        <tr><td>자동 수집</td><td>쿠키, 방문 일시, 방문 경로, 기기·브라우저 정보</td><td>방문 통계와 사이트 개선</td><td>수집 후 14개월</td></tr>
+      </table>
+      <h4>2. 제3자 제공</h4>
+      <p>회사는 개인정보를 외부에 제공하지 않습니다. 법령에 따라 요구되는 경우는 예외입니다.</p>
+      <h4>3. 처리 위탁과 국외 이전</h4>
+      <p>회사는 아래 서비스를 이용해 정보를 보관·처리합니다. 정보는 각 서비스의 서버(미국 등)에 암호화된 통신으로 전송되어 저장되며, 보유 기간은 1번과 같습니다.</p>
+      <ul><li><b>Google LLC</b> · 전자계약 정보와 계약서 보관 (Google Workspace)</li><li><b>Google LLC</b> · 방문 통계 (Google Analytics)</li><li><b>㈜카카오</b> · 카카오톡 채널 상담</li></ul>
+      <p>국외 이전을 원하지 않으시면 전자계약 대신 이메일 계약서로 진행하실 수 있습니다.</p>
+      <h4>4. 파기</h4>
+      <p>보유 기간이 끝난 정보는 지체 없이 삭제합니다. 전자 파일은 복구할 수 없는 방법으로 지우고, 종이 서류는 분쇄합니다.</p>
+      <h4>5. 정보주체의 권리</h4>
+      <p>언제든지 본인 정보의 열람, 정정, 삭제, 처리 정지를 요청하실 수 있습니다. 아래 연락처로 요청하시면 지체 없이 처리합니다. 다만 법령상 보관 의무가 있는 정보는 그 기간 동안 삭제가 제한될 수 있습니다.</p>
+      <h4>6. 쿠키</h4>
+      <p>방문 통계를 위해 쿠키를 사용합니다. 브라우저 설정에서 쿠키 저장을 거부할 수 있으며, 거부해도 사이트 이용에는 지장이 없습니다.</p>
+      <h4>7. 안전성 확보 조치</h4>
+      <p>개인정보는 대표만 접근할 수 있는 계정에 보관하고, 2단계 인증과 접근 권한 관리를 적용합니다.</p>
+      <h4>8. 개인정보 보호책임자</h4>
+      <p>대표 홍준서 · 전화 070-4571-7467 · 이메일 info@treeland.kr</p>
+      <p>개인정보 침해 신고나 상담은 개인정보침해신고센터(국번 없이 118, privacy.kisa.or.kr)에도 하실 수 있습니다.</p>
+      <h4>9. 시행일</h4>
+      <p>이 방침은 2026년 10월 23일부터 적용합니다.</p>
+      <div class="cc-b"><button type="button" class="cc-main" id="pvOk">닫기</button></div>
+    </div>
+  </div>
+</dialog>
 <dialog class="cc info" id="infoDlg" aria-label="자세히 보기">
   <div class="cc-in">
     <button type="button" class="cc-x" id="infoClose" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
@@ -2096,6 +2147,11 @@ function fit(){var tops=[].slice.call(g.querySelectorAll('.xo-top'));tops.forEac
 var rows={};tops.forEach(function(t){var y=Math.round(t.closest('.xo').offsetTop);(rows[y]=rows[y]||[]).push(t)});
 Object.keys(rows).forEach(function(y){var m=Math.max.apply(null,rows[y].map(function(t){return t.offsetHeight}));rows[y].forEach(function(t){t.style.minHeight=m+'px'})})}
 fit();addEventListener('resize',fit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);addEventListener('load',fit)})();
+</script><script>
+(function(){var d=document.getElementById('pvDlg'),o=document.getElementById('pvOpen');if(!d||!o)return;
+o.addEventListener('click',function(){d.showModal();d.querySelector('.cc-in').scrollTop=0});
+function c(){d.close()}document.getElementById('pvClose').addEventListener('click',c);document.getElementById('pvOk').addEventListener('click',c);
+d.addEventListener('click',function(e){if(e.target===d)c()});})();
 </script>
 
 </body>
