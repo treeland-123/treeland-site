@@ -1140,6 +1140,11 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
 .incl svg{width:15px;height:15px;flex:none}
 @media (max-width:640px){.incl{gap:6px}.incl li{font-size:12.5px;padding:6px 10px 6px 8px}}
 .qres .qincl{margin:12px 0 -4px;font-size:12.5px;font-weight:700;color:var(--pine)}
+
+.qcard .qp-was{display:block;font-size:12px;font-weight:500;color:var(--muted);text-decoration-thickness:1px}
+.qcard .qp-now{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15.5px;font-weight:800;color:var(--ink)}
+.qcard.pre .qp-now{color:var(--berry)}
+.qcard .qp-off{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--berry);color:#fff;font-style:normal;font-size:11.5px;font-weight:800;line-height:1.5}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -2416,9 +2421,10 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     tier: () => {
       const n = Math.min(A.count || 1, 3), s = sizeOf(A.size).name;
       const lbl = early1() ? '1차 얼리버드가' : '정가';
+      const pr = t => { const [l, e] = P[A.size][t]; return early1() ? '<s class="qp-was">' + won(l) + '</s><span class="qp-now"><em class="qp-off">' + (t === 'pre' ? 15 : 10) + '%</em>' + won(e) + '</span>' : won(l); };
       ask('구성을 골라 주세요.', cards([
-        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: won(unit(A.size, 'std')) },
-        { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: won(unit(A.size, 'pre')), tag: '2026', k: 'pre' },
+        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: pr('std') },
+        { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', k: 'pre' },
       ], v => answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'), { cls: 'two' }), s + ' 1그루 ' + lbl + ' · 부가세 별도');
     },
     color: () => ask('장식 색상은요?', cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag })), v => answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v), { cls: 'sq', extra: [['추천', '사진 보고 추천받을게요']] })),
