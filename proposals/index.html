@@ -86,7 +86,7 @@ details.dm pre{white-space:pre-wrap;font:inherit;font-size:14px;background:var(-
 
 <script>
 const SITE="https://treeland.kr";
-const EARLY_END="2026-10-30"; // 1차 얼리버드 마감. 지나면 DM 문구에서 할인 문장 자동 제외
+const EARLY_END="2026-11-08"; // 1차 얼리버드 마감. 지나면 DM 문구에서 할인 문장 자동 제외
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 let toastT;function toast(m){const t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2000)}
@@ -104,7 +104,7 @@ const shortUrl=p=>"treeland.kr"+p.replace(/\/$/,"");
 function dmText(it){
   const size=(it.spec||"").split("·")[0].trim();
   const place=it.place||"매장";
-  const early=today()<=EARLY_END?" 10월 30일까지 예약하시면 1차 얼리버드 15% 할인이 적용됩니다.":"";
+  const early=today()<=EARLY_END?" 11월 8일까지 예약하시면 1차 얼리버드 15% 할인이 적용됩니다.":"";
   return `안녕하세요, 크리스마스트리 대여·설치 업체 트리랜드입니다 🎄
 
 ${it.name} ${place}에 맞춰 ${size} 트리 배치 시안과 제안서를 만들어 보았습니다.
