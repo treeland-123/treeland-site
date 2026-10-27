@@ -303,6 +303,9 @@ async function loadPrices() {
 
 /* ── 상태 ── */
 const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+// 추가 장식 이름은 띄어쓰기를 무시하고 홈페이지 품목과 맞춤 (직접 입력으로 같은 품목을 적어도 홈페이지 단가 사용)
+const norm = x => String(x || '').replace(/\s+/g, '');
+const findExtra = name => P.extras.find(x => norm(x.name) === norm(name));
 const blankTree = () => ({ size: '2.3m', tier: '프리미엄', color: '레드 & 골드', place: '', note: '' });
 let S = null;
 function freshState() {
@@ -346,12 +349,13 @@ function calc() {
   const multiDisc = -Math.round(earlySum * pct / 100);
   const treeSub = earlySum + multiDisc;
   const addons = S.addons.map(a => {
-    const ex = P.extras.find(x => x.name === a.name);
+    const ex = findExtra(a.name);
     const unit = ex ? ex.price : (+a.unit || 0);
-    if (!ex && !a.name.trim()) problems.push('직접 입력한 추가 장식의 이름을 넣어 주세요.');
+    if (!ex && !String(a.name || '').trim()) problems.push('직접 입력한 추가 장식의 이름을 넣어 주세요.');
+    else if (!ex && (a.unit === '' || a.unit == null || isNaN(+a.unit))) problems.push(`'${a.name}' 단가를 넣어 주세요 (무료면 0).`);
     const opt = [...(a.sel || []), a.memo].filter(Boolean).join(' · ');
     const ti = a.tree ? trees[a.tree - 1] : null;
-    return { ...a, unit, opt, qty: +a.qty || 0, treeText: ti ? `${ti.n}번${ti.place ? ' · ' + ti.place : ''}` : '(미정)' };
+    return { ...a, name: ex ? ex.name : a.name, unit, opt, qty: +a.qty || 0, treeText: ti ? `${ti.n}번${ti.place ? ' · ' + ti.place : ''}` : '(미정)' };
   });
   const addonSum = addons.reduce((a, x) => a + x.qty * x.unit, 0);
   const ship = +S.ship || 0;
@@ -476,11 +480,11 @@ function treeCard(t, i) {
     </div></div>`;
 }
 function addonCard(a, i) {
-  const ex = P.extras.find(x => x.name === a.name);
+  const ex = findExtra(a.name);
   const custom = !ex;
   return `<div class="card" data-addon="${i}">
     <div class="card-hd"><span>추가 장식 ${i + 1}</span><button type="button" class="link" data-del-addon="${i}">삭제</button></div>
-    <div class="field"><label>항목</label><select data-a="pick">${P.extras.map(x => `<option ${x.name === a.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}<option value="__custom" ${custom ? 'selected' : ''}>직접 입력</option></select></div>
+    <div class="field"><label>항목</label><select data-a="pick">${P.extras.map(x => `<option ${ex && x.name === ex.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}<option value="__custom" ${custom ? 'selected' : ''}>직접 입력</option></select></div>
     ${custom ? `<div class="grid2"><div class="field"><label>이름</label><input data-a="name" value="${esc(a.name)}"></div><div class="field"><label>단가 (원)</label><input data-a="unit" type="number" inputmode="numeric" value="${esc(a.unit)}"></div></div>` : ''}
     ${ex && ex.opts.length ? `<div class="grid2">${ex.opts.map((o, oi) => `<div class="field"><label>${esc(o.k)}</label><select data-a="sel" data-oi="${oi}">${o.v.map(v => `<option ${(a.sel || [])[oi] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`).join('')}</div>` : ''}
     <div class="grid3">
@@ -526,6 +530,7 @@ $('#form').addEventListener('input', e => {
   if (tc && el.dataset.k) { S.trees[+tc.dataset.tree][el.dataset.k] = el.value; if (el.dataset.k === 'place') { refreshAddonTrees(); } return update(); }
   if (ac && el.dataset.a) {
     const a = S.addons[+ac.dataset.addon], k = el.dataset.a;
+    if (k === 'name' && findExtra(el.value)) { const ex = findExtra(el.value); a.name = ex.name; a.unit = ''; a.sel = ex.opts.map(o => o.v[0]); renderForm(); return; }
     if (k === 'sel') { a.sel = a.sel || []; a.sel[+el.dataset.oi] = el.value; }
     else if (k === 'tree') a.tree = el.value ? +el.value : '';
     else if (k !== 'pick') a[k] = el.value;
