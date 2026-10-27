@@ -355,9 +355,10 @@ function calc() {
     else if (!ex && (a.unit === '' || a.unit == null || isNaN(+a.unit))) problems.push(`'${a.name}' 단가를 넣어 주세요 (무료면 0).`);
     const opt = [...(a.sel || []), a.memo].filter(Boolean).join(' · ');
     const ti = a.tree ? trees[a.tree - 1] : null;
-    return { ...a, name: ex ? ex.name : a.name, unit, opt, qty: +a.qty || 0, treeText: ti ? `${ti.n}번${ti.place ? ' · ' + ti.place : ''}` : '(미정)' };
+    const qty = +a.qty || 0;
+    return { ...a, name: ex ? ex.name : a.name, unit, opt, qty, amount: a.free ? 0 : qty * unit, treeText: ti ? `${ti.n}번${ti.place ? ' · ' + ti.place : ''}` : '(미정)' };
   });
-  const addonSum = addons.reduce((a, x) => a + x.qty * x.unit, 0);
+  const addonSum = addons.reduce((a, x) => a + x.amount, 0);
   const ship = +S.ship || 0;
   const supply = treeSub + addonSum + ship;
   const vat = Math.round(supply * 0.1);
@@ -381,7 +382,7 @@ function renderPaper(R) {
     <td class="c">${esc(t.name)}</td><td class="c ${t.tier === '단일 구성' ? 'sm' : ''}">${esc(t.tier)}</td><td class="c">${esc(t.color)}</td>
     <td class="c sm">${esc(t.base)}</td><td class="r">${fmt(t.list)}</td></tr>`).join('');
   const addonRows = R.addons.map(a => `<tr><td class="c">${esc(a.name)}</td><td class="c sm">${esc(a.opt)}</td><td class="c sm">${esc(a.treeText)}</td>
-    <td class="c">${a.qty}</td><td class="r">${a.unit ? fmt(a.unit) : '무료'}</td><td class="r">${fmt(a.qty * a.unit)}</td></tr>`).join('');
+    <td class="c">${a.qty}</td><td class="r">${a.unit ? fmt(a.unit) : '무료'}</td><td class="r">${a.free && a.unit ? '<b>서비스</b>' : fmt(a.amount)}</td></tr>`).join('');
   const sumRows = [
     ['트리 정가 합계', fmt(R.listSum)],
     ...(S.phase !== 'none' ? [[R.earlyLabel, fmt(R.earlyDisc), 'grey']] : []),
@@ -492,7 +493,8 @@ function addonCard(a, i) {
       <div class="field"><label>수량</label><input data-a="qty" type="number" inputmode="numeric" min="1" value="${esc(a.qty)}"></div>
       <div class="field"><label>메모</label><input data-a="memo" value="${esc(a.memo || '')}" placeholder="예: 금색 끈"></div>
     </div>
-    <span class="price-line">${ex ? (ex.price ? `${ex.unitLabel || '단가'} ${fmt(ex.price)}원` : '무료') : ''}</span></div>`;
+    <div class="inline" style="justify-content:space-between;flex-wrap:wrap"><span class="price-line">${ex ? (ex.price ? `${ex.unitLabel || '단가'} ${fmt(ex.price)}원` : '무료') : ''}</span>
+      <label style="display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer"><input type="checkbox" data-a="free" style="width:auto;margin:0" ${a.free ? 'checked' : ''}> 서비스 (무료 제공)</label></div></div>`;
 }
 function renderForm() {
   $('#cust').value = S.cust; $('#qno').value = S.no; $('#qdate').value = S.date;
@@ -531,7 +533,8 @@ $('#form').addEventListener('input', e => {
   if (ac && el.dataset.a) {
     const a = S.addons[+ac.dataset.addon], k = el.dataset.a;
     if (k === 'name' && findExtra(el.value)) { const ex = findExtra(el.value); a.name = ex.name; a.unit = ''; a.sel = ex.opts.map(o => o.v[0]); renderForm(); return; }
-    if (k === 'sel') { a.sel = a.sel || []; a.sel[+el.dataset.oi] = el.value; }
+    if (k === 'free') a.free = el.checked;
+    else if (k === 'sel') { a.sel = a.sel || []; a.sel[+el.dataset.oi] = el.value; }
     else if (k === 'tree') a.tree = el.value ? +el.value : '';
     else if (k !== 'pick') a[k] = el.value;
     return update();
@@ -616,7 +619,7 @@ $('#pngBtn').onclick = e => run(e.currentTarget, async () => {
 $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
   const lines = [`[트리랜드 견적] ${S.cust} 귀하 (No. ${S.no})`, ''];
   R.trees.forEach(t => lines.push(`${t.n}. ${t.place ? t.place + ' · ' : ''}${t.name} ${t.tier} · ${t.color}`));
-  R.addons.forEach(a => lines.push(`  + ${a.name}${a.opt ? ' (' + a.opt + ')' : ''}${a.qty > 1 ? ' ×' + a.qty : ''} → ${a.treeText}`));
+  R.addons.forEach(a => lines.push(`  + ${a.name}${a.opt ? ' (' + a.opt + ')' : ''}${a.qty > 1 ? ' ×' + a.qty : ''}${a.free && a.unit ? ' — 서비스' : ''} → ${a.treeText}`));
   lines.push('', `트리 정가 ${fmt(R.listSum)}원`);
   if (S.phase !== 'none') lines.push(`${R.earlyLabel} ${fmt(R.earlyDisc)}원`);
   if (R.pct) lines.push(`여러 그루 할인 ${R.pct}% ${fmt(R.multiDisc)}원`);
