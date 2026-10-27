@@ -1145,6 +1145,10 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
 .qcard .qp-now{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:15.5px;font-weight:800;color:var(--ink)}
 .qcard.pre .qp-now{color:var(--berry)}
 .qcard .qp-off{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--berry);color:#fff;font-style:normal;font-size:11.5px;font-weight:800;line-height:1.5}
+
+.sheet2 .tp-one{grid-column:3 / 5}
+.sheet2 .tp-one .tp-k{display:block}
+@media (max-width:640px){.sheet2 .tp-one{grid-column:2 / 4}}
 </style>
 <div id="splash" aria-hidden="true"><div class="sp-in"><img class="sp-mark" src="img/logo-mark.png" width="300" height="453" alt=""><span class="sp-line"></span></div></div>
 <script>(function(){var d=document.documentElement;d.classList.add('intro');if(!location.hash){try{history.scrollRestoration='manual'}catch(e){}scrollTo(0,0)}setTimeout(function(){['img/asan-gold.webp','img/yonsei-biz.webp','img/arko.webp'].forEach(function(u){var i=new Image();i.decoding='async';try{i.fetchPriority='low'}catch(e){}i.src=u})},250);setTimeout(function(){d.classList.remove('intro')},1880);setTimeout(function(){var e=document.getElementById('splash');if(e)e.remove()},2300)})();</script>
@@ -1174,7 +1178,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
         <h1>크리스마스트리 대여 · 설치</h1>
         <p class="lead"><strong>검증된 디자인과 자체 제작 장식, 합리적인 가격까지.</strong><br>여러 현장을 거치며 완성한 구성에, <span class="nw">디테일을 더했습니다.</span></p>
         <div class="tag hp" role="note">
-          <b class="num" data-e2="1.35m 275,000원부터">1.35m 247,000원부터</b>
+          <b class="num" data-e2="1.35m 340,000원부터">1.35m 289,000원부터</b>
           <div class="hp-more"><div>
             <span>설치·철거 포함 · 기간 추가금 없음 · 서울 운임 무료</span>
           </div></div>
@@ -1422,7 +1426,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
           </div>
         </article>
       </div>
-      <p class="tier-n">두 구성 모두 KC 인증 전기안정기, 방문 설치, 1월~2월 초 회수가 포함됩니다. 2.3m 이상은 30% 키워 새로 만든 시그니처 상자로 장식합니다.</p>
+      <p class="tier-n">두 구성 모두 KC 인증 전기안정기, 방문 설치, 1월~2월 초 회수가 포함됩니다. 2.3m 이상은 30% 키워 새로 만든 시그니처 상자로 장식합니다. 1.35m는 단일 구성으로, 프리미엄 장식이 들어가고 LED 별과 하단 상자는 빠집니다.</p>
       <button type="button" class="sg-open" id="sgOpen"><span><b>우리 공간엔 몇 m가 맞을까?</b><small>성인 키와 나란히 세운 크기 비교</small></span><span aria-hidden="true">›</span></button>
       <div class="sguide">
         <div class="sguide-head"><h3>사이즈 가이드</h3><p>성인 키 170cm와 나란히 세운 실제 비율입니다. 높이와 함께 하단 지름을 설치할 공간의 폭과 비교해 보세요.</p></div>
@@ -1433,7 +1437,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
       <div class="sheet-title"><h3>크기별 가격</h3><p data-e2="트리 구성 1식 · 정가 (2차 얼리버드 할인은 상담 시 안내)">트리 구성 1식 · 1차 얼리버드 할인가 (스탠다드 10% · 프리미엄 15%)</p></div>
       <div class="sheet sheet2" role="table" aria-label="크기별 가격">
         <div class="sheet-row sheet-head" role="row"><span role="columnheader">사진</span><span role="columnheader">크기</span><span role="columnheader">스탠다드</span><span role="columnheader">프리미엄</span></div>
-        <div class="sheet-row" role="row" data-size-card="135" tabindex="0" aria-label="1.35m 자세히 보기"><img role="cell" src="img/size-135.webp" width="600" height="800" loading="lazy" alt="1.35m 설치 예"><div class="sz" role="cell"><b class="num">1.35m</b><span>하단 지름 81cm · 작은 공간, 입구 옆</span><span class="sz-box">하단 상자 미포함</span></div><span class="tp" role="cell"><em class="tp-k">스탠다드</em><b class="num">247,000원</b><s class="num">275,000원</s></span><span class="tp pre" role="cell"><em class="tp-k">프리미엄</em><b class="num">289,000원</b><s class="num">340,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row" role="row" data-size-card="135" tabindex="0" aria-label="1.35m 자세히 보기"><img role="cell" src="img/size-135.webp" width="600" height="800" loading="lazy" alt="1.35m 설치 예"><div class="sz" role="cell"><b class="num">1.35m</b><span>하단 지름 81cm · 작은 공간, 입구 옆</span><span class="sz-box">LED 별·하단 상자 미포함</span></div><span class="tp pre tp-one" role="cell"><em class="tp-k">단일 구성 · 프리미엄 장식</em><b class="num">289,000원</b><s class="num">340,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row" role="row" data-size-card="195" tabindex="0" aria-label="1.95m 슬림 자세히 보기"><img role="cell" src="img/size-195.webp" width="600" height="800" loading="lazy" alt="1.95m 슬림 설치 예"><div class="sz" role="cell"><b class="num">1.95m 슬림</b><span>하단 지름 100cm · 폭이 좁은 자리</span><span class="sz-box">하단 상자 3개</span></div><span class="tp" role="cell"><em class="tp-k">스탠다드</em><b class="num">427,000원</b><s class="num">475,000원</s></span><span class="tp pre" role="cell"><em class="tp-k">프리미엄</em><b class="num">500,000원</b><s class="num">590,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row is-pop" role="row" data-size-card="230" tabindex="0" aria-label="2.3m 자세히 보기"><img role="cell" src="img/size-230.webp" width="600" height="801" loading="lazy" alt="2.3m 설치 예"><div class="sz" role="cell"><b class="num">2.3m<span class="pop">인기</span></b><span>하단 지름 140cm · 카페, 사무실, 가정</span><span class="sz-box">하단 상자 5개</span></div><span class="tp" role="cell"><em class="tp-k">스탠다드</em><b class="num">580,000원</b><s class="num">645,000원</s></span><span class="tp pre" role="cell"><em class="tp-k">프리미엄</em><b class="num">680,000원</b><s class="num">800,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row" role="row" data-size-card="230s" tabindex="0" aria-label="2.3m 스노우 자세히 보기"><img role="cell" src="img/size-230s.webp" width="600" height="800" loading="lazy" alt="2.3m 스노우 설치 예"><div class="sz" role="cell"><b class="num">2.3m 스노우<span class="pop pop-ltd">한정 수량</span></b><span>잎 끝에 눈이 덮인 트리 · 하단 지름 140cm</span><span class="sz-box">하단 상자 5개</span></div><span class="tp" role="cell"><em class="tp-k">스탠다드</em><b class="num">652,000원</b><s class="num">725,000원</s></span><span class="tp pre" role="cell"><em class="tp-k">프리미엄</em><b class="num">765,000원</b><s class="num">900,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
@@ -1479,7 +1483,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
       <div class="faq">
         <details><summary>언제까지 예약해야 하나요?</summary><p data-e2="1차 얼리버드 할인(스탠다드 10%, 프리미엄 15%)은 11월 8일에 마감되었습니다. 지금은 2차 얼리버드로 예약하실 수 있고, 할인율은 상담하실 때 안내해 드립니다. 원하시는 설치 날짜가 있으시면 함께 말씀해 주세요.">1차 얼리버드 할인은 11월 8일까지 예약하시는 분께 적용됩니다. 스탠다드는 10%, 프리미엄은 15% 할인됩니다. 이후에는 할인율을 조정한 2차 얼리버드로 예약하실 수 있습니다. 원하시는 설치 날짜가 있으시면 상담하실 때 함께 말씀해 주세요.</p></details>
         <details><summary>예약 후 취소할 수 있나요?</summary><p>계약일로부터 7일 안에는 비용 없이 취소하실 수 있습니다. 그 뒤에는 설치일에 가까울수록 위약금이 생기며, 자세한 기준은 계약서에 적어 드립니다.</p></details>
-        <details><summary>스탠다드와 프리미엄은 무엇이 다른가요?</summary><p>두 구성 모두 같은 트리와 LED 조명, 오너먼트, 리본, 받침대 가리개가 들어갑니다. 프리미엄에는 벨벳 리본·솔방울·레드·화이트 베리 장식과 추가 오너먼트, LED 별이 더해집니다. 하단 시그니처 상자 개수는 두 구성이 같고, 2.3m 이상은 30% 키워 새로 만든 상자로 장식합니다.</p></details>
+        <details><summary>스탠다드와 프리미엄은 무엇이 다른가요?</summary><p>두 구성 모두 같은 트리와 LED 조명, 오너먼트, 리본, 받침대 가리개가 들어갑니다. 프리미엄에는 벨벳 리본·솔방울·레드·화이트 베리 장식과 추가 오너먼트, LED 별이 더해집니다. 하단 시그니처 상자 개수는 두 구성이 같고, 2.3m 이상은 30% 키워 새로 만든 상자로 장식합니다. 1.35m는 구성을 나누지 않고 단일 구성(프리미엄 장식, LED 별·하단 상자 제외)으로 운영합니다.</p></details>
         <details><summary>얼리버드 기간에 예약하면 바로 설치되나요?</summary><p>11월 8일은 1차 얼리버드 할인 마감일이며, 설치는 11월부터 진행됩니다. 예약하실 때 원하시는 설치 날짜를 알려 주시면 일정에 맞춰 설치해 드립니다.</p></details>
         <details><summary>전기 안전은 괜찮나요?</summary><p>네, 안심하셔도 됩니다. 모든 트리에는 화재 예방을 위해 KC 인증을 받은 전기안정기(SMPS)를 설치해 드립니다.</p></details>
         <details><summary>대여 기간은 어떻게 되나요?</summary><p>설치한 날부터 1월~2월 초까지 이용하실 수 있습니다. 기간에 따른 추가요금은 없으며, 회수 날짜는 편하신 날로 협의해 정합니다.</p></details>
@@ -1917,7 +1921,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
       const z = SIZES[key], pr = priceOf(z.chip);
       show('<p class="cc-k">크기 · 하단 지름 ' + z.d + '</p><p class="ic-title">' + esc(z.t) + (z.pop ? '<small>인기</small>' : '') + (z.ltd ? '<small class="ltd">한정 수량</small>' : '') + '</p>' +
         '<img class="ic-img tall" src="' + z.img + '" alt="' + esc(z.t) + ' 설치 예">' +
-        '<p class="ic-meta"><span>' + (z.box ? '하단 상자 ' + z.box + '개' : '하단 상자 미포함') + '</span>' + (pr ? (window.TL_AFTER1 ? '<span>스탠다드 <b>' + won(pr.std[0]) + '</b></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[0]) + '</b></span><span>정가 · 2차 할인은 상담 시 안내</span>' : '<span>스탠다드 <b>' + won(pr.std[1]) + '</b> <s>' + won(pr.std[0]) + '</s></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[1]) + '</b> <s>' + won(pr.pre[0]) + '</s></span><span>1차 얼리버드가</span>') : '') + '</p>' +
+        '<p class="ic-meta"><span>' + (z.box ? '하단 상자 ' + z.box + '개' : '하단 상자 미포함') + '</span>' + (pr && z.chip === 's135' ? '<span>단일 구성 <b style="color:var(--berry)">' + won(pr.pre[window.TL_AFTER1 ? 0 : 1]) + '</b>' + (window.TL_AFTER1 ? '' : ' <s>' + won(pr.pre[0]) + '</s>') + '</span><span>' + (window.TL_AFTER1 ? '정가 · 2차 할인은 상담 시 안내' : '1차 얼리버드가') + '</span>' : pr ? (window.TL_AFTER1 ? '<span>스탠다드 <b>' + won(pr.std[0]) + '</b></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[0]) + '</b></span><span>정가 · 2차 할인은 상담 시 안내</span>' : '<span>스탠다드 <b>' + won(pr.std[1]) + '</b> <s>' + won(pr.std[0]) + '</s></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[1]) + '</b> <s>' + won(pr.pre[0]) + '</s></span><span>1차 얼리버드가</span>') : '') + '</p>' +
         '<p class="cc-d">' + esc(z.fit) + '</p>' + caseRow(z.cases) +
         '<div class="cc-b"><button type="button" class="cc-main" data-go>이 크기로 견적 내기</button></div>', from);
       body.querySelector('[data-go]').addEventListener('click', () => goEstimate(pre => pick(z.chip, pre)));
@@ -2325,7 +2329,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
 (() => {
   // 확정 가격 (2026-10-28 대표님 가격표). [정가, 1차 얼리버드가]
   const P = {
-    s135: { std: [275000, 247000], pre: [340000, 289000] },
+    s135: { std: [340000, 289000], pre: [340000, 289000] },   // 1.35m는 단일 구성(프리미엄 장식, LED 별·상자 제외)
     s195: { std: [475000, 427000], pre: [590000, 500000] },
     s230: { std: [645000, 580000], pre: [800000, 680000] },
     s230s: { std: [725000, 652000], pre: [900000, 765000] },
@@ -2374,6 +2378,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   const ORDER = ['place', 'size', 'count', 'tier', 'color', 'extra', 'region', 'when'];
   const PROG = { place: 1, size: 2, ceil: 2, count: 3, tier: 4, color: 5, extra: 6, region: 7, when: 8, result: 9 };
   function nextOf(step) {
+    if ((step === 'size' || step === 'ceil' || step === 'place') && A.size === 's135') { A.tier = 'pre'; A._pre_tier = 1; }   // 1.35m는 구성 선택 없음
     if (step === 'size' && A.size === '?') return 'ceil';
     let i = ORDER.indexOf(step === 'ceil' ? 'size' : step) + 1;
     while (i < ORDER.length && A['_pre_' + ORDER[i]]) i++;
@@ -2525,7 +2530,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   }
   function makeId() { const d = new Date(Date.now() + 9 * 3600000), c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = ''; for (let i = 0; i < 3; i++) r += c[Math.floor(Math.random() * c.length)]; return 'TL-' + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0') + '-' + r; }
   const cnt = c => c.n + (A.count >= 4 ? '그루 이상' : '그루');
-  const tierName = t => t === 'pre' ? '프리미엄' : '스탠다드';
+  const tierName = t => A.size === 's135' ? '단일 구성' : (t === 'pre' ? '프리미엄' : '스탠다드');
   function quoteText(c, v) {
     const range = c.min === c.max ? won(c.min) : won(c.min) + ' ~ ' + won(c.max);
     const L = ['상호', '담당자', '연락처', '설치 주소'], who = (v || []).map((x, i) => x ? L[i] + ': ' + x : '').filter(Boolean);
