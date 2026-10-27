@@ -83,14 +83,14 @@ button{font:inherit;cursor:pointer}
 .stage-inner{transform-origin:0 0;width:794px}
 
 /* ── A4 견적서 (항상 흰 종이) ── */
-#paper{--k:1;width:794px;height:1123px;background:#fff;color:#000;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;
+#paper{--row:30px;width:794px;height:1123px;background:#fff;color:#000;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;
   padding:30px 34px;position:relative;font-size:12.6px;line-height:1.35;-webkit-font-smoothing:antialiased}
 #paper .frame{border:3px double #000;height:100%;padding:16px 26px 0;display:flex;flex-direction:column;overflow:hidden}
 #paper .no{font-size:11.5px}
-#paper .title{text-align:center;margin:calc(2px*var(--k)) 0 calc(14px*var(--k))}
+#paper .title{text-align:center;margin:2px 0 14px}
 #paper .title span{display:inline-block;font-size:30px;font-weight:700;white-space:pre;padding:0 .15em 3px;border-bottom:4px double #000;line-height:1.2}
 #paper table{border-collapse:collapse;width:100%;table-layout:fixed}
-#paper td,#paper th{border:1px solid #000;padding:calc(4px*var(--k)) 7px;vertical-align:middle;font-weight:400}
+#paper td,#paper th{border:1px solid #000;padding:4px 7px;vertical-align:middle;font-weight:400}
 #paper th{font-weight:700}
 #paper .c{text-align:center}
 #paper .r{text-align:right;font-variant-numeric:tabular-nums}
@@ -98,36 +98,36 @@ button{font:inherit;cursor:pointer}
 #paper .sm{font-size:10.5px}
 #paper .xs{font-size:9.5px;line-height:1.2}
 #paper .top{display:grid;grid-template-columns:47% 53%;align-items:stretch}
-#paper .to{display:flex;flex-direction:column;justify-content:center;gap:calc(14px*var(--k));padding-right:18px;border-bottom:1.5px solid #000}
+#paper .to{display:flex;flex-direction:column;justify-content:center;gap:14px;padding-right:18px;border-bottom:1.5px solid #000}
 #paper .to .ln{border-bottom:1px solid #000;padding-bottom:5px;font-size:13.5px}
 #paper .to .cust{font-size:15.5px;font-weight:700;display:flex;justify-content:space-between;gap:10px}
 #paper .to .cust span:last-child{white-space:nowrap}
 #paper .sup{border:1.5px solid #000}
-#paper .sup td{height:calc(26px*var(--k));text-align:center;font-size:12px}
+#paper .sup td{height:26px;text-align:center;font-size:12px}
 #paper .sup .v{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.9em;font-weight:700;width:30px;font-size:13px}
 #paper .sup .k{width:96px;font-size:11.5px}
 #paper .seal{display:inline-flex;align-items:center;gap:6px}
 #paper .seal img{width:26px;height:26px;object-fit:contain}
-#paper .amount{margin-top:calc(14px*var(--k));border:1.5px solid #000}
-#paper .amount td{height:calc(40px*var(--k));border:0;font-size:14.5px}
+#paper .amount{margin-top:14px;border:1.5px solid #000}
+#paper .amount td{height:40px;border:0;font-size:14.5px}
 #paper .amount td:first-child{width:32%;font-weight:700;border-right:1px solid #000}
 #paper .amount td:last-child{text-align:center;font-weight:700;font-size:15px}
-#paper h3{font-size:13px;margin:calc(14px*var(--k)) 0 calc(5px*var(--k));font-weight:700}
-#paper .grid thead th{border-top:2px solid #000;border-bottom:2px solid #000;font-size:11.5px;height:calc(24px*var(--k))}
-#paper .grid tbody td{height:calc(27px*var(--k))}
+#paper h3{font-size:13px;margin:14px 0 5px;font-weight:700}
+#paper .grid thead th{border-top:2px solid #000;border-bottom:2px solid #000;font-size:11.5px;height:24px}
+#paper .grid tbody td{height:var(--row);padding-top:1px;padding-bottom:1px}
 #paper .grey{background:#f2f2f2}
 #paper .sum{margin-top:0}
-#paper .sum td{height:calc(23px*var(--k));font-size:12px}
+#paper .sum td{height:23px;font-size:12px}
 #paper .sum .first td{border-top:2px solid #000}
 #paper .sum .strong td{font-weight:700;font-size:13px}
 #paper .sum .top2 td{border-top:2px solid #000}
-#paper .sum .total td{font-weight:700;font-size:15.5px;height:calc(32px*var(--k))}
+#paper .sum .total td{font-weight:700;font-size:15.5px;height:32px}
 #paper .notes{vertical-align:top!important;padding:10px 12px!important;font-size:12.3px;line-height:1.45}
 #paper .notes .h{font-weight:700;margin-bottom:6px}
 #paper .notes .v1{font-weight:700}
 #paper .notes .v2{font-size:10.8px;margin:1px 0 6px}
 #paper .notes ul{list-style:none;margin:0;padding:0}
-#paper .notes li{padding-left:12px;position:relative;margin:0 0 calc(3px*var(--k))}
+#paper .notes li{padding-left:12px;position:relative;margin:0 0 3px}
 #paper .notes li::before{content:"·";position:absolute;left:2px}
 #paper .notes .warn{font-size:10.8px;margin-top:6px}
 #paper .fill{flex:1}
@@ -206,6 +206,7 @@ button{font:inherit;cursor:pointer}
     <section>
       <div class="total-box"><span>합계 (부가세 포함)</span><b id="totalOut">0원</b></div>
       <p class="hint err" id="problems" hidden></p>
+      <p class="hint err" id="overflow" hidden></p>
       <div class="actions">
         <button type="button" class="primary" id="pdfBtn">PDF 저장</button>
         <button type="button" class="ghost" id="pngBtn">이미지 저장</button>
@@ -357,7 +358,7 @@ function calc() {
   const vat = Math.round(supply * 0.1);
   const used = [...new Set(trees.filter(t => t.tier !== '단일 구성').map(t => t.tier))];
   const earlyLabel = S.phase === 'e2' ? `2차 얼리버드 할인 (${S.e2Pct || 0}%)`
-    : used.length > 1 ? `1차 얼리버드 (${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')})`
+    : used.length > 1 ? `1차 얼리버드 할인\n${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')}`
     : `1차 얼리버드 할인 (${trees[0].off})`;
   if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
   return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, earlyLabel, problems };
@@ -411,26 +412,40 @@ function renderPaper(R) {
     <h3>1. 트리 구성</h3>
     <table class="grid"><colgroup>${tCols.map(w => `<col style="width:${w}%">`).join('')}</colgroup>
       <thead><tr>${tHead.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${treeRows}</tbody></table>
-    ${R.addons.length ? `<h3>2. 추가 장식</h3><table class="grid"><colgroup><col style="width:27%"><col style="width:20%"><col style="width:17%"><col style="width:7%"><col style="width:13%"><col style="width:16%"></colgroup>
-      <thead><tr><th>항목</th><th>옵션</th><th>적용 트리</th><th>수량</th><th>단가</th><th>금액</th></tr></thead><tbody>${addonRows}</tbody></table>` : ''}
-    <h3>${R.addons.length ? 3 : 2}. 금액 정리</h3>
+    <h3>2. 추가 장식</h3><table class="grid"><colgroup><col style="width:27%"><col style="width:20%"><col style="width:17%"><col style="width:7%"><col style="width:13%"><col style="width:16%"></colgroup>
+      <thead><tr><th>항목</th><th>옵션</th><th>적용 트리</th><th>수량</th><th>단가</th><th>금액</th></tr></thead><tbody id="addonBody">${addonRows}</tbody></table>
+    <h3>3. 금액 정리</h3>
     <table class="sum"><colgroup><col style="width:50%"><col style="width:28%"><col style="width:22%"></colgroup>
       ${sumRows.map(([k, v, cls = ''], i) => `<tr class="${i === 0 ? 'first ' : ''}${cls.includes('strong') ? 'strong ' : ''}${cls.includes('top2') ? 'top2 ' : ''}${cls === 'total' ? 'total' : ''}">
         ${i === 0 ? `<td class="notes" rowspan="${sumRows.length}">${notes}</td>` : ''}
-        <td class="c ${cls.includes('grey') ? 'grey' : ''}">${esc(k)}</td><td class="r ${cls.includes('grey') ? 'grey' : ''}">${v}</td></tr>`).join('')}
+        <td class="c ${cls.includes('grey') ? 'grey' : ''}">${esc(k).replace(/\n(.*)/, '<div class="xs">$1</div>')}</td><td class="r ${cls.includes('grey') ? 'grey' : ''}">${v}</td></tr>`).join('')}
     </table></div></div>`;
   fitPaper();
 }
-// 한 장을 꽉 채우도록 줄 높이 배율(--k)을 맞춤
+// 제목·공급자·금액 정리는 높이 고정. 남는 공간은 추가 장식 표 아래 빈 줄로 채우고,
+// 넘치면 품목 줄 높이를 최소 높이까지 줄임. 그래도 넘치면 paperOver = true
+let paperOver = false;
+const ROW = 30, ROW_MIN = 21;
+const BLANK = '<tr class="blank">' + '<td>&nbsp;</td>'.repeat(6) + '</tr>';
 function fitPaper() {
-  const paper = $('#paper'), frame = $('#frame'), content = $('#content');
-  const avail = () => frame.clientHeight - 18;
-  let lo = 0.85, hi = 2.4;
-  for (let i = 0; i < 14; i++) {
-    const mid = (lo + hi) / 2; paper.style.setProperty('--k', mid);
-    if (content.scrollHeight <= avail()) lo = mid; else hi = mid;
+  const paper = $('#paper'), frame = $('#frame'), content = $('#content'), tb = $('#addonBody');
+  const avail = frame.clientHeight - 16;
+  const setRow = h => paper.style.setProperty('--row', h + 'px');
+  tb.querySelectorAll('tr.blank').forEach(r => r.remove());
+  setRow(ROW);
+  let free = avail - content.scrollHeight;
+  if (free >= 0) {
+    for (let i = Math.floor(free / ROW); i > 0; i--) tb.insertAdjacentHTML('beforeend', BLANK);
+    const rows = paper.querySelectorAll('.grid tbody tr').length;
+    let h = ROW + Math.max(0, (avail - content.scrollHeight) / rows);   // 남은 몇 px은 줄마다 나눠서 꽉 채움
+    setRow(h);
+    while (content.scrollHeight > avail && h > ROW) { h -= 0.25; setRow(h); }
+    paperOver = false;
+  } else {
+    let h = ROW;
+    while (content.scrollHeight > avail && h > ROW_MIN) { h -= 0.5; setRow(h); }
+    paperOver = content.scrollHeight > avail;
   }
-  paper.style.setProperty('--k', lo);
   scalePreview();
 }
 function scalePreview() {
@@ -495,6 +510,10 @@ function update() {
   $('#problems').hidden = !R.problems.length; $('#problems').textContent = R.problems.join(' ');
   ['#pdfBtn', '#pngBtn', '#copyBtn'].forEach(s => $(s).disabled = !!R.problems.length);
   renderPaper(R);
+  const ov = $('#overflow');
+  ov.hidden = !(paperOver || S.trees.length >= 10);
+  ov.textContent = S.trees.length >= 10 ? `${S.trees.length}그루는 이 양식(한 장)으로 맞지 않습니다. 견적서 구성을 따로 짜야 합니다.`
+    : '내용이 한 장을 넘어 아래가 잘립니다. 비고 추가 줄을 줄이거나 장식을 합쳐 주세요.';
   store.set('tl-quote-draft', S);
   return R;
 }
