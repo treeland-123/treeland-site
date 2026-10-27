@@ -37,7 +37,7 @@ h2{font-size:16px;margin:0}
 @media (max-width:520px){.grid2{grid-template-columns:1fr}}
 .field{display:flex;flex-direction:column;gap:4px;min-width:0}
 .field label{font-size:13px;color:var(--sub)}
-input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+input,textarea,#n-quote{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
 textarea{resize:vertical;min-height:110px;font-size:14px}
 input:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .hint{font-size:12.5px;color:var(--sub)}
@@ -77,6 +77,9 @@ a{color:var(--ink)}
 .step .n{min-width:36px;text-align:center;font-variant-numeric:tabular-nums;font-size:14px}
 .cdot{width:12px;height:12px;border-radius:50%;border:1px solid var(--line)}
 .tree select{font:inherit;font-size:14px;color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:6px 8px;flex:1;min-width:140px}
+.tree select.tier{flex:0 0 auto;min-width:0}
+.tree .one{font-size:13px;color:var(--sub)}
+.tree input.tplace{flex:1 1 100%;font-size:14px;padding:6px 8px}
 .del{border:0;background:none;color:var(--sub);font-size:13px;text-decoration:underline;margin-left:auto}
 </style>
 </head>
@@ -101,6 +104,7 @@ a{color:var(--ink)}
     <h2 id="h-new">새 계약 링크 만들기</h2>
     <form id="newForm" novalidate>
       <div class="wrap" style="gap:12px">
+        <div class="field" id="fromQuote" hidden><label for="n-quote">견적서에서 불러오기</label><select id="n-quote"><option value="">고르면 아래 칸이 채워집니다</option></select><span class="hint">이 기기에서 저장한 견적서의 상호·트리 구성·임대료·운임·견적 번호를 가져옵니다. 설치 장소와 일시는 직접 넣어 주세요.</span></div>
         <div class="field"><label for="n-customer">고객 상호 (선택, 미리 채워짐)</label><input type="text" id="n-customer"></div>
         <div class="field"><label for="n-place">설치 장소</label><input type="text" id="n-place" placeholder="예: 서울 성북구 ○○카페 1층 입구"></div>
         <div class="field"><span class="flabel">트리 구성</span>
@@ -108,7 +112,7 @@ a{color:var(--ink)}
             <button type="button" data-v="1.35m">+ 1.35m</button><button type="button" data-v="1.95m 슬림">+ 1.95m 슬림</button><button type="button" data-v="2.3m">+ 2.3m</button><button type="button" data-v="2.3m 스노우">+ 2.3m 스노우</button><button type="button" data-v="2.9m">+ 2.9m</button>
           </div>
           <div class="trees" id="trees"></div>
-          <span class="hint">크기를 누를 때마다 한 줄씩 추가됩니다. 줄마다 수량과 장식 색상을 정하면 아래 두 칸이 자동으로 채워집니다.</span>
+          <span class="hint">크기를 누를 때마다 한 줄씩 추가됩니다. 줄마다 구성·수량·장식 색상을 정하면 아래 두 칸이 자동으로 채워집니다. 여러 곳에 놓으면 위치도 적어 주세요.</span>
         </div>
         <div class="field"><label for="n-size">임대물 크기·수량</label><input type="text" id="n-size" placeholder="위에서 트리를 추가하면 채워집니다. 직접 써도 됩니다"></div>
         <div class="field"><label for="n-color">장식 색상</label><input type="text" id="n-color" placeholder="위에서 트리를 추가하면 채워집니다. 직접 써도 됩니다"></div>
@@ -118,7 +122,11 @@ a{color:var(--ink)}
           <div class="field"><label for="n-install">설치 예정 일시</label><input type="datetime-local" id="n-install" step="1800"></div>
           <div class="field"><label for="n-retrieve">회수 예정 일시</label><input type="datetime-local" id="n-retrieve" step="1800"></div>
         </div>
-        <div class="field"><label for="n-price">임대료 (부가세 별도, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450,000" autocomplete="off"><span class="hint" id="priceHint"></span></div>
+        <div class="grid2">
+          <div class="field"><label for="n-price">임대료 (견적서 공급가액, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450,000" autocomplete="off"><span class="hint" id="priceHint"></span></div>
+          <div class="field"><label for="n-ship">그중 운임 (원)</label><input type="text" id="n-ship" inputmode="numeric" placeholder="서울은 0" autocomplete="off"><span class="hint">취소 위약금 계산에서 빠지는 금액입니다.</span></div>
+        </div>
+        <div class="field"><label for="n-qno">견적 번호 (선택)</label><input type="text" id="n-qno" placeholder="예: 2026-003" autocomplete="off"><span class="hint">계약서에 「별첨 견적서 No. ○」로 표시됩니다.</span></div>
         <p class="error" id="newErr" role="alert" hidden></p>
         <button type="submit" class="primary" id="newBtn">링크 만들기</button>
       </div>
@@ -257,7 +265,7 @@ $("#list").addEventListener("click", async e => {
 });
 
 function msg(url, c){
-  return `안녕하세요, 트리랜드입니다.\n아래 링크에서 계약서 확인하신 후 서명 부탁드립니다.\n서명하시면 입력하신 이메일로 계약서가 발송됩니다.\n${url}\n\n설치: ${fmtLong(c.install)}\n회수: ${fmtLong(c.retrieve)}\n임대료: ${won(c.price)}원 (부가세 별도)\n세부 구성은 보내드린 견적서와 같습니다.`;
+  return `안녕하세요, 트리랜드입니다.\n아래 링크에서 계약서 확인하신 후 서명 부탁드립니다.\n서명하시면 입력하신 이메일로 계약서가 발송됩니다.\n${url}\n\n설치: ${fmtLong(c.install)}\n회수: ${fmtLong(c.retrieve)}\n임대료: ${won(c.price)}원 (부가세 별도${c.ship > 0 ? `, 운임 ${won(c.ship)}원 포함` : ""})\n세부 구성은 보내드린 견적서${c.qno ? `(No. ${c.qno})` : ""}와 같습니다.`;
 }
 $("#newForm").addEventListener("submit", async e => {
   e.preventDefault();
@@ -270,17 +278,20 @@ $("#newForm").addEventListener("submit", async e => {
   if(!v("#n-retrieve")) return err("회수 예정 일시를 골라 주세요.");
   if(v("#n-retrieve") <= v("#n-install")) return err("회수 예정 일시가 설치 예정 일시보다 뒤여야 합니다.");
   if(!(price > 0)) return err("임대료를 숫자로 입력해 주세요.");
+  if(v("#n-ship") === "") return err("운임을 입력해 주세요. 서울이면 0입니다.");
+  const ship = Number(v("#n-ship").replace(/[^\d]/g, ""));
+  if(ship >= price) return err("운임이 임대료보다 클 수 없습니다. 임대료는 운임을 포함한 공급가액입니다.");
   $("#newErr").hidden = true;
   const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
   try{
     const contract = { customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
-      install:v("#n-install"), retrieve:v("#n-retrieve"), price };
+      install:v("#n-install"), retrieve:v("#n-retrieve"), price, ship, qno:v("#n-qno") };
     const j = await api({action:"create", pin:pin(), contract});
     if(!j.ok && j.error === "pin"){ pinState(false, "비밀번호가 틀렸습니다. 다시 입력해 주세요."); $("#pin").scrollIntoView({block:"center"}); $("#pin").focus(); throw new Error("비밀번호가 틀려서 링크를 만들지 못했습니다. 맨 위 비밀번호를 확인해 주세요."); }
     if(!j.ok) throw new Error(j.error);
     $("#r-msg").value = msg(j.url, contract); $("#openLink").href = j.url; $("#result").hidden = false;
     e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
-    trees = []; renderTrees(); priceHint(); clearDraft();
+    trees = []; renderTrees(); priceHint(); clearDraft(); $("#n-quote").value = "";
     $("#result").scrollIntoView({behavior:"smooth", block:"center"});
     load();
   }catch(ex){ err(ex.message || "링크를 만들지 못했습니다."); }
@@ -288,27 +299,38 @@ $("#newForm").addEventListener("submit", async e => {
 });
 // 트리 구성: 줄마다 크기·수량·색상
 const COLORS = [["레드 & 골드","#9e2330"],["네이비 & 골드","#1d2d45"],["세이지 그린 & 골드","#93a68a"],["화이트 & 샴페인","#f1eee7"]];
-let trees = [];   // [{size, qty, color}]
+const TIERS = ["스탠다드","프리미엄"];
+const ONE = "1.35m";   // 1.35m는 단일 구성(프리미엄 장식, LED 별·상자 제외)
+let trees = [];   // [{size, tier, qty, color, place}]
+const tierOf = t => t.size === ONE ? "" : (t.tier || "프리미엄");
+const treeName = t => `${t.size}${tierOf(t) ? " " + tierOf(t) : ""}`;
 function compose(){
   const sz = [], seen = new Map();
-  trees.forEach(t => { const k = t.size + "|" + t.color; if(seen.has(k)) seen.get(k).qty += t.qty; else { const o = {...t}; seen.set(k, o); sz.push(o); } });
-  $("#n-size").value = sz.map(t => `${t.size} 트리 ${t.qty}대`).join(", ");
+  trees.forEach(t => { const k = [t.size, tierOf(t), t.color, t.place || ""].join("|"); if(seen.has(k)) seen.get(k).qty += t.qty; else { const o = {...t}; seen.set(k, o); sz.push(o); } });
+  const at = t => t.place ? ` (${t.place})` : "";
+  $("#n-size").value = sz.map(t => `${treeName(t)} 트리 ${t.qty}대${at(t)}`).join(", ");
   const cs = [...new Set(sz.map(t => t.color))];
-  $("#n-color").value = cs.length <= 1 ? (cs[0] || "") : sz.map(t => `${t.size}${t.qty > 1 ? ` ${t.qty}대` : ""} ${t.color}`).join(", ");
+  // 색상이 여러 개면 색상별로 묶음: "레드 & 골드 (2.3m 프리미엄 2대), 네이비 & 골드 (1.35m)"
+  $("#n-color").value = cs.length <= 1 ? (cs[0] || "") : cs.map(c => {
+    const m = new Map(); sz.filter(t => t.color === c).forEach(t => m.set(treeName(t), (m.get(treeName(t)) || 0) + t.qty));
+    return `${c} (${[...m].map(([n, q]) => n + (q > 1 ? ` ${q}대` : "")).join(", ")})`;
+  }).join(", ");
 }
 function renderTrees(){
   $("#trees").innerHTML = trees.map((t, i) => `<div class="tree" data-i="${i}">
     <b>${esc(t.size)}</b>
+    ${t.size === ONE ? `<span class="one">단일 구성</span>` : `<select class="tier" data-act="tier" aria-label="${esc(t.size)} 구성">${TIERS.map(x => `<option${x === tierOf(t) ? " selected" : ""}>${x}</option>`).join("")}</select>`}
     <span class="step"><button type="button" data-act="minus" aria-label="${esc(t.size)} 수량 줄이기">−</button><span class="n">${t.qty}대</span><button type="button" data-act="plus" aria-label="${esc(t.size)} 수량 늘리기">+</button></span>
     <span class="cdot" style="background:${(COLORS.find(c => c[0] === t.color) || [,"transparent"])[1]}"></span>
     <select data-act="color" aria-label="${esc(t.size)} 장식 색상">${COLORS.map(c => `<option${c[0] === t.color ? " selected" : ""}>${esc(c[0])}</option>`).join("")}</select>
-    <button type="button" class="del" data-act="del" aria-label="${esc(t.size)} 빼기">빼기</button></div>`).join("");
+    <button type="button" class="del" data-act="del" aria-label="${esc(t.size)} 빼기">빼기</button>
+    ${trees.length > 1 || t.place ? `<input type="text" class="tplace" data-act="place" value="${esc(t.place || "")}" placeholder="위치 (선택) 예: 1층 입구" aria-label="${esc(t.size)} 설치 위치">` : ""}</div>`).join("");
   compose();
 }
 $("#sizeChips").addEventListener("click", e => {
   const b = e.target.closest("button"); if(!b) return;
   const last = trees[trees.length - 1];
-  trees.push({ size:b.dataset.v, qty:1, color: last ? last.color : COLORS[0][0] });
+  trees.push({ size:b.dataset.v, tier: last && last.tier ? last.tier : "프리미엄", qty:1, color: last ? last.color : COLORS[0][0], place:"" });
   renderTrees();
 });
 $("#trees").addEventListener("click", e => {
@@ -320,22 +342,63 @@ $("#trees").addEventListener("click", e => {
   renderTrees();
 });
 $("#trees").addEventListener("change", e => {
-  if(e.target.dataset.act !== "color") return;
-  trees[+e.target.closest(".tree").dataset.i].color = e.target.value; renderTrees();
+  const a = e.target.dataset.act, row = e.target.closest(".tree"), t = row && trees[+row.dataset.i];
+  if(!t) return;
+  if(a === "color") t.color = e.target.value;
+  else if(a === "tier") t.tier = e.target.value;
+  else return;
+  renderTrees();
 });
+$("#trees").addEventListener("input", e => {
+  if(e.target.dataset.act !== "place") return;
+  trees[+e.target.closest(".tree").dataset.i].place = e.target.value.trim(); compose(); saveDraft();
+});
+
+// 견적서에서 불러오기: /quote/ 가 이 기기에 저장한 발행 내역(tl-quote-hist)
+function quoteHist(){ try{ return JSON.parse(localStorage.getItem("tl-quote-hist") || "[]") || []; }catch(e){ return []; } }
+function supplyOf(total){   // 합계(부가세 포함) → 공급가액. 견적서는 부가세 = round(공급가액×0.1)
+  const g = Math.round(total / 1.1);
+  for(const s of [g, g - 1, g + 1, g - 2, g + 2]) if(s + Math.round(s * 0.1) === total) return s;
+  return g;
+}
+function fillFromQuote(h){
+  const st = h.state || {};
+  if(st.cust) $("#n-customer").value = st.cust;
+  const rows = [];
+  (st.trees || []).forEach(q => {
+    const t = { size:q.size, tier: q.size === ONE ? "" : (q.tier || "프리미엄"), qty:1, color:q.color || COLORS[0][0], place:(q.place || "").trim() };
+    const same = rows.find(r => r.size === t.size && r.tier === t.tier && r.color === t.color && r.place === t.place);
+    if(same) same.qty++; else rows.push(t);
+  });
+  trees = rows; renderTrees();
+  $("#n-price").value = won(supplyOf(Number(h.total) || 0));
+  $("#n-ship").value = won(Number(String(st.ship ?? "").replace(/[^\d]/g, "")) || 0);
+  $("#n-qno").value = h.no || "";
+  priceHint(); saveDraft();
+}
+function initQuote(){
+  const list = quoteHist(); if(!list.length) return;
+  $("#n-quote").insertAdjacentHTML("beforeend", list.map((h, i) => `<option value="${i}">${esc(h.cust || "(상호 없음)")} · No. ${esc(h.no)} · 합계 ${won(h.total)}원</option>`).join(""));
+  $("#fromQuote").hidden = false;
+  $("#n-quote").addEventListener("change", e => { const h = list[+e.target.value]; if(e.target.value !== "" && h) fillFromQuote(h); });
+  const q = new URLSearchParams(location.search).get("q");
+  if(q){ const i = list.findIndex(h => h.no === q); if(i >= 0){ $("#n-quote").value = String(i); fillFromQuote(list[i]); $("#n-place").focus(); } }
+}
 
 // 임대료: 쉼표 자동, 부가세 포함 금액·한글 금액 안내
 function priceHint(){
   const n = Number($("#n-price").value.replace(/[^\d]/g, ""));
-  $("#priceHint").textContent = n ? `부가세 포함 ${won(Math.round(n * 1.1))}원 · 계약서 표기: 금 ${hangulAmount(n)}원정` : "";
+  $("#priceHint").textContent = n ? `부가세 포함 ${won(n + Math.round(n * 0.1))}원 · 계약서 표기: 금 ${hangulAmount(n)}원정` : "";
 }
-$("#n-price").addEventListener("input", e => {
-  const el = e.target, digits = el.value.replace(/[^\d]/g, "").replace(/^0+/, "");
+const commaInput = e => {
+  const el = e.target, digits = el.value.replace(/[^\d]/g, "").replace(/^0+(?=\d)/, "");
   const fromEnd = el.value.length - el.selectionStart;
   el.value = digits ? won(digits) : "";
   const pos = Math.max(0, el.value.length - fromEnd); el.setSelectionRange(pos, pos);
   priceHint();
-});
+};
+$("#n-price").addEventListener("input", commaInput);
+$("#n-ship").addEventListener("input", commaInput);
 // 설치 일시를 고르면 회수 일시 칸을 그 시즌 1월로 맞춰 열어 줌 (값은 채우지 않음)
 $("#n-install").addEventListener("change", () => {
   const p = parts($("#n-install").value); if(!p) return;
@@ -351,7 +414,7 @@ $("#n-retrieve").addEventListener("focus", e => {
   }
 });
 // 작성 중인 내용 임시 저장 (이 기기에만)
-const DRAFT_IDS = ["#n-customer","#n-place","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price"];
+const DRAFT_IDS = ["#n-customer","#n-place","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno"];
 function saveDraft(){ try{ localStorage.setItem("tl_draft", JSON.stringify({ f: DRAFT_IDS.map(id => $(id).value), trees })); }catch(e){} }
 function clearDraft(){ try{ localStorage.removeItem("tl_draft"); }catch(e){} }
 try{
@@ -363,6 +426,7 @@ $("#newForm").addEventListener("change", saveDraft);
 $("#trees").addEventListener("click", () => setTimeout(saveDraft));
 $("#sizeChips").addEventListener("click", () => setTimeout(saveDraft));
 
+initQuote();   // 임시 저장분을 불러온 뒤에 실행해야 ?q= 견적이 우선함
 $("#copyBtn").onclick = e => copy($("#r-msg").value, e.currentTarget);
 </script>
 

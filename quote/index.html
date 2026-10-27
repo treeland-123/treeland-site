@@ -74,7 +74,7 @@ button{font:inherit;cursor:pointer}
 .hist .it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
 .hist .it:first-child{border-top:0}
 .hist .m{color:var(--sub);font-size:12.5px;font-variant-numeric:tabular-nums}
-.hist .acts{display:flex;gap:10px;align-items:center}
+.hist .acts{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 10px;align-items:center}
 
 /* 미리보기 */
 .preview{position:sticky;top:12px;min-width:0}
@@ -605,7 +605,7 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
 function renderHist() {
   const list = store.get('tl-quote-hist', []);
   $('#hist').innerHTML = list.length ? list.map((h, i) => `<div class="it"><div><b>${esc(h.cust)}</b> <span class="m">No. ${esc(h.no)}</span><div class="m">${new Date(h.at).toLocaleDateString('ko-KR')} · 합계 ${fmt(h.total)}원</div></div>
-    <div class="acts"><button type="button" class="ghost" data-open="${i}">열기</button><button type="button" class="link" data-copyq="${i}">복제</button><button type="button" class="link" data-delq="${i}">삭제</button></div></div>`).join('')
+    <div class="acts"><button type="button" class="ghost" data-open="${i}">열기</button><a class="ghost" href="/contract/admin.html?q=${encodeURIComponent(h.no)}" style="text-decoration:none">계약서 만들기</a><button type="button" class="link" data-copyq="${i}">복제</button><button type="button" class="link" data-delq="${i}">삭제</button></div></div>`).join('')
     : '<p class="hint">아직 저장한 견적이 없습니다. PDF·이미지를 저장하면 여기에 남습니다.</p>';
 }
 $('#hist').addEventListener('click', e => {
