@@ -2141,7 +2141,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     s195: { std: [475000, 427000], pre: [590000, 500000] },
     s230: { std: [645000, 580000], pre: [800000, 680000] },
     s230s: { std: [725000, 652000], pre: [900000, 765000] },
-    s290: { std: [1300000, 1170000], pre: [1500000, 1275000] },
+    s290: { std: [1500000, 1275000], pre: [1650000, 1400000] },
   };
   window.TL_PRICES = P;
   const EARLY1_END = Date.UTC(2026, 10, 8);          // 1차 얼리버드 11월 8일까지 (KST 기준 그날 끝까지)
@@ -2217,6 +2217,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     if (opts.extra) { const c = chips(opts.extra.map(e => e[1]), t => on(opts.extra.find(e => e[1] === t)[0])); c.style.marginTop = '10px'; w.appendChild(c); }
     return w;
   }
+  const pct = (sz, tier) => { const [l, e] = P[sz][tier]; return Math.round((1 - e / l) * 100); };
   const unit = (sz, tier) => { const p = P[sz][tier]; return early1() ? p[1] : p[0]; };
 
   const Q = {
@@ -2233,7 +2234,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     tier: () => {
       const n = Math.min(A.count || 1, 3), s = sizeOf(A.size).name;
       const lbl = early1() ? '1차 얼리버드가' : '정가';
-      const pr = t => { const [l, e] = P[A.size][t]; return early1() ? '<s class="qp-was">' + won(l) + '</s><span class="qp-now"><em class="qp-off">' + (t === 'pre' ? 15 : 10) + '%</em>' + won(e) + '</span>' : won(l); };
+      const pr = t => { const [l, e] = P[A.size][t]; return early1() ? '<s class="qp-was">' + won(l) + '</s><span class="qp-now"><em class="qp-off">' + pct(A.size, t) + '%</em>' + won(e) + '</span>' : won(l); };
       ask('구성을 골라 주세요.', cards([
         { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: pr('std') },
         { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', k: 'pre' },
@@ -2349,7 +2350,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       '색상: ' + (A.color === '추천' ? '사진 보고 추천 요청' : A.color),
       '추가 장식: ' + ((A.extra || []).map(x => x.name).join(', ') || '없음'),
       '설치 지역: ' + A.region, '희망 시기: ' + A.when,
-      '예상 합계: ' + range + ' (' + (c.e1 ? '1차 얼리버드 ' + (c.tier === 'pre' ? 15 : 10) + '%' : '정가 기준') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '') + ', 부가세 별도)',
+      '예상 합계: ' + range + ' (' + (c.e1 ? '1차 얼리버드 ' + pct(A.size, c.tier) + '%' : '정가 기준') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '') + ', 부가세 별도)',
       '', '공간 사진을 함께 보내드립니다.']).join('\n');
   }
   function copyNow(text) {
@@ -2382,7 +2383,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     const c = calc();
     say('예상 견적이 나왔어요.', () => {
       const range = c.min === c.max ? won(c.min) : won(c.min) + ' ~ ' + won(c.max);
-      const disc = c.e1 ? '1차 얼리버드 ' + (c.tier === 'pre' ? 15 : 10) + '%' : '정가';
+      const disc = c.e1 ? '1차 얼리버드 ' + pct(A.size, c.tier) + '%' : '정가';
       const d = document.createElement('div'); d.className = 'qm qres';
       d.innerHTML = '<h4>' + tierName(c.tier) + ' · ' + c.s.name + '</h4><dl>' +
         '<div><dt>트리 ' + cnt(c) + '</dt><dd>정가 ' + won(c.list * c.n) + '</dd></div>' +
