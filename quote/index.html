@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<title>트리랜드 견적서 발행</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 관리자용 견적서 발행: 왼쪽 입력, 오른쪽 A4 미리보기. 가격은 홈페이지 가격표에서 읽어 옴 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --ok:#2e6b3a;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.app{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:24px;align-items:start}
+@media (max-width:980px){.app{grid-template-columns:minmax(0,1fr)}}
+header{grid-column:1/-1;padding-top:24px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:22px;margin:2px 0 0}
+.status{font-size:13px;color:var(--sub);margin:0}
+.status.err{color:var(--err)}
+.links{display:flex;gap:12px;font-size:13px}
+.links a{color:var(--sub)}
+.form{display:flex;flex-direction:column;gap:16px;min-width:0}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+h2{font-size:15px;margin:0;display:flex;justify-content:space-between;align-items:center;gap:8px}
+h2 small{font-weight:400;color:var(--sub);font-size:12.5px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:10px}
+@media (max-width:420px){.grid3{grid-template-columns:1fr 1fr}}
+.field{display:flex;flex-direction:column;gap:3px;min-width:0}
+.field label,.lbl{font-size:12.5px;color:var(--sub)}
+input,select,textarea{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px 10px;width:100%;min-width:0}
+textarea{resize:vertical;min-height:64px;font-size:14px}
+input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid var(--ink);outline-offset:1px}
+input[type=number]{font-variant-numeric:tabular-nums}
+.hint{font-size:12.5px;color:var(--sub);margin:0}
+.hint.err{color:var(--err)}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:12px;font-size:15px;font-weight:700}
+.primary[disabled],.ghost[disabled]{opacity:.45;cursor:not-allowed}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:7px 12px;font-size:13.5px}
+.link{background:none;border:0;padding:2px 0;font-size:13px;color:var(--sub);text-decoration:underline;text-underline-offset:2px}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:10px;background:var(--bg)}
+.card-hd{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:14px}
+.seg{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+.seg button{flex:1;background:none;border:0;padding:8px 6px;font-size:14px;color:var(--ink)}
+.seg button[aria-pressed="true"]{background:var(--act);color:var(--act-ink);font-weight:700}
+.seg button[disabled]{color:var(--sub);cursor:not-allowed}
+.price-line{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+.radios{display:flex;flex-direction:column;gap:6px}
+.radios label{display:flex;gap:8px;align-items:center;font-size:14px}
+.radios input{width:auto}
+.inline{display:flex;gap:8px;align-items:center}
+.inline input{width:90px}
+.total-box{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
+.total-box b{font-size:20px}
+.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.actions .primary{grid-column:1/-1}
+.hist{display:flex;flex-direction:column}
+.hist .it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
+.hist .it:first-child{border-top:0}
+.hist .m{color:var(--sub);font-size:12.5px;font-variant-numeric:tabular-nums}
+.hist .acts{display:flex;gap:10px;align-items:center}
+
+/* 미리보기 */
+.preview{position:sticky;top:12px;min-width:0}
+@media (max-width:980px){.preview{position:static}}
+.stage{width:100%;overflow:hidden;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 6px 24px rgba(0,0,0,.08);background:#fff}
+.stage-inner{transform-origin:0 0;width:794px}
+
+/* ── A4 견적서 (항상 흰 종이) ── */
+#paper{--k:1;width:794px;height:1123px;background:#fff;color:#000;font-family:"Noto Sans KR","Malgun Gothic",sans-serif;
+  padding:30px 34px;position:relative;font-size:12.6px;line-height:1.35;-webkit-font-smoothing:antialiased}
+#paper .frame{border:3px double #000;height:100%;padding:16px 26px 0;display:flex;flex-direction:column;overflow:hidden}
+#paper .no{font-size:11.5px}
+#paper .title{text-align:center;margin:calc(2px*var(--k)) 0 calc(14px*var(--k))}
+#paper .title span{display:inline-block;font-size:30px;font-weight:700;white-space:pre;padding:0 .15em 3px;border-bottom:4px double #000;line-height:1.2}
+#paper table{border-collapse:collapse;width:100%;table-layout:fixed}
+#paper td,#paper th{border:1px solid #000;padding:calc(4px*var(--k)) 7px;vertical-align:middle;font-weight:400}
+#paper th{font-weight:700}
+#paper .c{text-align:center}
+#paper .r{text-align:right;font-variant-numeric:tabular-nums}
+#paper .b{font-weight:700}
+#paper .sm{font-size:10.5px}
+#paper .xs{font-size:9.5px;line-height:1.2}
+#paper .top{display:grid;grid-template-columns:47% 53%;align-items:stretch}
+#paper .to{display:flex;flex-direction:column;justify-content:center;gap:calc(14px*var(--k));padding-right:18px;border-bottom:1.5px solid #000}
+#paper .to .ln{border-bottom:1px solid #000;padding-bottom:5px;font-size:13.5px}
+#paper .to .cust{font-size:15.5px;font-weight:700;display:flex;justify-content:space-between;gap:10px}
+#paper .to .cust span:last-child{white-space:nowrap}
+#paper .sup{border:1.5px solid #000}
+#paper .sup td{height:calc(26px*var(--k));text-align:center;font-size:12px}
+#paper .sup .v{writing-mode:vertical-rl;text-orientation:upright;letter-spacing:.9em;font-weight:700;width:30px;font-size:13px}
+#paper .sup .k{width:96px;font-size:11.5px}
+#paper .seal{display:inline-flex;align-items:center;gap:6px}
+#paper .seal img{width:26px;height:26px;object-fit:contain}
+#paper .amount{margin-top:calc(14px*var(--k));border:1.5px solid #000}
+#paper .amount td{height:calc(40px*var(--k));border:0;font-size:14.5px}
+#paper .amount td:first-child{width:32%;font-weight:700;border-right:1px solid #000}
+#paper .amount td:last-child{text-align:center;font-weight:700;font-size:15px}
+#paper h3{font-size:13px;margin:calc(14px*var(--k)) 0 calc(5px*var(--k));font-weight:700}
+#paper .grid thead th{border-top:2px solid #000;border-bottom:2px solid #000;font-size:11.5px;height:calc(24px*var(--k))}
+#paper .grid tbody td{height:calc(27px*var(--k))}
+#paper .grey{background:#f2f2f2}
+#paper .sum{margin-top:0}
+#paper .sum td{height:calc(23px*var(--k));font-size:12px}
+#paper .sum .first td{border-top:2px solid #000}
+#paper .sum .strong td{font-weight:700;font-size:13px}
+#paper .sum .top2 td{border-top:2px solid #000}
+#paper .sum .total td{font-weight:700;font-size:15.5px;height:calc(32px*var(--k))}
+#paper .notes{vertical-align:top!important;padding:10px 12px!important;font-size:12.3px;line-height:1.45}
+#paper .notes .h{font-weight:700;margin-bottom:6px}
+#paper .notes .v1{font-weight:700}
+#paper .notes .v2{font-size:10.8px;margin:1px 0 6px}
+#paper .notes ul{list-style:none;margin:0;padding:0}
+#paper .notes li{padding-left:12px;position:relative;margin:0 0 calc(3px*var(--k))}
+#paper .notes li::before{content:"·";position:absolute;left:2px}
+#paper .notes .warn{font-size:10.8px;margin-top:6px}
+#paper .fill{flex:1}
+@media print{
+  @page{size:A4;margin:0}
+  body{background:#fff;padding:0}
+  .app>*:not(.preview),header{display:none!important}
+  .app{display:block;max-width:none}
+  .preview{position:static}
+  .stage{box-shadow:none;border-radius:0;width:210mm!important;height:auto!important}
+  .stage-inner{transform:none!important}
+  #paper{width:210mm;height:297mm}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div>
+      <div class="brand">TREELAND</div>
+      <h1>견적서 발행</h1>
+      <p class="status" id="status">홈페이지 가격표를 불러오는 중…</p>
+    </div>
+    <nav class="links"><a href="/contract/admin.html">계약 관리</a><a href="/schedule/">일정표</a><a href="/">홈페이지</a></nav>
+  </header>
+
+  <div class="form" id="form" aria-busy="true">
+    <section>
+      <h2>받는 곳</h2>
+      <div class="field"><label for="cust">상호 (귀하 앞)</label><input id="cust" placeholder="예: 주식회사 원엔드" autocomplete="off"></div>
+      <div class="grid2">
+        <div class="field"><label for="qno">견적 번호</label><input id="qno" autocomplete="off"></div>
+        <div class="field"><label for="qdate">견적일</label><input id="qdate" type="date"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>트리 <small id="treeCount"></small></h2>
+      <div id="trees" class="form" style="gap:10px"></div>
+      <button type="button" class="ghost" id="addTree">+ 트리 추가</button>
+    </section>
+
+    <section>
+      <h2>추가 장식 <small>없으면 비워 두세요</small></h2>
+      <div id="addons" class="form" style="gap:10px"></div>
+      <button type="button" class="ghost" id="addAddon">+ 추가 장식</button>
+    </section>
+
+    <section>
+      <h2>운임</h2>
+      <div class="grid2">
+        <div class="field"><label for="region">지역</label><select id="region"></select></div>
+        <div class="field"><label for="ship">금액 (원)</label><input id="ship" type="number" inputmode="numeric" step="10000" min="0"></div>
+      </div>
+      <div class="field"><label for="shipLabel">견적서 표기</label><input id="shipLabel" placeholder="예: 경기 성남시"></div>
+      <p class="hint" id="shipHint"></p>
+    </section>
+
+    <section>
+      <h2>할인</h2>
+      <div class="radios" id="phase">
+        <label><input type="radio" name="phase" value="e1"> <span id="e1Label">1차 얼리버드</span></label>
+        <label><input type="radio" name="phase" value="e2"> 2차 얼리버드 <span class="inline"><input id="e2Pct" type="number" inputmode="numeric" min="0" max="50" placeholder="%"> %</span></label>
+        <label><input type="radio" name="phase" value="none"> 할인 없음 (정가)</label>
+      </div>
+      <div class="field" id="multiBox" hidden><label for="multiPct">여러 그루 추가 할인 (4그루 이상은 직접 입력)</label>
+        <div class="inline"><input id="multiPct" type="number" inputmode="numeric" min="0" max="50"> %</div></div>
+      <p class="hint" id="multiHint"></p>
+    </section>
+
+    <section>
+      <h2>비고 추가 <small>한 줄에 하나, 선택</small></h2>
+      <textarea id="extraNotes" placeholder="기본 비고 아래에 붙습니다"></textarea>
+    </section>
+
+    <section>
+      <div class="total-box"><span>합계 (부가세 포함)</span><b id="totalOut">0원</b></div>
+      <p class="hint err" id="problems" hidden></p>
+      <div class="actions">
+        <button type="button" class="primary" id="pdfBtn">PDF 저장</button>
+        <button type="button" class="ghost" id="pngBtn">이미지 저장</button>
+        <button type="button" class="ghost" id="copyBtn">카톡 요약</button>
+        <button type="button" class="ghost" id="newBtn">새 견적</button>
+      </div>
+      <p class="hint" id="actMsg" role="status"></p>
+    </section>
+
+    <section>
+      <h2>도장 <small id="stampState"></small></h2>
+      <p class="hint">도장 이미지는 홈페이지에 올리지 않고 이 기기 브라우저에만 저장됩니다. 기기마다 한 번 골라 주세요.</p>
+      <div class="inline" style="flex-wrap:wrap"><input type="file" id="stampFile" accept="image/*" style="width:auto;flex:1"><button type="button" class="link" id="stampClear">지우기</button></div>
+    </section>
+
+    <section>
+      <h2>발행 내역 <small>이 기기에 저장</small></h2>
+      <div class="hist" id="hist"><p class="hint">아직 저장한 견적이 없습니다.</p></div>
+    </section>
+  </div>
+
+  <div class="preview">
+    <div class="stage" id="stage"><div class="stage-inner" id="stageInner"><div id="paper"></div></div></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = n => (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+};
+function korean(n) {
+  const d = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'], u = ['', '십', '백', '천'], big = ['', '만', '억'];
+  let s = '', g = 0; n = Math.round(n);
+  if (n <= 0) return '일금 영원정';
+  while (n > 0) { const part = n % 10000; n = Math.floor(n / 10000);
+    if (part) { let t = '', x = part; for (let i = 0; i < 4; i++) { const k = x % 10; x = Math.floor(x / 10); if (k) t = d[k] + u[i] + t; } s = t + big[g] + s; }
+    g++; }
+  return '일금 ' + s + '원정';
+}
+
+/* ── 홈페이지 가격표 읽기 ── */
+let P = null;   // { sizes:[{label, base, tiers:{스탠다드:{list,early,off}, ...}}], extras, colors, regions, multi, box, deadline }
+function literal(src, name) {
+  const m = new RegExp('const ' + name + ' *= *').exec(src); if (!m) return null;
+  let i = m.index + m[0].length, d = 0;
+  for (let j = i; j < src.length; j++) {
+    const c = src[j];
+    if (c === '{' || c === '[') d++;
+    else if (c === '}' || c === ']') { d--; if (d === 0) return src.slice(i, j + 1); }
+  }
+  return null;
+}
+const lit = (src, name) => { const s = literal(src, name); return s ? Function('"use strict";return (' + s + ')')() : null; };
+const won = s => +String(s).replace(/[^\d]/g, '');
+
+async function loadPrices() {
+  const html = await (await fetch('/index.html', { cache: 'no-store' })).text();
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const sizes = [...doc.querySelectorAll('.sheet-row[data-size-card]')].map(row => {
+    const b = row.querySelector('.sz b.num');
+    const label = [...b.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+    const tiers = {};
+    row.querySelectorAll('.tp').forEach(tp => {
+      const k = tp.querySelector('.tp-k').textContent.trim();
+      const tier = k.includes('단일') ? '단일 구성' : k;
+      const off = tp.querySelector('.tp-off').textContent.trim();
+      const early = won(/([\d,]+)원/.exec(tp.querySelector('b.num').textContent.replace(off, ''))[1]);
+      const list = won(tp.querySelector('s.num').textContent);
+      tiers[tier] = { list, early, off };
+    });
+    return { label, base: row.querySelector('.sz-box').textContent.trim(), tiers };
+  });
+  const js = [...doc.querySelectorAll('script')].map(s => s.textContent).join('\n');
+  // 견적 계산기 쪽 데이터(배열형 COLORS)를 씀
+  const qi = js.indexOf('const COLORS = [');
+  const colors = qi >= 0 ? lit(js.slice(qi), 'COLORS').map(c => c.name) : ['레드 & 골드', '화이트 & 샴페인', '세이지 그린 & 골드', '네이비 & 골드'];
+  const extras = (lit(js, 'EXTRAS') || []).map(x => ({ name: x.name, price: x.price, opts: (x.opts || []).map(o => ({ k: o.k, v: o.v.map(v => v[0]) })) }));
+  const box = +(/BOX_EXTRA *= *(\d+)/.exec(js) || [0, 5000])[1];
+  extras.push({ name: '시그니처 상자 추가', price: box, opts: [], unitLabel: '개당' });
+  const multi = lit(js, 'MULTI') || { 2: 0.05, 3: 0.1 };
+  const regions = lit(js, 'REGIONS') || [{ name: '서울', min: 0, max: 0 }];
+  const dm = /1차 얼리버드 할인은 (\d+)월 (\d+)일까지/.exec(doc.body.textContent) || /1차 얼리버드 (\d+)월 (\d+)일 마감/.exec(doc.body.textContent);
+  if (!sizes.length) throw new Error('가격표를 찾지 못했습니다');
+  return { sizes, extras, colors, regions, multi, box, deadline: dm ? { m: +dm[1], d: +dm[2] } : null, at: new Date() };
+}
+
+/* ── 상태 ── */
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+const blankTree = () => ({ size: '2.3m', tier: '프리미엄', color: '레드 & 골드', place: '', note: '' });
+let S = null;
+function freshState() {
+  const seq = store.get('tl-quote-seq', 2);
+  const y = new Date().getFullYear();
+  return {
+    no: `${y}-${String(seq + 1).padStart(3, '0')}`, date: today(), cust: '',
+    trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', extraNotes: '',
+  };
+}
+function deadlineDate() {
+  if (!P || !P.deadline) return null;
+  const y = new Date().getFullYear();
+  return new Date(y, P.deadline.m - 1, P.deadline.d, 23, 59, 59);
+}
+function autoPhase() { const dl = deadlineDate(); return !dl || new Date() <= dl ? 'e1' : 'e2'; }
+
+/* ── 계산 ── */
+const sizeOf = label => P.sizes.find(s => s.label === label) || P.sizes[0];
+const typeName = label => /스노우|슬림/.test(label) ? `${label} 트리` : `${label} 그린 트리`;
+function calc() {
+  const problems = [];
+  const trees = S.trees.map((t, i) => {
+    const sz = sizeOf(t.size), names = Object.keys(sz.tiers);
+    const tier = names.length === 1 ? names[0] : (sz.tiers[t.tier] ? t.tier : names[names.length - 1]);
+    const pr = sz.tiers[tier];
+    let early = pr.list;
+    if (S.phase === 'e1') early = pr.early;
+    else if (S.phase === 'e2') {
+      const p = +S.e2Pct;
+      if (S.e2Pct === '' || !(p >= 0)) problems.push('2차 얼리버드 할인율을 넣어 주세요.');
+      else early = Math.floor(pr.list * (1 - p / 100) / 1000) * 1000;
+    }
+    return { ...t, n: i + 1, tier, off: pr.off, list: pr.list, early, base: sz.base, name: typeName(sz.label) };
+  });
+  const listSum = trees.reduce((a, t) => a + t.list, 0);
+  const earlySum = trees.reduce((a, t) => a + t.early, 0);
+  const n = trees.length;
+  let pct = Math.round((P.multi[n] || 0) * 100);
+  if (n >= 4) { if (S.multiPct === '') problems.push(`${n}그루 추가 할인율을 넣어 주세요.`); pct = +S.multiPct || 0; }
+  const multiDisc = -Math.round(earlySum * pct / 100);
+  const treeSub = earlySum + multiDisc;
+  const addons = S.addons.map(a => {
+    const ex = P.extras.find(x => x.name === a.name);
+    const unit = ex ? ex.price : (+a.unit || 0);
+    if (!ex && !a.name.trim()) problems.push('직접 입력한 추가 장식의 이름을 넣어 주세요.');
+    const opt = [...(a.sel || []), a.memo].filter(Boolean).join(' · ');
+    const ti = a.tree ? trees[a.tree - 1] : null;
+    return { ...a, unit, opt, qty: +a.qty || 0, treeText: ti ? `${ti.n}번${ti.place ? ' · ' + ti.place : ''}` : '(미정)' };
+  });
+  const addonSum = addons.reduce((a, x) => a + x.qty * x.unit, 0);
+  const ship = +S.ship || 0;
+  const supply = treeSub + addonSum + ship;
+  const vat = Math.round(supply * 0.1);
+  const used = [...new Set(trees.filter(t => t.tier !== '단일 구성').map(t => t.tier))];
+  const earlyLabel = S.phase === 'e2' ? `2차 얼리버드 할인 (${S.e2Pct || 0}%)`
+    : used.length > 1 ? `1차 얼리버드 (${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')})`
+    : `1차 얼리버드 할인 (${trees[0].off})`;
+  if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
+  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, earlyLabel, problems };
+}
+
+/* ── 견적서 그리기 ── */
+function stampTag() { const s = store.get('tl-quote-stamp', null); return s ? `<img src="${s}" alt="">` : '<span class="sm">(인)</span>'; }
+function renderPaper(R) {
+  const d = S.date ? new Date(S.date + 'T00:00') : new Date();
+  const ds = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+  const hasPlace = R.trees.some(t => t.place);
+  const tCols = hasPlace ? [7, 17, 19, 12, 18, 13, 14] : [7, 24, 13, 20, 18, 18];
+  const tHead = hasPlace ? ['번호', '설치 위치', '크기 · 종류', '구성', '장식 색상', '기본 포함', '정가'] : ['번호', '크기 · 종류', '구성', '장식 색상', '기본 포함', '정가'];
+  const treeRows = R.trees.map(t => `<tr><td class="c">${t.n}번</td>${hasPlace ? `<td class="c">${esc(t.place)}${t.note ? `<div class="xs">${esc(t.note)}</div>` : ''}</td>` : ''}
+    <td class="c">${esc(t.name)}</td><td class="c ${t.tier === '단일 구성' ? 'sm' : ''}">${esc(t.tier)}</td><td class="c">${esc(t.color)}</td>
+    <td class="c sm">${esc(t.base)}</td><td class="r">${fmt(t.list)}</td></tr>`).join('');
+  const addonRows = R.addons.map(a => `<tr><td class="c">${esc(a.name)}</td><td class="c sm">${esc(a.opt)}</td><td class="c sm">${esc(a.treeText)}</td>
+    <td class="c">${a.qty}</td><td class="r">${a.unit ? fmt(a.unit) : '무료'}</td><td class="r">${fmt(a.qty * a.unit)}</td></tr>`).join('');
+  const sumRows = [
+    ['트리 정가 합계', fmt(R.listSum)],
+    ...(S.phase !== 'none' ? [[R.earlyLabel, fmt(R.earlyDisc), 'grey']] : []),
+    ...(R.pct ? [[`여러 그루 할인 (${R.trees.length}그루 ${R.pct}%)`, fmt(R.multiDisc), 'grey']] : []),
+    ['트리 소계', fmt(R.treeSub), 'strong'],
+    ...(R.addons.length ? [['추가 장식', fmt(R.addonSum)]] : []),
+    [S.shipLabel ? `운임 (${S.shipLabel})` : '운임', R.ship ? fmt(R.ship) : '무료'],
+    ['공급가액', '₩' + fmt(R.supply), 'strong top2'],
+    ['부가가치세 (10%)', '₩' + fmt(R.vat)],
+    ['합계금액', '₩' + fmt(R.total), 'total'],
+  ];
+  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '';
+  const notes = `<div class="h">&lt;비고&gt;</div>
+    ${S.phase === 'e1' && dl ? `<div class="v1">본 견적은 ${dl}까지 계약 시 유효합니다.</div><div class="v2">1차 얼리버드 할인 적용가이며, 이후 계약 시 2차 할인율로 다시 견적드립니다.</div>` : ''}
+    <ul><li>트리 대여비는 설치·철거·회수비 포함입니다.</li><li>2월 초 회수까지 기간별 추가 요금 없음</li>
+    <li>결제는 설치 완료 후 3일 이내 전액입니다.</li><li>모든 트리에 KC 인증 전기안정기 설치</li><li>설치 자리 가까이 콘센트가 필요합니다.</li>
+    ${S.extraNotes.split('\n').map(s => s.trim()).filter(Boolean).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
+    <div class="warn">※ 고객사 귀책으로 분실·파손 시 비용이 청구될 수 있으며, 취소 위약금은 계약서에 따릅니다.</div>`;
+  $('#paper').innerHTML = `<div class="frame" id="frame"><div id="content">
+    <div class="no">No. ${esc(S.no)}</div>
+    <div class="title"><span>견   적   서</span></div>
+    <div class="top">
+      <div class="to"><div class="ln">견적일&nbsp;&nbsp; ${ds}</div><div class="ln cust"><span>${esc(S.cust) || '&nbsp;'}</span><span>귀하</span></div><div>아래와 같이 견적합니다.</div></div>
+      <table class="sup"><colgroup><col style="width:30px"><col style="width:96px"><col></colgroup>
+        <tr><td class="v" rowspan="6">공급자</td><td class="k">사업자번호</td><td>360-69-00592</td></tr>
+        <tr><td class="k">소재지</td><td>서울 성북구 아리랑로19길 87</td></tr>
+        <tr><td class="k">상호</td><td>트리랜드 (TREELAND)</td></tr>
+        <tr><td class="k">대표자 성명</td><td><span class="seal">홍준서 ${stampTag()}</span></td></tr>
+        <tr><td class="k">전화번호</td><td>070-4571-7467</td></tr>
+        <tr><td class="k">이메일</td><td>info@treeland.kr</td></tr></table>
+    </div>
+    <table class="amount"><tr><td>견적금액 (부가세 제외)</td><td>${korean(R.supply)}&nbsp;&nbsp;&nbsp;( ₩${fmt(R.supply)} )</td></tr></table>
+    <h3>1. 트리 구성</h3>
+    <table class="grid"><colgroup>${tCols.map(w => `<col style="width:${w}%">`).join('')}</colgroup>
+      <thead><tr>${tHead.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${treeRows}</tbody></table>
+    ${R.addons.length ? `<h3>2. 추가 장식</h3><table class="grid"><colgroup><col style="width:27%"><col style="width:20%"><col style="width:17%"><col style="width:7%"><col style="width:13%"><col style="width:16%"></colgroup>
+      <thead><tr><th>항목</th><th>옵션</th><th>적용 트리</th><th>수량</th><th>단가</th><th>금액</th></tr></thead><tbody>${addonRows}</tbody></table>` : ''}
+    <h3>${R.addons.length ? 3 : 2}. 금액 정리</h3>
+    <table class="sum"><colgroup><col style="width:50%"><col style="width:28%"><col style="width:22%"></colgroup>
+      ${sumRows.map(([k, v, cls = ''], i) => `<tr class="${i === 0 ? 'first ' : ''}${cls.includes('strong') ? 'strong ' : ''}${cls.includes('top2') ? 'top2 ' : ''}${cls === 'total' ? 'total' : ''}">
+        ${i === 0 ? `<td class="notes" rowspan="${sumRows.length}">${notes}</td>` : ''}
+        <td class="c ${cls.includes('grey') ? 'grey' : ''}">${esc(k)}</td><td class="r ${cls.includes('grey') ? 'grey' : ''}">${v}</td></tr>`).join('')}
+    </table></div></div>`;
+  fitPaper();
+}
+// 한 장을 꽉 채우도록 줄 높이 배율(--k)을 맞춤
+function fitPaper() {
+  const paper = $('#paper'), frame = $('#frame'), content = $('#content');
+  const avail = () => frame.clientHeight - 18;
+  let lo = 0.85, hi = 2.4;
+  for (let i = 0; i < 14; i++) {
+    const mid = (lo + hi) / 2; paper.style.setProperty('--k', mid);
+    if (content.scrollHeight <= avail()) lo = mid; else hi = mid;
+  }
+  paper.style.setProperty('--k', lo);
+  scalePreview();
+}
+function scalePreview() {
+  const stage = $('#stage'), inner = $('#stageInner');
+  const s = Math.min(1, stage.clientWidth / 794);
+  inner.style.transform = `scale(${s})`; stage.style.height = (1123 * s) + 'px';
+}
+addEventListener('resize', scalePreview);
+
+/* ── 입력 화면 ── */
+function treeCard(t, i) {
+  const sz = sizeOf(t.size), names = Object.keys(sz.tiers), single = names.length === 1;
+  const tier = single ? names[0] : t.tier;
+  const pr = sz.tiers[tier] || sz.tiers[names[0]];
+  return `<div class="card" data-tree="${i}">
+    <div class="card-hd"><span>${i + 1}번 트리</span>${S.trees.length > 1 ? `<button type="button" class="link" data-del-tree="${i}">삭제</button>` : ''}</div>
+    <div class="grid2">
+      <div class="field"><label>크기</label><select data-k="size">${P.sizes.map(s => `<option ${s.label === t.size ? 'selected' : ''}>${esc(s.label)}</option>`).join('')}</select></div>
+      <div class="field"><label>장식 색상</label><select data-k="color">${[...new Set([...P.colors, t.color])].map(c => `<option ${c === t.color ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select></div>
+    </div>
+    <div class="field"><span class="lbl">구성</span>${single ? `<div class="seg"><button type="button" aria-pressed="true" disabled>${esc(names[0])}</button></div>`
+      : `<div class="seg" role="group">${names.map(nm => `<button type="button" data-tier="${esc(nm)}" aria-pressed="${nm === tier}">${esc(nm)}</button>`).join('')}</div>`}
+      <span class="price-line">정가 ${fmt(pr.list)}원 · 1차 ${fmt(pr.early)}원 (${pr.off}) · ${esc(sz.base)}</span></div>
+    <div class="grid2">
+      <div class="field"><label>설치 위치 (선택)</label><input data-k="place" value="${esc(t.place)}" placeholder="예: 탕비실"></div>
+      <div class="field"><label>위치 메모 (선택)</label><input data-k="note" value="${esc(t.note)}" placeholder="예: 콘센트 옆 벽 앞"></div>
+    </div></div>`;
+}
+function addonCard(a, i) {
+  const ex = P.extras.find(x => x.name === a.name);
+  const custom = !ex;
+  return `<div class="card" data-addon="${i}">
+    <div class="card-hd"><span>추가 장식 ${i + 1}</span><button type="button" class="link" data-del-addon="${i}">삭제</button></div>
+    <div class="field"><label>항목</label><select data-a="pick">${P.extras.map(x => `<option ${x.name === a.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}<option value="__custom" ${custom ? 'selected' : ''}>직접 입력</option></select></div>
+    ${custom ? `<div class="grid2"><div class="field"><label>이름</label><input data-a="name" value="${esc(a.name)}"></div><div class="field"><label>단가 (원)</label><input data-a="unit" type="number" inputmode="numeric" value="${esc(a.unit)}"></div></div>` : ''}
+    ${ex && ex.opts.length ? `<div class="grid2">${ex.opts.map((o, oi) => `<div class="field"><label>${esc(o.k)}</label><select data-a="sel" data-oi="${oi}">${o.v.map(v => `<option ${(a.sel || [])[oi] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`).join('')}</div>` : ''}
+    <div class="grid3">
+      <div class="field"><label>적용 트리</label><select data-a="tree"><option value="">(미정)</option>${S.trees.map((t, ti) => `<option value="${ti + 1}" ${+a.tree === ti + 1 ? 'selected' : ''}>${ti + 1}번${t.place ? ' · ' + esc(t.place) : ''}</option>`).join('')}</select></div>
+      <div class="field"><label>수량</label><input data-a="qty" type="number" inputmode="numeric" min="1" value="${esc(a.qty)}"></div>
+      <div class="field"><label>메모</label><input data-a="memo" value="${esc(a.memo || '')}" placeholder="예: 금색 끈"></div>
+    </div>
+    <span class="price-line">${ex ? (ex.price ? `${ex.unitLabel || '단가'} ${fmt(ex.price)}원` : '무료') : ''}</span></div>`;
+}
+function renderForm() {
+  $('#cust').value = S.cust; $('#qno').value = S.no; $('#qdate').value = S.date;
+  $('#trees').innerHTML = S.trees.map(treeCard).join('');
+  $('#treeCount').textContent = `${S.trees.length}그루`;
+  $('#addons').innerHTML = S.addons.map(addonCard).join('');
+  $('#region').innerHTML = P.regions.map(r => `<option ${r.name === S.region ? 'selected' : ''}>${esc(r.name)}</option>`).join('');
+  $('#ship').value = S.ship; $('#shipLabel').value = S.shipLabel;
+  document.querySelectorAll('input[name=phase]').forEach(r => r.checked = r.value === S.phase);
+  $('#e2Pct').value = S.e2Pct; $('#multiPct').value = S.multiPct; $('#extraNotes').value = S.extraNotes;
+  update();
+}
+function update() {
+  const R = calc();
+  const reg = P.regions.find(r => r.name === S.region);
+  $('#shipHint').textContent = reg ? (reg.max ? `홈페이지 기준 ${fmt(reg.min)}~${fmt(reg.max)}원` : '서울은 운임 무료') : '';
+  $('#multiBox').hidden = S.trees.length < 4;
+  $('#multiHint').textContent = S.trees.length >= 4 ? '' : S.trees.length >= 2 ? `${S.trees.length}그루 추가 할인 ${R.pct}% 자동 적용` : '';
+  $('#totalOut').textContent = fmt(R.total) + '원';
+  $('#problems').hidden = !R.problems.length; $('#problems').textContent = R.problems.join(' ');
+  ['#pdfBtn', '#pngBtn', '#copyBtn'].forEach(s => $(s).disabled = !!R.problems.length);
+  renderPaper(R);
+  store.set('tl-quote-draft', S);
+  return R;
+}
+
+/* 입력 이벤트 */
+$('#form').addEventListener('input', e => {
+  const el = e.target;
+  const tc = el.closest('[data-tree]'), ac = el.closest('[data-addon]');
+  if (tc && el.dataset.k) { S.trees[+tc.dataset.tree][el.dataset.k] = el.value; if (el.dataset.k === 'place') { refreshAddonTrees(); } return update(); }
+  if (ac && el.dataset.a) {
+    const a = S.addons[+ac.dataset.addon], k = el.dataset.a;
+    if (k === 'sel') { a.sel = a.sel || []; a.sel[+el.dataset.oi] = el.value; }
+    else if (k === 'tree') a.tree = el.value ? +el.value : '';
+    else if (k !== 'pick') a[k] = el.value;
+    return update();
+  }
+  const map = { cust: 'cust', qno: 'no', qdate: 'date', ship: 'ship', shipLabel: 'shipLabel', e2Pct: 'e2Pct', multiPct: 'multiPct', extraNotes: 'extraNotes' };
+  if (map[el.id]) { S[map[el.id]] = el.value; return update(); }
+  if (el.name === 'phase') { S.phase = el.value; return update(); }
+});
+$('#form').addEventListener('change', e => {
+  const el = e.target;
+  const tc = el.closest('[data-tree]'), ac = el.closest('[data-addon]');
+  if (tc && el.dataset.k === 'size') { const t = S.trees[+tc.dataset.tree]; t.size = el.value; renderForm(); return; }
+  if (ac && el.dataset.a === 'pick') {
+    const a = S.addons[+ac.dataset.addon];
+    if (el.value === '__custom') { a.name = ''; a.unit = ''; a.sel = []; }
+    else { a.name = el.value; const ex = P.extras.find(x => x.name === el.value); a.sel = ex.opts.map(o => o.v[0]); }
+    renderForm(); return;
+  }
+  if (el.id === 'region') {
+    S.region = el.value; const r = P.regions.find(x => x.name === el.value);
+    if (r && !r.max) { S.ship = 0; S.shipLabel = ''; } else if (!S.shipLabel || P.regions.some(x => x.name === S.shipLabel)) S.shipLabel = r.name;
+    $('#ship').value = S.ship; $('#shipLabel').value = S.shipLabel; update();
+  }
+});
+function refreshAddonTrees() {
+  document.querySelectorAll('[data-a="tree"]').forEach((sel, i) => {
+    const a = S.addons[i];
+    sel.innerHTML = `<option value="">(미정)</option>` + S.trees.map((t, ti) => `<option value="${ti + 1}" ${+a.tree === ti + 1 ? 'selected' : ''}>${ti + 1}번${t.place ? ' · ' + esc(t.place) : ''}</option>`).join('');
+  });
+}
+$('#form').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const tc = b.closest('[data-tree]');
+  if (b.dataset.tier && tc) { S.trees[+tc.dataset.tree].tier = b.dataset.tier; renderForm(); return; }
+  if (b.dataset.delTree !== undefined) {
+    const i = +b.dataset.delTree; S.trees.splice(i, 1);
+    S.addons.forEach(a => { if (+a.tree === i + 1) a.tree = ''; else if (+a.tree > i + 1) a.tree = +a.tree - 1; });
+    renderForm(); return;
+  }
+  if (b.dataset.delAddon !== undefined) { S.addons.splice(+b.dataset.delAddon, 1); renderForm(); return; }
+});
+$('#addTree').onclick = () => { const last = S.trees[S.trees.length - 1]; S.trees.push({ ...blankTree(), size: last.size, tier: last.tier }); renderForm(); };
+$('#addAddon').onclick = () => { const ex = P.extras[0]; S.addons.push({ name: ex.name, sel: ex.opts.map(o => o.v[0]), tree: S.trees.length === 1 ? 1 : '', qty: 1, memo: '' }); renderForm(); };
+$('#newBtn').onclick = () => { if (S.cust && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; S = freshState(); renderForm(); $('#cust').focus(); };
+
+/* ── 저장 ── */
+const fileBase = () => `견적서_${S.no}_${(S.cust || '고객').replace(/[\\/:*?"<>|\s]+/g, '')}`;
+async function capture() {
+  await document.fonts.ready;
+  const inner = $('#stageInner'), prev = inner.style.transform;
+  inner.style.transform = 'none';
+  try { return await html2canvas($('#paper'), { scale: 2.5, backgroundColor: '#ffffff', useCORS: true, logging: false }); }
+  finally { inner.style.transform = prev; scalePreview(); }
+}
+function msg(t, ok = true) { const m = $('#actMsg'); m.textContent = t; m.className = 'hint' + (ok ? '' : ' err'); }
+function saveHistory(R) {
+  const list = store.get('tl-quote-hist', []).filter(h => h.no !== S.no);
+  list.unshift({ no: S.no, cust: S.cust, total: R.total, at: new Date().toISOString(), state: JSON.parse(JSON.stringify(S)) });
+  store.set('tl-quote-hist', list.slice(0, 60));
+  const m = /^(\d{4})-(\d+)$/.exec(S.no);
+  if (m && +m[2] > store.get('tl-quote-seq', 2)) store.set('tl-quote-seq', +m[2]);
+  renderHist();
+}
+async function run(btn, fn) {
+  const R = calc(); if (R.problems.length) return;
+  const label = btn.textContent; btn.disabled = true; btn.textContent = '만드는 중…';
+  try { await fn(R); saveHistory(R); } catch (err) { msg('파일을 만들지 못했습니다. 다시 눌러 주세요. (' + err.message + ')', false); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
+$('#pdfBtn').onclick = e => run(e.currentTarget, async () => {
+  const c = await capture();
+  const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+  pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+  download(pdf.output('blob'), fileBase() + '.pdf'); msg(`${fileBase()}.pdf 저장했습니다.`);
+});
+$('#pngBtn').onclick = e => run(e.currentTarget, async () => {
+  const c = await capture();
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  download(blob, fileBase() + '.png'); msg(`${fileBase()}.png 저장했습니다. 카톡에 사진으로 보내기 좋습니다.`);
+});
+$('#copyBtn').onclick = e => run(e.currentTarget, async R => {
+  const lines = [`[트리랜드 견적] ${S.cust} 귀하 (No. ${S.no})`, ''];
+  R.trees.forEach(t => lines.push(`${t.n}. ${t.place ? t.place + ' · ' : ''}${t.name} ${t.tier} · ${t.color}`));
+  R.addons.forEach(a => lines.push(`  + ${a.name}${a.opt ? ' (' + a.opt + ')' : ''}${a.qty > 1 ? ' ×' + a.qty : ''} → ${a.treeText}`));
+  lines.push('', `트리 정가 ${fmt(R.listSum)}원`);
+  if (S.phase !== 'none') lines.push(`${R.earlyLabel} ${fmt(R.earlyDisc)}원`);
+  if (R.pct) lines.push(`여러 그루 할인 ${R.pct}% ${fmt(R.multiDisc)}원`);
+  if (R.addons.length) lines.push(`추가 장식 ${fmt(R.addonSum)}원`);
+  lines.push(`운임 ${R.ship ? fmt(R.ship) + '원' : '무료'}`, `공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
+  if (S.phase === 'e1' && P.deadline) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
+  await navigator.clipboard.writeText(lines.join('\n')); msg('카톡 요약을 복사했습니다.');
+});
+
+/* ── 발행 내역 ── */
+function renderHist() {
+  const list = store.get('tl-quote-hist', []);
+  $('#hist').innerHTML = list.length ? list.map((h, i) => `<div class="it"><div><b>${esc(h.cust)}</b> <span class="m">No. ${esc(h.no)}</span><div class="m">${new Date(h.at).toLocaleDateString('ko-KR')} · 합계 ${fmt(h.total)}원</div></div>
+    <div class="acts"><button type="button" class="ghost" data-open="${i}">열기</button><button type="button" class="link" data-copyq="${i}">복제</button><button type="button" class="link" data-delq="${i}">삭제</button></div></div>`).join('')
+    : '<p class="hint">아직 저장한 견적이 없습니다. PDF·이미지를 저장하면 여기에 남습니다.</p>';
+}
+$('#hist').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const list = store.get('tl-quote-hist', []);
+  if (b.dataset.open) { S = JSON.parse(JSON.stringify(list[+b.dataset.open].state)); renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
+  if (b.dataset.copyq) { const st = JSON.parse(JSON.stringify(list[+b.dataset.copyq].state)); const f = freshState(); S = { ...st, no: f.no, date: f.date, cust: '', phase: f.phase }; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); $('#cust').focus(); }
+  if (b.dataset.delq && confirm('이 견적을 내역에서 지울까요?')) { list.splice(+b.dataset.delq, 1); store.set('tl-quote-hist', list); renderHist(); }
+});
+
+/* ── 도장 ── */
+function stampState() { const has = !!store.get('tl-quote-stamp', null); $('#stampState').textContent = has ? '저장됨' : '없음 — (인)으로 표시'; }
+$('#stampFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = new Image(), r = new FileReader();
+  r.onload = () => { img.onload = () => {
+    const c = document.createElement('canvas'), s = 160; c.width = c.height = s;
+    const k = Math.min(s / img.width, s / img.height); c.getContext('2d').drawImage(img, (s - img.width * k) / 2, (s - img.height * k) / 2, img.width * k, img.height * k);
+    if (!store.set('tl-quote-stamp', c.toDataURL('image/png'))) msg('이 브라우저에는 도장을 저장할 수 없습니다.', false);
+    stampState(); update();
+  }; img.src = r.result; };
+  r.readAsDataURL(f);
+};
+$('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp'); } catch {} stampState(); update(); };
+
+/* ── 시작 ── */
+(async () => {
+  try { P = await loadPrices(); }
+  catch (err) { $('#status').textContent = '홈페이지 가격표를 불러오지 못했습니다. 새로고침해 주세요. (' + err.message + ')'; $('#status').className = 'status err'; return; }
+  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '';
+  $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
+  $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}까지)` : ''}`;
+  const draft = store.get('tl-quote-draft', null);
+  S = draft && draft.trees ? draft : freshState();
+  S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
+  $('#form').removeAttribute('aria-busy');
+  stampState(); renderHist(); renderForm();
+})();
+})();
+</script>
+</body>
+</html>

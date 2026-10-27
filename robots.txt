@@ -4,6 +4,7 @@ Disallow: /src/
 Disallow: /build/
 Disallow: /contract/
 Disallow: /admin/
+Disallow: /quote/
 Disallow: /schedule/
 Disallow: /ledger/
 Disallow: /stats/
