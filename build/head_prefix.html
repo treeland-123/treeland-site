@@ -10,14 +10,15 @@ window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);
 gtag('js',new Date());gtag('config','G-75S6VN6PP6');
 /* 문의 추적
    kakao_popup_open : 카톡 상담 버튼 → 안내 팝업이 뜸 (popup_type ask=일반 문의, quote=견적 상담)
-   kakao_click      : 실제로 카카오톡이 열림 (via ask_popup / quote_popup / direct)
+   kakao_click      : 실제로 카카오톡이 열림 (via ask_popup / quote_chat=1분 견적 / direct)
+   1분 견적 단계: quote_start / quote_step / quote_result / quote_copy / quote_kakao_open (본문 스크립트에서 전송)
    phone_click / email_click / instagram_click / company_pdf_click */
 document.addEventListener('click',function(e){var el=e.target.closest&&e.target.closest('a[href],[data-sheet]');if(!el)return;
 var h=el.getAttribute('href')||'',id=el.id||'',t=(el.textContent||'').trim().slice(0,40);
 if(id==='copyKakao'||(id==='barBtn'&&h)){gtag('event','kakao_popup_open',{popup_type:'quote',link_text:t});return;}
 if(el.hasAttribute('data-sheet')&&!h){gtag('event','kakao_popup_open',{popup_type:'ask',link_text:t});return;}
 var n='',p={link_url:h,link_text:t};
-if(h.indexOf('pf.kakao.com')>-1){n='kakao_click';p.via=id==='askGo'?'ask_popup':id==='kqGo'?'quote_popup':'direct';}
+if(h.indexOf('pf.kakao.com')>-1){n='kakao_click';p.via=id==='askGo'?'ask_popup':id==='qGo'?'quote_chat':id==='kqGo'?'quote_popup':'direct';}
 else if(h.indexOf('tel:')===0)n='phone_click';else if(h.indexOf('mailto:')===0)n='email_click';else if(h.indexOf('instagram.com')>-1)n='instagram_click';else if(/\.pdf($|\?)/i.test(h))n='company_pdf_click';
 if(n)gtag('event',n,p);},true);
 </script>

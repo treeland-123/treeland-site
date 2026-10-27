@@ -19,7 +19,7 @@ def block(s, start_pat):
     raise ValueError(start_pat)
 
 SEC = {
-    'trust': '<div class="trust">', 'set': '<section class="set" id="set"', 'cases': '<section class="cases" id="cases"',
+    'trust': '<div class="trust">', 'cases': '<section class="cases" id="cases"',
     'detail': '<section id="detail"', 'light': '<section class="light" id="light"', 'colors': '<section id="colors"',
     'process': '<section id="process"', 'faq': '<section id="faq"', 'contact': '<section class="contact" id="contact"',
 }
@@ -28,8 +28,8 @@ PAGES = [
      '카페·매장, 병원, 학교·학원, 기관·공공시설, 사무실·가정에 설치한 트리랜드 크리스마스트리 사례입니다. 설치 전과 후를 비교해 보실 수 있습니다.',
      ['trust', 'cases'], None),
     ('trees', '트리 소개', '트리 소개',
-     '트리랜드 크리스마스트리의 잎과 조명, 장식 색상, 2026 시즌 구성을 소개합니다. 모든 트리에 KC 인증 전기안정기를 설치합니다.',
-     ['detail', 'light', 'colors', 'set'], '잎과 조명, 장식 색상, 올해 새로 더한 구성을 차례로 보실 수 있습니다.'),
+     '트리랜드 크리스마스트리의 잎과 오너먼트, 하단 시그니처 상자, 조명, 장식 색상을 소개합니다. 모든 트리에 KC 인증 전기안정기를 설치합니다.',
+     ['detail', 'light', 'colors'], '잎과 오너먼트, 하단 상자, 조명, 장식 색상을 차례로 보실 수 있습니다.'),
     ('faq', '자주 묻는 질문', '자주 묻는 질문',
      '크리스마스트리 대여 예약 시기, 설치와 회수, 대여 기간, 결제와 세금계산서, 취소 기준 등 자주 묻는 질문을 모았습니다.',
      ['faq'], None),
