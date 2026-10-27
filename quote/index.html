@@ -217,8 +217,8 @@ button{font:inherit;cursor:pointer}
 
     <section>
       <h2>도장 <small id="stampState"></small></h2>
-      <p class="hint">도장 이미지는 홈페이지에 올리지 않고 이 기기 브라우저에만 저장됩니다. 기기마다 한 번 골라 주세요.</p>
-      <div class="inline" style="flex-wrap:wrap"><input type="file" id="stampFile" accept="image/*" style="width:auto;flex:1"><button type="button" class="link" id="stampClear">지우기</button></div>
+      <p class="hint">대표 도장이 자동으로 찍힙니다. 다른 도장을 쓰려면 아래에서 고르세요 (이 기기에만 적용).</p>
+      <div class="inline" style="flex-wrap:wrap"><input type="file" id="stampFile" accept="image/*" style="width:auto;flex:1"><button type="button" class="link" id="stampClear">기본 도장으로</button></div>
     </section>
 
     <section>
@@ -364,7 +364,7 @@ function calc() {
 }
 
 /* ── 견적서 그리기 ── */
-function stampTag() { const s = store.get('tl-quote-stamp', null); return s ? `<img src="${s}" alt="">` : '<span class="sm">(인)</span>'; }
+function stampTag() { const s = store.get('tl-quote-stamp', null) || '/quote/stamp.png'; return `<img src="${s}" alt="">`; }
 function renderPaper(R) {
   const d = S.date ? new Date(S.date + 'T00:00') : new Date();
   const ds = `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
@@ -617,7 +617,7 @@ $('#hist').addEventListener('click', e => {
 });
 
 /* ── 도장 ── */
-function stampState() { const has = !!store.get('tl-quote-stamp', null); $('#stampState').textContent = has ? '저장됨' : '없음 — (인)으로 표시'; }
+function stampState() { const has = !!store.get('tl-quote-stamp', null); $('#stampState').textContent = has ? '이 기기에서 바꾼 도장 사용 중' : '대표 도장 자동 적용'; $('#stampClear').hidden = !has; }
 $('#stampFile').onchange = e => {
   const f = e.target.files[0]; if (!f) return;
   const img = new Image(), r = new FileReader();
