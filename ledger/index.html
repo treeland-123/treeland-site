@@ -156,7 +156,7 @@ details.card[open] summary{margin-bottom:6px}
   <div id="main" style="display:flex;flex-direction:column;gap:20px">
 
   <div class="ledger" aria-label="시즌 수지">
-    <div><span>매출 (공급가)</span><b id="sumRev" class="num">0</b><em id="sumSites">현장 0곳</em></div>
+    <div><span>매출 (부가세 포함)</span><b id="sumRev" class="num">0</b><em id="sumSites">현장 0곳</em></div>
     <div><span>지출</span><b id="sumExp" class="num">0</b><em id="sumCount">0건</em></div>
     <div class="net" id="netBox"><span>남는 돈</span><b id="sumNet" class="num">0</b><em id="sumRate">마진 —</em></div>
   </div>
@@ -308,7 +308,7 @@ async function ledger(action,data){
   return j;
 }
 
-// 계약 → 현장 변환. 서명완료만, 임대료는 부가세 별도라 그대로 공급가
+// 계약 → 현장 변환. 서명완료만. 임대료는 부가세 별도라 화면·수지는 ×1.1 한 부가세 포함 금액으로
 function seasonOf(iso){
   const m=/^(\d{4})-(\d{2})/.exec(iso||"");if(!m)return S.seasons[S.seasons.length-1];
   const y=+m[1],mo=+m[2];
@@ -323,11 +323,12 @@ function contractSites(){
   return S.contracts.filter(c=>c.status==="서명완료").map(c=>{
     const id="c:"+c.id,x=S.extras[c.id]||{};
     return {id,contractId:c.id,fromContract:true,name:c.name||c.customer||c.place,date:kst(c.install),pickup:kst(c.retrieve),
-      spec:[c.size,c.color].filter(Boolean).join(" · "),phone:c.tel||"",pay:c.pay||"",revenue:Number(c.price)||0,
+      spec:[c.size,c.color].filter(Boolean).join(" · "),phone:c.tel||"",pay:c.pay||"",revenue:Number(c.price)||0,gross:Math.round((Number(c.price)||0)*1.1),
       taxInvoice:!!x.taxInvoice,memo:x.memo||"",pdf:c.pdf||"",contact:c.contact||"",season:seasonOf(kst(c.install))};
   });
 }
-const allSites=()=>contractSites().concat(S.sites);
+const grossOf=s=>s.vat==="in"?(s.revenueInput||Math.round((s.revenue||0)*1.1)):Math.round((s.revenueInput||s.revenue||0)*1.1);
+const allSites=()=>contractSites().concat(S.sites.map(s=>({...s,gross:grossOf(s)})));
 
 // tabs
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
@@ -357,7 +358,7 @@ function render(){
   const season=curSeason();
   $("seasonSel").innerHTML=seasons().map(s=>`<option ${s===season?"selected":""}>${esc(s)}</option>`).join("");
   const sites=seasonSites(),exps=seasonExp();
-  const rev=sites.reduce((a,s)=>a+(s.revenue||0),0),exp=exps.reduce((a,e)=>a+(e.amount||0),0),net=rev-exp;
+  const rev=sites.reduce((a,s)=>a+(s.gross||0),0),exp=exps.reduce((a,e)=>a+(e.amount||0),0),net=rev-exp;
   $("sumRev").textContent=won(rev);$("sumExp").textContent=won(exp);$("sumNet").textContent=won(net);
   const nc=sites.filter(s=>s.fromContract).length;
   $("sumSites").textContent=`현장 ${sites.length}곳`+(nc?` · 계약 ${nc}`:"");$("sumCount").textContent=`${exps.length}건`;
@@ -379,14 +380,14 @@ function renderSites(sites,exps){
   $("contractNote").textContent=S.contractErr;$("contractNote").hidden=!S.contractErr;
   if(!sites.length){$("siteList").innerHTML=`<div class="empty">${S.ready?"이 시즌 현장이 없습니다. 계약서 서명이 끝나면 자동으로 들어옵니다.":"불러오는 중…"}</div>`}
   else $("siteList").innerHTML=sites.map(s=>{
-    const se=exps.filter(e=>e.siteId===s.id),cost=se.reduce((a,e)=>a+e.amount,0),m=(s.revenue||0)-cost;
-    const rate=s.revenue?(m/s.revenue*100).toFixed(0)+"%":"매출 미입력";
+    const se=exps.filter(e=>e.siteId===s.id),cost=se.reduce((a,e)=>a+e.amount,0),m=(s.gross||0)-cost;
+    const rate=s.gross?(m/s.gross*100).toFixed(0)+"%":"매출 미입력";
     const open=S.openSite===s.id;
     const period=[s.date,s.pickup].filter(Boolean).map(md).join("–");
     return `<div class="site"><div class="site-head" data-site="${esc(s.id)}" tabindex="0"><span><b>${esc(s.name)}</b>${s.fromContract?`<span class="tag common">계약</span>`:""}${s.taxInvoice?`<span class="tag tax">계산서</span>`:""}<small>${esc([period,s.spec,s.pay].filter(Boolean).join(" · "))}</small></span>${se.length?`<span class="margin-pill ${m<0?"minus":""}">${rate}</span>`:""}</div>
       ${s.phone?`<span class="site-phone">${esc([s.contact,fmtPhone(s.phone)].filter(Boolean).join(" "))}</span>`:""}
-      <div class="site-nums"><span>매출 <span class="num">${won(s.revenue)}</span></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
-      ${se.length&&s.revenue?`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,cost/s.revenue*100)}%"></i></div>`:""}
+      <div class="site-nums"><span>매출 <span class="num">${won(s.gross)}</span> <small class="note">공급가 ${won(s.revenue)}</small></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
+      ${se.length&&s.gross?`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,cost/s.gross*100)}%"></i></div>`:""}
       <div class="site-acts">${se.length?`<button type="button" class="linkbtn" data-toggle="${esc(s.id)}">이 현장 지출 ${se.length}건 ${open?"접기":"보기"}</button>`:""}${s.pdf?`<a class="linkbtn" href="${esc(s.pdf)}" target="_blank" rel="noopener">계약서 PDF</a>`:""}</div>
       ${open&&se.length?`<div class="detail"><div class="list">${se.map(itemHtml).join("")}</div></div>`:""}
     </div>`}).join("");
@@ -459,7 +460,7 @@ $("expForm").addEventListener("submit",async ev=>{ev.preventDefault();
 // 현장
 const supply=(v,vat)=>vat==="in"?Math.round(v/1.1):v;
 function revHint(){const v=parseNum($("sRev").value),vat=$("sVat").value;
-  $("revHint").textContent=!v?"":vat==="in"?`공급가 ${won(supply(v,vat))}원 · 부가세 ${won(v-supply(v,vat))}원 (수지는 공급가로 계산)`:`부가세 포함 ${won(Math.round(v*1.1))}원`}
+  $("revHint").textContent=!v?"":vat==="in"?`공급가 ${won(supply(v,vat))}원 · 부가세 ${won(v-supply(v,vat))}원 (수지는 부가세 포함 금액으로 계산)`:`부가세 포함 ${won(Math.round(v*1.1))}원 (수지는 이 금액으로 계산)`}
 $("sRev").addEventListener("input",revHint);$("sVat").addEventListener("change",revHint);
 
 function editSite(id){const s=allSites().find(x=>x.id===id);if(!s)return;S.editSite=id;
@@ -467,7 +468,7 @@ function editSite(id){const s=allSites().find(x=>x.id===id);if(!s)return;S.editS
   $("siteFormTitle").textContent=c?"계약 현장":"현장 수정";
   ["sName","sDate","sPickup","sSpec","sPhone","sRev","sVat","sPay"].forEach(k=>$(k).disabled=c);
   $("sName").value=s.name||"";$("sDate").value=s.date||"";$("sPickup").value=s.pickup||"";$("sSpec").value=s.spec||"";$("sPhone").value=fmtPhone(s.phone);
-  const rin=c?s.revenue:(s.revenueInput||s.revenue);$("sRev").value=rin?won(rin):"";$("sVat").value=s.vat==="in"?"in":"ex";
+  const rin=c?s.gross:(s.revenueInput||s.revenue);$("sRev").value=rin?won(rin):"";$("sVat").value=(c||s.vat==="in")?"in":"ex";
   $("sPay").value=s.pay||"";$("sTax").checked=!!s.taxInvoice;$("sMemo").value=s.memo||"";revHint();
   $("contractLock").hidden=!c;$("siteMode").hidden=c;$("siteCancel").hidden=false;$("siteDel").hidden=c;
   showTab("site");$("siteFormBox").open=true;$("siteFormBox").scrollIntoView({block:"start"});(c?$("sTax"):$("sName")).focus()}
