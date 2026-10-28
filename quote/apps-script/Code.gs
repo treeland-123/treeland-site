@@ -124,17 +124,31 @@ function remove(no) {
 
 /* ---------- 메일 ---------- */
 function aliasReady() { return GmailApp.getAliases().indexOf(FROM) > -1; }
+// 메일 서명 (텍스트·HTML). 로고는 treeland.kr/quote/mail-logo.png 를 받아 메일 본문에 직접 넣음(cid)
+const SIGN_TEXT = '─────────────────\n트리랜드 TREELAND\nT. 070-4571-7467 ｜ E. info@treeland.kr\nwww.treeland.kr';
+const SIGN_HTML = '<div style="margin-top:22px;padding-top:16px;border-top:1px solid #d9d9d4;font-family:\'Malgun Gothic\',sans-serif">'
+  + '<img src="cid:tlLogo" alt="TREELAND" width="170" style="display:block;width:170px;height:auto;margin:0 0 10px">'
+  + '<div style="font-size:13px;font-weight:700;color:#1f3d30">트리랜드 TREELAND</div>'
+  + '<div style="font-size:12px;color:#666;margin-top:3px">T. 070-4571-7467 ｜ E. <a href="mailto:info@treeland.kr" style="color:#666;text-decoration:none">info@treeland.kr</a></div>'
+  + '<div style="font-size:12px;margin-top:2px"><a href="https://www.treeland.kr" style="color:#1f3d30">www.treeland.kr</a></div></div>';
+function logoBlob() {
+  try { return UrlFetchApp.fetch('https://treeland.kr/quote/mail-logo.png').getBlob().setName('treeland-logo.png'); } catch (x) { return null; }
+}
 function send(b) {
   const to = String(b.to || '').trim();
   if (!/^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/.test(to)) return { error: 'bad_email' };
   if (!b.pdf) return { error: 'no_pdf' };
   if (!aliasReady()) return { error: 'alias', message: 'Gmail에 ' + FROM + ' 보내는 주소가 등록되어 있지 않습니다.' };
   const blob = Utilities.newBlob(Utilities.base64Decode(b.pdf), 'application/pdf', b.filename || '트리랜드_견적서.pdf');
-  const body = String(b.body || '');
-  const html = body.split('\n').map(l => l ? l.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])) : '&nbsp;').map(l => `<div>${l}</div>`).join('');
-  const opt = { from: FROM, name: FROM_NAME, replyTo: FROM, attachments: [blob], htmlBody: `<div style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.7;color:#222">${html}</div>` };
+  const body = String(b.body || '').replace(/\s+$/, '');
+  const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+  const html = body.split('\n').map(l => `<div>${l ? esc(l) : '&nbsp;'}</div>`).join('');
+  const logo = logoBlob();
+  const opt = { from: FROM, name: FROM_NAME, replyTo: FROM, attachments: [blob],
+    htmlBody: `<div style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.7;color:#222">${html}${logo ? SIGN_HTML : SIGN_HTML.replace(/<img[^>]*>/, '')}</div>` };
+  if (logo) opt.inlineImages = { tlLogo: logo };
   if (b.copySelf) opt.bcc = FROM;
-  GmailApp.sendEmail(to, String(b.subject || '[트리랜드] 견적서'), body, opt);
+  GmailApp.sendEmail(to, String(b.subject || '[트리랜드] 견적서'), body + '\n\n' + SIGN_TEXT, opt);
   const sentAt = new Date().toISOString();
   if (b.quote && b.quote.no) {
     const lock = LockService.getScriptLock(); lock.waitLock(10000);
