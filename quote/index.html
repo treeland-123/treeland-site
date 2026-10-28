@@ -604,7 +604,7 @@ async function capture() {
 }
 function msg(t, ok = true) { const m = $('#actMsg'); m.textContent = t; m.className = 'hint' + (ok ? '' : ' err'); }
 /* ── 발행 내역: 견적 서버(Apps Script 「트리랜드 견적」)와 연동, 안 되면 이 기기에만 ── */
-const QUOTE_ENDPOINT = '';
+const QUOTE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec';   // Apps Script 「트리랜드 견적」 (hongjs100418)
 const getPin = () => { try { return localStorage.getItem('tl_pin') || ''; } catch { return ''; } };
 let HIST = store.get('tl-quote-hist', []);
 let ONLINE = false, NEXT_NO = '';

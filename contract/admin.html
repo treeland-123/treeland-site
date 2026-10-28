@@ -376,8 +376,19 @@ function fillFromQuote(h){
   $("#n-qno").value = h.no || "";
   priceHint(); saveDraft();
 }
-function initQuote(){
-  const list = quoteHist(); if(!list.length) return;
+// 견적 서버(트리랜드 견적)의 발행 내역 — 어느 기기에서 만든 견적이든 불러옴. 서버가 안 되면 이 기기 내역만
+const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";
+async function serverQuotes(){
+  try{
+    const pin = localStorage.getItem("tl_pin") || ""; if(!pin) return [];
+    const r = await fetch(QUOTE_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({ action:"list", pin }) });
+    const j = await r.json(); return j.quotes || [];
+  }catch(e){ return []; }
+}
+async function initQuote(){
+  const local = quoteHist(), server = await serverQuotes();
+  const list = [...server, ...local.filter(h => !server.some(q => q.no === h.no))];
+  if(!list.length) return;
   $("#n-quote").insertAdjacentHTML("beforeend", list.map((h, i) => `<option value="${i}">${esc(h.cust || "(상호 없음)")} · No. ${esc(h.no)} · 합계 ${won(h.total)}원</option>`).join(""));
   $("#fromQuote").hidden = false;
   $("#n-quote").addEventListener("change", e => { const h = list[+e.target.value]; if(e.target.value !== "" && h) fillFromQuote(h); });
