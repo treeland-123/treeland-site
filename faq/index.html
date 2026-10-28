@@ -1194,6 +1194,11 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
 .tp b .tp-off{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:4px;background:var(--pine);color:#F4F1EA;font-family:var(--body);font-style:normal;font-size:11.5px;font-weight:800;line-height:1.5;vertical-align:2px}
 .tp.pre b .tp-off{background:var(--berry)}
 @media (max-width:640px){.tp b .tp-off{font-size:10.5px;padding:0 5px;margin-right:4px}}
+
+.tier-soon{position:absolute;left:50%;top:78%;transform:translateX(-50%);padding:4px 12px;border:1px solid #B89A5E;border-radius:999px;background:rgba(247,244,236,.9);color:#8A6E3E;font-size:12.5px;font-weight:600;white-space:nowrap}
+@media (max-width:640px){.tier-soon{font-size:11px;padding:3px 9px}}
+.qcard .qimg{position:relative;display:block;padding:0}
+.qcard .qsoon{position:absolute;left:50%;top:76%;transform:translateX(-50%);padding:2px 7px;border:1px solid #B89A5E;border-radius:999px;background:rgba(247,244,236,.92);color:#8A6E3E;font-size:10px;font-weight:600;line-height:1.4;white-space:nowrap}
 </style>
 <style>
 .sub-crumb{padding-top:14px;font-size:13px;color:var(--muted)}
@@ -2154,7 +2159,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     const g = document.createElement('div'); g.className = 'qgrid' + (opts.cls ? ' ' + opts.cls : ''); w.appendChild(g);
     items.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'qcard' + (it.k ? ' ' + it.k : '');
-      b.innerHTML = '<img src="img/' + it.img + '.webp" alt="" loading="lazy">' + (it.tag ? '<span class="qt">' + it.tag + '</span>' : '') + '<b>' + it.b + '</b>' + (it.s ? '<span>' + it.s + '</span>' : '') + (it.p ? '<span class="qp">' + it.p + '</span>' : '');
+      b.innerHTML = (it.soon ? '<span class="qimg"><img src="img/' + it.img + '.webp" alt="" loading="lazy"><span class="qsoon">' + it.soon + '</span></span>' : '<img src="img/' + it.img + '.webp" alt="" loading="lazy">') + (it.tag ? '<span class="qt">' + it.tag + '</span>' : '') + '<b>' + it.b + '</b>' + (it.s ? '<span>' + it.s + '</span>' : '') + (it.p ? '<span class="qp">' + it.p + '</span>' : '');
       b.onclick = () => on(it.v, b); g.appendChild(b);
     });
     if (opts.extra) { const c = chips(opts.extra.map(e => e[1]), t => on(opts.extra.find(e => e[1] === t)[0])); c.style.marginTop = '10px'; w.appendChild(c); }
@@ -2180,7 +2185,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const pr = t => { const [l, e] = P[A.size][t]; return early1() ? '<s class="qp-was">' + won(l) + '</s><span class="qp-now"><em class="qp-off">' + pct(A.size, t) + '%</em>' + won(e) + '</span>' : won(l); };
       ask('구성을 골라 주세요.', cards([
         { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: pr('std') },
-        { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', k: 'pre' },
+        { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', soon: '10월 30일 업데이트 예정', k: 'pre' },
       ], v => answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'), { cls: 'two' }), s + ' 1그루 ' + lbl + ' · 부가세 별도');
     },
     color: () => ask('장식 색상은요?', cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag })), v => answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v), { cls: 'sq', extra: [['추천', '사진 보고 추천받을게요']] })),
