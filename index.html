@@ -2436,13 +2436,16 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     return ORDER[i] || 'result';
   }
   function setProg(step) { document.getElementById('qdProg').style.width = (PROG[step] / 9 * 100) + '%'; document.getElementById('qdBack').disabled = !hist.length; }
-  function bubble(cls, html) { const d = document.createElement('div'); d.className = 'qm ' + cls; d.innerHTML = html; log.appendChild(d); log.scrollTop = log.scrollHeight; return d; }
+  const toEnd = () => { log.scrollTop = log.scrollHeight; };
+  // 아래 선택 영역(dock)이 나타나거나 커져 대화창 높이가 줄어도 마지막 말풍선이 보이게
+  if ('ResizeObserver' in window) { let lh = 0; new ResizeObserver(() => { const h = log.clientHeight; if (h !== lh) { lh = h; toEnd(); } }).observe(log); }
+  function bubble(cls, html) { const d = document.createElement('div'); d.className = 'qm ' + cls; d.innerHTML = html; log.appendChild(d); toEnd(); return d; }
   let gen = 0;
   function say(html, cb, small) {
     const t = bubble('bot typing', '<i></i><i></i><i></i>'), g = gen;
     setTimeout(() => { t.remove(); if (g !== gen) return; bubble('bot q', html + (small ? '<small>' + small + '</small>' : '')); cb && cb(); }, reduce ? 0 : 420);
   }
-  function ask(text, widget, small) { say(text, () => { dock.innerHTML = ''; dock.appendChild(widget); }, small); }
+  function ask(text, widget, small) { say(text, () => { dock.innerHTML = ''; dock.appendChild(widget); toEnd(); requestAnimationFrame(toEnd); }, small); }
   function chips(list, on) {
     const w = document.createElement('div'); w.className = 'qchips';
     list.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qchip' + (/모르|괜찮|추천|몰라/.test(t) ? ' ghost' : ''); b.textContent = t; b.onclick = () => on(t); w.appendChild(b); });
@@ -2503,6 +2506,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const label = () => { const n = count(); go.textContent = n ? n + '개 선택 완료' : '선택 없이 넘어가기'; };
       EXTRAS.forEach((e, i) => {
         const st = sel[i]; st.pick = (e.opts || []).map(() => 0);
+        if (A.size === 's135' && e.price === 0) return;   // 1.35m는 기본 하단 상자가 없어 '소품상자로 대체'가 해당 없음
         const card = document.createElement('div'); card.className = 'qcard qx-c';
         const pics = e.img ? [e.img] : ((e.opts && e.opts[0].v.filter(v => v[1]).map(v => v[1])) || []);
         const kinds = e.opts ? e.opts[0].v.map(v => v[0]) : [];
@@ -2548,7 +2552,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
         if (boxes) list.push({ name: '시그니처 상자 ' + boxes + '개 추가', price: boxes * BOX_EXTRA, once: true });
         answer('extra', list, list.length ? list.map(x => x.name).join(', ') : '없이 진행할게요');
       };
-      row.appendChild(go); w.appendChild(row); dock.appendChild(w);
+      row.appendChild(go); w.appendChild(row); dock.appendChild(w); toEnd();
     }, '가격은 트리 1그루 기준이에요. 고르면 종류를 정할 수 있어요.');
   }
   function run(step) { qIdx[step] = log.children.length; Q[step](); }
