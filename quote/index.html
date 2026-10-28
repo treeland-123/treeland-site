@@ -581,7 +581,7 @@ $('#addAddon').onclick = () => { const ex = P.extras[0]; S.addons.push({ name: e
 $('#newBtn').onclick = () => { if (S.cust && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; S = freshState(); renderForm(); $('#cust').focus(); };
 
 /* ── 저장 ── */
-const fileBase = () => `견적서_${S.no}_${(S.cust || '고객').replace(/[\\/:*?"<>|\s]+/g, '')}`;
+const fileBase = () => `트리랜드_견적서_${(S.cust || '고객').replace(/[\\/:*?"<>|\s]+/g, '')}`;   // 견적 번호는 내부용이라 파일 이름에 넣지 않음
 async function capture() {
   await document.fonts.ready;
   const inner = $('#stageInner'), prev = inner.style.transform;
@@ -617,7 +617,7 @@ $('#pngBtn').onclick = e => run(e.currentTarget, async () => {
   download(blob, fileBase() + '.png'); msg(`${fileBase()}.png 저장했습니다. 카톡에 사진으로 보내기 좋습니다.`);
 });
 $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
-  const lines = [`[트리랜드 견적] ${S.cust} 귀하 (No. ${S.no})`, ''];
+  const lines = [`[트리랜드 견적] ${S.cust} 귀하`, ''];
   R.trees.forEach(t => lines.push(`${t.n}. ${t.place ? t.place + ' · ' : ''}${t.name} ${t.tier} · ${t.color}`));
   R.addons.forEach(a => lines.push(`  + ${a.name}${a.opt ? ' (' + a.opt + ')' : ''}${a.qty > 1 ? ' ×' + a.qty : ''}${a.free && a.unit ? ' — 서비스' : ''} → ${a.treeText}`));
   lines.push('', `트리 정가 ${fmt(R.listSum)}원`);

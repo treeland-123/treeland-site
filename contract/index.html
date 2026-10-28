@@ -263,7 +263,7 @@ const TERMS = [
 let C = null;   // 계약 데이터 (트리랜드가 미리 입력)
 const shipText = v => v === "" || v == null ? "운임 포함" : Number(v) > 0 ? `운임 ${won(v)}원 포함` : "운임 없음";
 const contentRows = c => [
-  ["설치 장소", c.place], ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", c.qno ? `견적서(No. ${c.qno})와 같습니다` : "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
+  ["설치 장소", c.place], ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
   ["설치 예정일", fmtDate(c.install)], ["회수 예정일", fmtDate(c.retrieve)],
   ["임대료", `금 ${hangulAmount(c.price)}원정 (₩${won(c.price)}) · 부가가치세 별도, ${shipText(c.ship)}`],
 ];
@@ -369,7 +369,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
     <table class="sig"><tr><th colspan="2">갑 (임차인)</th><th colspan="2">을 (임대인)</th></tr>
     <tr><th>상호(성명)</th><td>${esc(g.name)}</td><th>상호</th><td>트리랜드 (TREELAND)</td></tr>
     <tr><th>대표자</th><td>${esc(g.rep)}　<img src="${sigUrl}" alt=""></td><th>대표자</th><td>홍준서　<span class="seal">(인)${C.stamp ? `<img class="stamp" src="${C.stamp}" alt="">` : ""}</span></td></tr></table>
-    <p style="margin-top:8px">별첨 : 견적서 1부${C.qno ? ` (No. ${esc(C.qno)})` : ""}</p>
+    <p style="margin-top:8px">별첨 : 견적서 1부</p>
     <div class="audit">전자서명 기록 · 계약번호 ${esc(C.id)} · 서명 일시 ${d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})} (KST) · 개인정보 수집·이용 동의 및 계약 체결 동의 확인 · 기기 ${esc(navigator.userAgent)} · 문서 확인값(SHA-256) ${hash}</div></div>`;
 }
 
