@@ -68,7 +68,7 @@ button{font:inherit;cursor:pointer}
 .inline input{width:90px}
 .total-box{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
 .total-box b{font-size:20px}
-.actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .actions .primary{grid-column:1/-1}
 .hist{display:flex;flex-direction:column}
 .hist .it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:9px 0;border-top:1px solid var(--line);font-size:13.5px}
@@ -159,8 +159,9 @@ button{font:inherit;cursor:pointer}
     <section>
       <h2>받는 곳</h2>
       <div class="field"><label for="cust">상호 (귀하 앞)</label><input id="cust" placeholder="예: 주식회사 원엔드" autocomplete="off"></div>
+      <div class="field"><label for="custEmail">이메일 (메일로 보낼 때)</label><input id="custEmail" type="email" inputmode="email" placeholder="예: manager@company.com" autocomplete="off"></div>
       <div class="grid2">
-        <div class="field"><label for="qno">견적 번호</label><input id="qno" autocomplete="off"></div>
+        <div class="field"><label for="qno">견적 번호 <small>(내부 관리용)</small></label><input id="qno" autocomplete="off"></div>
         <div class="field"><label for="qdate">견적일</label><input id="qdate" type="date"></div>
       </div>
     </section>
@@ -210,11 +211,21 @@ button{font:inherit;cursor:pointer}
       <p class="hint err" id="overflow" hidden></p>
       <div class="actions">
         <button type="button" class="primary" id="pdfBtn">PDF 저장</button>
+        <button type="button" class="ghost" id="mailBtn">메일 보내기</button>
         <button type="button" class="ghost" id="pngBtn">이미지 저장</button>
         <button type="button" class="ghost" id="copyBtn">카톡 요약</button>
         <button type="button" class="ghost" id="newBtn">새 견적</button>
       </div>
       <p class="hint" id="actMsg" role="status"></p>
+      <div class="card" id="mailBox" hidden>
+        <div class="card-hd"><span>견적서 메일 보내기</span><button type="button" class="link" id="mailClose">닫기</button></div>
+        <p class="hint">보내는 사람: 트리랜드 &lt;info@treeland.kr&gt; · 견적서 PDF가 첨부됩니다.</p>
+        <div class="field"><label for="mailTo">받는 사람</label><input id="mailTo" type="email" inputmode="email" autocomplete="off"></div>
+        <div class="field"><label for="mailSubj">제목</label><input id="mailSubj" autocomplete="off"></div>
+        <div class="field"><label for="mailBody">본문</label><textarea id="mailBody" style="min-height:220px"></textarea></div>
+        <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="mailCopy" style="width:auto;margin:0" checked> info@treeland.kr로 사본 받기</label>
+        <button type="button" class="primary" id="mailSend">보내기</button>
+      </div>
     </section>
 
     <section>
@@ -224,7 +235,8 @@ button{font:inherit;cursor:pointer}
     </section>
 
     <section>
-      <h2>발행 내역 <small>이 기기에 저장</small></h2>
+      <h2>발행 내역 <small id="syncState">불러오는 중…</small></h2>
+      <div class="inline" id="pinBox" hidden style="flex-wrap:wrap"><input type="password" id="pin" placeholder="관리자 비밀번호 (계약 관리와 같음)" autocomplete="current-password" style="flex:1;width:auto"><button type="button" class="ghost" id="pinGo">확인</button></div>
       <div class="hist" id="hist"><p class="hint">아직 저장한 견적이 없습니다.</p></div>
     </section>
   </div>
@@ -312,7 +324,7 @@ function freshState() {
   const seq = store.get('tl-quote-seq', 2);
   const y = new Date().getFullYear();
   return {
-    no: `${y}-${String(seq + 1).padStart(3, '0')}`, date: today(), cust: '',
+    no: NEXT_NO || `${y}-${String(seq + 1).padStart(3, '0')}`, autoNo: true, date: today(), cust: '', email: '',
     trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', extraNotes: '',
   };
 }
@@ -497,7 +509,7 @@ function addonCard(a, i) {
       <label style="display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer"><input type="checkbox" data-a="free" style="width:auto;margin:0" ${a.free ? 'checked' : ''}> 서비스 (무료 제공)</label></div></div>`;
 }
 function renderForm() {
-  $('#cust').value = S.cust; $('#qno').value = S.no; $('#qdate').value = S.date;
+  $('#cust').value = S.cust; $('#custEmail').value = S.email || ''; $('#qno').value = S.no; $('#qdate').value = S.date;
   $('#trees').innerHTML = S.trees.map(treeCard).join('');
   $('#treeCount').textContent = `${S.trees.length}그루`;
   $('#addons').innerHTML = S.addons.map(addonCard).join('');
@@ -539,7 +551,8 @@ $('#form').addEventListener('input', e => {
     else if (k !== 'pick') a[k] = el.value;
     return update();
   }
-  const map = { cust: 'cust', qno: 'no', qdate: 'date', ship: 'ship', shipLabel: 'shipLabel', e2Pct: 'e2Pct', multiPct: 'multiPct', extraNotes: 'extraNotes' };
+  if (el.id === 'qno') S.autoNo = false;
+  const map = { custEmail: 'email', cust: 'cust', qno: 'no', qdate: 'date', ship: 'ship', shipLabel: 'shipLabel', e2Pct: 'e2Pct', multiPct: 'multiPct', extraNotes: 'extraNotes' };
   if (map[el.id]) { S[map[el.id]] = el.value; return update(); }
   if (el.name === 'phase') { S.phase = el.value; return update(); }
 });
@@ -590,18 +603,67 @@ async function capture() {
   finally { inner.style.transform = prev; scalePreview(); }
 }
 function msg(t, ok = true) { const m = $('#actMsg'); m.textContent = t; m.className = 'hint' + (ok ? '' : ' err'); }
-function saveHistory(R) {
-  const list = store.get('tl-quote-hist', []).filter(h => h.no !== S.no);
-  list.unshift({ no: S.no, cust: S.cust, total: R.total, at: new Date().toISOString(), state: JSON.parse(JSON.stringify(S)) });
-  store.set('tl-quote-hist', list.slice(0, 60));
+/* ── 발행 내역: 견적 서버(Apps Script 「트리랜드 견적」)와 연동, 안 되면 이 기기에만 ── */
+const QUOTE_ENDPOINT = '';
+const getPin = () => { try { return localStorage.getItem('tl_pin') || ''; } catch { return ''; } };
+let HIST = store.get('tl-quote-hist', []);
+let ONLINE = false, NEXT_NO = '';
+async function api(action, extra) {
+  if (!QUOTE_ENDPOINT) throw Object.assign(new Error('견적 서버 주소가 아직 없습니다'), { code: 'noserver' });
+  const r = await fetch(QUOTE_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action, pin: getPin(), ...(extra || {}) }) });
+  const j = await r.json();
+  if (j.error) throw Object.assign(new Error(j.message || j.error), { code: j.error });
+  return j;
+}
+const keepLocal = () => store.set('tl-quote-hist', HIST.slice(0, 200));
+const asQuote = (h) => ({ no: h.no, cust: h.cust, email: h.email || (h.state && h.state.email) || '', total: h.total, at: h.at, state: h.state });
+function syncState(t, err) { const el = $('#syncState'); el.textContent = t; el.style.color = err ? 'var(--err)' : ''; }
+async function sync() {
+  if (!QUOTE_ENDPOINT) { syncState('이 기기에만 저장'); return; }
+  if (!getPin()) { $('#pinBox').hidden = false; syncState('비밀번호를 넣으면 모든 기기와 공유', true); return; }
+  try {
+    const j = await api('list', { year: new Date().getFullYear() });
+    const server = j.quotes || [], have = new Set(server.map(q => q.no));
+    const pending = HIST.filter(h => !have.has(h.no) || h.pending);   // 이 기기에만 있던 내역은 올림
+    for (const h of pending) { try { await api('save', { quote: asQuote(h) }); h.pending = false; } catch {} }
+    const merged = [...server.filter(q => !pending.some(h => h.no === q.no)), ...pending].sort((x, y) => (y.at || '').localeCompare(x.at || ''));
+    HIST = merged; keepLocal(); ONLINE = true; $('#pinBox').hidden = true;
+    if (pending.length) { const k = await api('list', { year: new Date().getFullYear() }); NEXT_NO = k.next; } else NEXT_NO = j.next;
+    if (S && S.autoNo && NEXT_NO && !HIST.some(h => h.no === S.no && h.cust === S.cust)) { S.no = NEXT_NO; $('#qno').value = S.no; update(); }
+    syncState('모든 기기 공유');
+  } catch (err) {
+    ONLINE = false;
+    if (err.code === 'pin') { try { localStorage.removeItem('tl_pin'); } catch {} $('#pinBox').hidden = false; syncState('비밀번호가 틀렸습니다', true); }
+    else syncState('서버 연결 안 됨 — 이 기기에 임시 저장', true);
+  }
+  renderHist(); mailReady();
+}
+$('#pinGo').onclick = () => { const v = $('#pin').value.trim(); if (!v) return; try { localStorage.setItem('tl_pin', v); } catch {} syncState('확인 중…'); sync(); };
+$('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinGo').click(); });
+// 저장·발송 직전에 서버에서 번호를 확정 (다른 기기와 겹치지 않게)
+async function ensureNo() {
+  if (!ONLINE || !S.autoNo) return;
+  const j = await api('reserve', { year: (S.date || today()).slice(0, 4) });
+  S.no = j.no; S.autoNo = false; $('#qno').value = S.no; update();
+}
+function saveHistory(R, extra) {
+  const h = { no: S.no, cust: S.cust, email: S.email || '', total: R.total, at: new Date().toISOString(), state: JSON.parse(JSON.stringify(S)), ...(extra || {}) };
+  const old = HIST.find(x => x.no === S.no);
+  if (old && old.sentAt && !h.sentAt) { h.sentAt = old.sentAt; h.sentTo = old.sentTo; }
+  HIST = [h, ...HIST.filter(x => x.no !== S.no)];
   const m = /^(\d{4})-(\d+)$/.exec(S.no);
   if (m && +m[2] > store.get('tl-quote-seq', 2)) store.set('tl-quote-seq', +m[2]);
-  renderHist();
+  if (ONLINE && !extra) api('save', { quote: asQuote(h) }).catch(() => { h.pending = true; keepLocal(); });
+  else if (!ONLINE && QUOTE_ENDPOINT) h.pending = true;
+  keepLocal(); renderHist();
 }
 async function run(btn, fn) {
   const R = calc(); if (R.problems.length) return;
   const label = btn.textContent; btn.disabled = true; btn.textContent = '만드는 중…';
-  try { await fn(R); saveHistory(R); } catch (err) { msg('파일을 만들지 못했습니다. 다시 눌러 주세요. (' + err.message + ')', false); }
+  try { await ensureNo(); const extra = await fn(calc()); saveHistory(calc(), extra || undefined); } catch (err) {
+    const why = { alias: 'Gmail에 info@treeland.kr 보내는 주소가 아직 연결되지 않았습니다.', pin: '관리자 비밀번호를 다시 확인해 주세요.', bad_email: '받는 사람 이메일 주소를 확인해 주세요.' }[err.code];
+    msg(why || '처리하지 못했습니다. 다시 눌러 주세요. (' + err.message + ')', false);
+  }
   finally { btn.disabled = false; btn.textContent = label; }
 }
 function download(blob, name) { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); }
@@ -631,18 +693,65 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
 
 /* ── 발행 내역 ── */
 function renderHist() {
-  const list = store.get('tl-quote-hist', []);
-  $('#hist').innerHTML = list.length ? list.map((h, i) => `<div class="it"><div><b>${esc(h.cust)}</b> <span class="m">No. ${esc(h.no)}</span><div class="m">${new Date(h.at).toLocaleDateString('ko-KR')} · 합계 ${fmt(h.total)}원</div></div>
+  const list = HIST;
+  const when = iso => { const d = new Date(iso); return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  $('#hist').innerHTML = list.length ? list.map((h, i) => `<div class="it"><div><b>${esc(h.cust)}</b> <span class="m">No. ${esc(h.no)}</span><div class="m">${h.at ? new Date(h.at).toLocaleDateString('ko-KR') : ''} · 합계 ${fmt(h.total)}원${h.pending ? ' · 아직 서버에 안 올라감' : ''}</div>${h.sentAt ? `<div class="m">메일 ${when(h.sentAt)} → ${esc(h.sentTo)}</div>` : ''}</div>
     <div class="acts"><button type="button" class="ghost" data-open="${i}">열기</button><a class="ghost" href="/contract/admin.html?q=${encodeURIComponent(h.no)}" style="text-decoration:none">계약서 만들기</a><button type="button" class="link" data-copyq="${i}">복제</button><button type="button" class="link" data-delq="${i}">삭제</button></div></div>`).join('')
-    : '<p class="hint">아직 저장한 견적이 없습니다. PDF·이미지를 저장하면 여기에 남습니다.</p>';
+    : '<p class="hint">아직 저장한 견적이 없습니다. PDF·이미지를 저장하거나 메일을 보내면 여기에 남습니다.</p>';
 }
 $('#hist').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
-  const list = store.get('tl-quote-hist', []);
-  if (b.dataset.open) { S = JSON.parse(JSON.stringify(list[+b.dataset.open].state)); renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
-  if (b.dataset.copyq) { const st = JSON.parse(JSON.stringify(list[+b.dataset.copyq].state)); const f = freshState(); S = { ...st, no: f.no, date: f.date, cust: '', phase: f.phase }; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); $('#cust').focus(); }
-  if (b.dataset.delq && confirm('이 견적을 내역에서 지울까요?')) { list.splice(+b.dataset.delq, 1); store.set('tl-quote-hist', list); renderHist(); }
+  const list = HIST;
+  if (b.dataset.open) { S = JSON.parse(JSON.stringify(list[+b.dataset.open].state)); S.autoNo = false; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
+  if (b.dataset.copyq) { const st = JSON.parse(JSON.stringify(list[+b.dataset.copyq].state)); const f = freshState(); S = { ...st, no: f.no, autoNo: true, date: f.date, cust: '', email: '', phase: f.phase }; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); $('#cust').focus(); }
+  if (b.dataset.delq && confirm('이 견적을 내역에서 지울까요? (모든 기기에서 지워집니다)')) {
+    const [h] = list.splice(+b.dataset.delq, 1); keepLocal(); renderHist();
+    if (ONLINE) api('delete', { no: h.no }).catch(() => msg('서버에서 지우지 못했습니다. 새로고침 후 다시 지워 주세요.', false));
+  }
 });
+
+/* ── 메일 보내기 ── */
+function mailReady() {
+  $('#mailBtn').title = ONLINE ? '' : '견적 서버에 연결되어야 보낼 수 있습니다';
+}
+function mailDefaults() {
+  const dl = P.deadline && S.phase === 'e1' ? `\n${P.deadline.m}월 ${P.deadline.d}일까지 계약하시면 1차 얼리버드 할인가로 진행됩니다.\n` : '';
+  $('#mailTo').value = S.email || '';
+  $('#mailSubj').value = `[트리랜드] ${S.cust} 크리스마스트리 대여 견적서`;
+  $('#mailBody').value = `안녕하세요, 트리랜드입니다.
+
+요청하신 크리스마스트리 대여 견적서를 보내드립니다.
+첨부한 PDF 파일을 확인해 주세요.
+${dl}
+트리 크기나 장식, 설치 날짜를 바꾸고 싶으시면 편하게 말씀해 주세요. 다시 맞춰 보내드리겠습니다.
+궁금하신 점은 이 메일에 답장 주시거나 070-4571-7467, 카카오톡 채널 「트리랜드」로 연락 주시면 됩니다.
+
+감사합니다.
+
+트리랜드 드림
+www.treeland.kr`;
+}
+$('#mailBtn').onclick = () => {
+  if (!ONLINE) { msg('견적 서버에 연결되어야 메일을 보낼 수 있습니다. 아래 발행 내역에서 비밀번호를 확인해 주세요.', false); return; }
+  if (calc().problems.length) return;
+  mailDefaults(); $('#mailBox').hidden = false; $('#mailTo').focus();
+};
+$('#mailClose').onclick = () => { $('#mailBox').hidden = true; };
+$('#mailSend').onclick = e => {
+  const to = $('#mailTo').value.trim();
+  if (!/^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/.test(to)) { msg('받는 사람 이메일 주소를 확인해 주세요.', false); $('#mailTo').focus(); return; }
+  S.email = to; $('#custEmail').value = to;
+  return run(e.currentTarget, async R => {
+    const c = await capture();
+    const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+    pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+    const b64 = pdf.output('datauristring').split(',')[1];
+    const quote = { no: S.no, cust: S.cust, email: to, total: R.total, at: new Date().toISOString(), state: JSON.parse(JSON.stringify(S)) };
+    const j = await api('send', { to, subject: $('#mailSubj').value.trim(), body: $('#mailBody').value, copySelf: $('#mailCopy').checked, pdf: b64, filename: fileBase() + '.pdf', quote });
+    $('#mailBox').hidden = true; msg(`${to}로 견적서를 보냈습니다.`);
+    return { sentAt: j.sentAt, sentTo: to };
+  });
+};
 
 /* ── 도장 ── */
 function stampState() { const has = !!store.get('tl-quote-stamp', null); $('#stampState').textContent = has ? '이 기기에서 바꾼 도장 사용 중' : '대표 도장 자동 적용'; $('#stampClear').hidden = !has; }
@@ -670,7 +779,7 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   S = draft && draft.trees ? draft : freshState();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
   $('#form').removeAttribute('aria-busy');
-  stampState(); renderHist(); renderForm();
+  stampState(); renderHist(); renderForm(); sync();
 })();
 })();
 </script>
