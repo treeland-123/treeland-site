@@ -1199,6 +1199,117 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
 @media (max-width:640px){.tier-soon{font-size:11px;padding:3px 9px}}
 .qcard .qimg{position:relative;display:block;padding:0}
 .qcard .qsoon{position:absolute;left:50%;top:76%;transform:translateX(-50%);padding:2px 7px;border:1px solid #B89A5E;border-radius:999px;background:rgba(247,244,236,.92);color:#8A6E3E;font-size:10px;font-weight:600;line-height:1.4;white-space:nowrap}
+
+/* 1분 견적: 여러 크기 담기 · 트리마다 고르기 */
+.qgrid.qsz{grid-template-columns:repeat(3,minmax(0,1fr))}
+.qsz-c{padding:6px 6px 8px;gap:6px;cursor:default}
+.qsz-hit{position:relative;display:grid;gap:4px;align-content:start;padding:0;border:0;background:none;color:inherit;font-family:inherit;text-align:left;cursor:pointer}
+.qsz-hit img{width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--surface)}
+.qsz-hit b{font-size:13.5px;line-height:1.3;padding-inline:3px}
+.qsz-hit span{font-size:11px;line-height:1.35;color:var(--muted);padding-inline:3px}
+.qsz-hit .qt{left:6px;top:6px}
+.qsz-c .qx-st{gap:6px}
+.qsz-c .qx-st button{width:28px;height:28px;font-size:15px}
+.qsz-c:not(.on) .qx-st{opacity:.55}
+.qgo:disabled{opacity:.45;cursor:default}
+.qx-q{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 2px 0;font-size:12px;color:var(--muted)}
+.qx-q[hidden]{display:none}
+.qx-q .qx-st{gap:6px}.qx-q .qx-st button{width:26px;height:26px;font-size:14px}
+.qpt{display:grid;gap:8px}
+.qpt-r{display:grid;grid-template-columns:minmax(78px,auto) minmax(0,1fr);align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--line);border-radius:12px;background:#fff}
+.qpt-n{font-size:14px;font-weight:700;white-space:nowrap}
+.qpt-o{display:flex;gap:6px}
+.qpt-o button{flex:1;min-height:36px;padding:4px 8px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.qpt-o button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#F4F1EA}
+.qpt-o.dots button{display:grid;justify-items:center;gap:2px;min-height:48px;padding:4px 2px;border-radius:10px}
+.qpt-o.dots i{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.qpt-o.dots em{font-style:normal;font-size:11px}
+.qpt-o.dots button[aria-pressed="true"]{background:#E9EDE7;color:var(--ink);box-shadow:inset 0 0 0 1px var(--pine)}
+.qres dl div.qg dt{color:var(--ink);font-weight:600}
+@media (max-width:360px){.qpt-r{grid-template-columns:1fr}.qsz-hit b{font-size:12.5px}}
+
+/* 설치 예약 현황 (일정표 연동) — 날짜 단위로만 표시 */
+.slots{margin-top:40px;padding:28px;border:1px solid var(--line);background:#FBFAF6}
+.slots-h{display:grid;gap:6px;max-width:640px}
+.slots-h h3{font-size:24px}
+.slots-h p:last-child{font-size:14.5px;color:var(--muted)}
+.slots-tabs{display:flex;gap:6px;margin:18px 0 12px}
+.slots-tabs button{min-height:36px;padding:4px 14px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.slots-tabs button[aria-selected="true"]{background:var(--pine);border-color:var(--pine);color:#F4F1EA}
+.slots-cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;max-width:520px}
+.sl-w{padding:4px 0;font-size:12px;font-weight:600;color:var(--muted);text-align:center}
+.sl-w.sun{color:#A3232F}.sl-w.sat{color:#2F5B8F}
+.sl-d{position:relative;display:grid;place-items:center;aspect-ratio:1/1;padding:0;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-family:inherit}
+.sl-d b{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+.sl-d.past{opacity:.3}
+.sl-d.empty{border:0;background:none}
+.sl-d.full{background:#EFEDE7;border-color:#E6E2D9}
+.sl-d.full b{color:#B3AEA4;font-weight:500;text-decoration:line-through;text-decoration-thickness:1px}
+.sl-dot{position:absolute;left:50%;bottom:16%;width:5px;height:5px;margin-left:-2.5px;border-radius:50%;background:#C9A24A}
+button.sl-d{cursor:pointer;transition:border-color .15s,background-color .15s,transform .1s}
+button.sl-d:hover{border-color:var(--pine)}
+button.sl-d:active{transform:scale(.94)}
+.slots-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 16px;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.sl-k{display:inline-flex;align-items:center;gap:6px}
+.sl-k i{display:inline-block;width:14px;height:14px;border-radius:4px}
+.sl-open{background:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.sl-part{background:radial-gradient(circle at 50% 70%,#C9A24A 0 2.5px,#fff 3px);box-shadow:inset 0 0 0 1px var(--line)}
+.sl-full{background:#EFEDE7}
+.sl-at{margin-left:auto}
+.qcal .slots-tabs{margin:0 0 8px}
+.qcal .slots-cal{max-width:none;gap:4px}
+.qcal .sl-d{aspect-ratio:auto;height:40px}
+.qcal .sl-d b{font-size:13.5px}
+.qcal .slots-foot{margin-top:8px;font-size:12px}
+@media (max-width:640px){.slots{padding:20px 14px;margin-inline:calc(var(--gutter)*-.5)}.slots-h h3{font-size:21px}.slots-cal{gap:3px}.sl-d{border-radius:6px}.sl-d b{font-size:13px}.sl-at{margin-left:0;width:100%}}
+.hero-slot{display:inline-flex;align-items:center;gap:8px;width:fit-content;margin-top:-4px;padding:5px 12px 5px 10px;border:1px solid rgba(235,201,126,.55);border-radius:999px;background:rgba(12,22,17,.35);color:#F4F1EA;font-size:13px;font-weight:500;text-decoration:none;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.hero-slot i{width:6px;height:6px;border-radius:50%;background:#EBC97E}
+.hero-slot span b{font-weight:700}
+.hero-slot:hover{border-color:#EBC97E}
+
+.sl-d{align-content:center;gap:1px}
+.sl-t{display:block;font-style:normal;font-size:10px;font-weight:600;line-height:1.1;letter-spacing:-.03em;white-space:nowrap}
+.sl-d.part .sl-t{color:#9A7A34}
+.sl-d.full .sl-t{color:#ABA69C;font-weight:500}
+.qcal .sl-d{height:44px}
+@media (max-width:380px){.sl-t{font-size:9px;letter-spacing:-.05em}}
+@media (prefers-reduced-motion:no-preference){.hero-slot i{animation:slotGlow 2.6s ease-in-out infinite}}
+@keyframes slotGlow{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(235,201,126,.55)}50%{opacity:.55;box-shadow:0 0 0 5px rgba(235,201,126,0)}}
+
+.sl-dlg .slots-tabs{margin:6px 0 8px}
+.sl-dlg .slots-cal{max-width:none;gap:4px}
+.sl-dlg .sl-d{aspect-ratio:auto;height:46px}
+.sl-dlg .cc-b{margin-top:14px}
+
+/* 예약 현황: 두루마리처럼 말려 있다가 누르면 아래로 펼쳐짐 (첫 화면 가격 라벨과 같은 금색 축) */
+.slots.roll{position:relative;padding:0 0 12px;border:0;background:none}
+.sl-head{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:16px 20px;border:1px solid var(--line);border-bottom:0;background:#FBFAF6;color:var(--ink);font-family:inherit;text-align:left;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.sl-ht{display:grid;gap:2px}
+.sl-ht .eyebrow{font-size:11px}
+.sl-ht b{font-family:var(--display);font-size:20px;font-weight:600;line-height:1.3}
+.sl-ht small{font-size:13px;color:#9A7A34;font-weight:600}
+.sl-chev{flex:none;width:34px;height:34px;display:grid;place-items:center;border:1px solid var(--line);border-radius:50%;color:var(--pine);transition:transform .6s cubic-bezier(.55,0,.25,1)}
+.sl-chev svg{width:15px;height:15px}
+.slots.open .sl-chev{transform:rotate(180deg)}
+.sl-body{display:grid;grid-template-rows:0fr;border-inline:1px solid var(--line);background:#FBFAF6;transition:grid-template-rows .9s cubic-bezier(.55,0,.25,1)}
+.slots.open .sl-body{grid-template-rows:1fr}
+.sl-inner{min-height:0;overflow:hidden;padding:0 20px;position:relative}
+.sl-inner>:first-child{margin-top:2px}
+.sl-inner>:last-child{margin-bottom:18px}
+.sl-desc{font-size:14px;color:var(--muted)}
+.sl-inner::after{content:"";position:absolute;left:0;right:0;bottom:0;height:22px;pointer-events:none;background:linear-gradient(180deg,rgba(60,44,10,0),rgba(60,44,10,.10))}
+.sl-rod{position:absolute;left:-6px;right:-6px;bottom:0;height:14px;border-radius:999px;background:linear-gradient(180deg,#2A2618 0%,#8C7340 22%,#F3DFA6 46%,#C9A55C 62%,#5E4A22 84%,#241F12 100%);box-shadow:0 3px 7px rgba(0,0,0,.28)}
+.sl-rod::before,.sl-rod::after{content:"";position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#F3DFA6,#8C7340 60%,#3A3018)}
+.sl-rod::before{left:-3px}.sl-rod::after{right:-3px}
+@media (prefers-reduced-motion:no-preference){.slots.roll.nudge:not(.open) .sl-rod{animation:rodNudge 1.2s ease-in-out 1}}
+@keyframes rodNudge{0%,100%{transform:translateY(0)}40%{transform:translateY(5px)}70%{transform:translateY(1px)}}
+@media (prefers-reduced-motion:reduce){.sl-body,.sl-chev{transition:none}}
+@media (max-width:640px){.sl-head{padding:14px 14px}.sl-inner{padding:0 12px}.sl-ht b{font-size:18px}.slots.roll{margin-inline:calc(var(--gutter)*-.5)}}
+/* 지난 견적 이어보기 (같은 기기에만 저장) */
+.hero-resume{display:inline-flex;align-items:center;gap:8px;width:fit-content;margin-top:-2px;padding:5px 12px;border:1px solid rgba(244,241,234,.35);border-radius:999px;background:rgba(244,241,234,.12);color:#F4F1EA;font-family:inherit;font-size:13px;cursor:pointer;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.hero-resume b{font-weight:700}
+.hero-resume svg{width:14px;height:14px;flex:none}
+.hero-resume:hover{border-color:#EBC97E}
 </style>
 <style>
 .sub-crumb{padding-top:14px;font-size:13px;color:var(--muted)}
@@ -1246,7 +1357,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         <details><summary>영업 중에 설치해도 되나요?</summary><p>네, 가능합니다. 설치는 약 1시간 정도 걸리며, 매장 동선과 영업에 방해가 되지 않도록 진행해 드립니다.</p></details>
         <details><summary>결제와 세금계산서는 어떻게 하나요?</summary><p>계약금은 받지 않습니다. 설치가 끝난 뒤 3일 안에 결제해 주시면 되고, 카드·현금 결제와 세금계산서 발행 모두 가능합니다. 기관·법인은 결재 일정에 맞춰 조정해 드립니다. 안내해 드린 금액은 모두 부가세 별도입니다.</p></details>
         <details><summary>얼리버드 할인은 어디에 적용되나요?</summary><p>얼리버드 할인은 트리 구성 가격에 적용됩니다. 운임과 추가 장식은 할인에서 제외되는 점 양해 부탁드립니다.</p></details>
-        <details><summary>트리를 여러 개 설치하면 할인되나요?</summary><p>네, 할인됩니다. 얼리버드 할인가에서 2개 설치하시면 5%, 3개 이상 설치하시면 10%를 추가로 할인해 드립니다. 4개 이상은 상담하실 때 따로 견적을 드리며, 한 곳에 설치하시는 경우 운임은 한 번만 받습니다.</p></details>
+        <details><summary>트리를 여러 개 설치하면 할인되나요?</summary><p>네, 할인됩니다. 얼리버드 할인가에서 2개 설치하시면 5%, 3개 설치하시면 10%를 추가로 할인해 드립니다. 4개 이상은 상담하실 때 따로 견적을 드리며, 한 곳에 설치하시는 경우 운임은 한 번만 받습니다.</p></details>
         <details><summary>크기는 어떻게 고르나요?</summary><p>천장 높이와 설치하실 공간의 폭, 주변 통로를 함께 보고 정하시면 됩니다. 고르기 어려우시면 공간 사진을 보내 주세요. 알맞은 크기를 제안해 드립니다.</p></details>
         <details><summary>사용 중 파손되면 어떻게 하나요?</summary><p>상태를 확인할 수 있는 사진과 함께 연락 주시면 빠르게 확인해 드립니다. 고객님 부주의로 인한 분실·파손은 비용이 발생할 수 있으며, 자세한 기준은 계약서에 적어 드립니다.</p></details>
       </div>
@@ -1359,6 +1470,18 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
       <h4>9. 시행일</h4>
       <p>이 방침은 2026년 10월 23일부터 적용합니다.</p>
       <div class="cc-b"><button type="button" class="cc-main" id="pvOk">닫기</button></div>
+    </div>
+  </div>
+</dialog>
+<dialog class="cc info sl-dlg" id="slotsDlg" aria-labelledby="slDlgT">
+  <div class="cc-in">
+    <button type="button" class="cc-x" id="slotsDlgX" aria-label="닫기"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 3l10 10M13 3 3 13" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
+    <div class="cc-p">
+      <p class="ic-title" id="slDlgT">설치 예약 현황</p>
+      <p class="cc-d">예약이 마감된 날짜는 회색으로 표시됩니다. 원하시는 날짜가 있으면 미리 확인해 주세요.</p>
+      <div class="slots-tabs" role="tablist" aria-label="월 선택"></div>
+      <div class="slots-cal"></div>
+      <div class="cc-b"><button type="button" class="cc-main" id="slotsDlgQ">1분 견적 내기</button><button type="button" class="cc-copy" id="slotsDlgC">닫기</button></div>
     </div>
   </div>
 </dialog>
@@ -2131,16 +2254,27 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   const early1 = () => Date.now() + 9 * 3600000 < EARLY1_END + 86400000;
 
   let A = {}, hist = [], qIdx = {}, qid = '', opener = null, via = '';
-  const ORDER = ['place', 'size', 'count', 'tier', 'color', 'extra', 'region', 'when'];
-  const PROG = { place: 1, size: 2, ceil: 2, count: 3, tier: 4, color: 5, extra: 6, region: 7, when: 8, result: 9 };
+  // A.trees = [{ size, n }] 크기별 수량. 트리 한 그루씩 풀면 units()
+  const ORDER = ['place', 'size', 'tier', 'color', 'extra', 'region', 'when'];
+  const PROG = { place: 1, size: 2, ceil: 2, tier: 3, color: 4, extra: 5, region: 6, when: 7, result: 8 };
+  const NUM = '①②③④⑤⑥⑦⑧⑨⑩';
+  const units = () => { const out = []; (A.trees || []).forEach(t => { for (let k = 0; k < t.n; k++) out.push({ size: t.size, key: t.size + '#' + k, label: sizeOf(t.size).name + (t.n > 1 ? ' ' + NUM[k] : '') }); }); return out; };
+  const total = () => (A.trees || []).reduce((a, t) => a + t.n, 0);
+  const tierOf = u => u.size === 's135' ? 'pre' : ((A.tierPer && A.tierPer[u.key]) || A.tier || 'pre');
+  const colorOf = u => (A.colorPer && A.colorPer[u.key]) || A.color;
+  const choosable = () => units().filter(u => u.size !== 's135');   // 1.35m는 구성 선택 없음
   function nextOf(step) {
-    if ((step === 'size' || step === 'ceil' || step === 'place') && A.size === 's135') { A.tier = 'pre'; A._pre_tier = 1; }   // 1.35m는 구성 선택 없음
     if (step === 'size' && A.size === '?') return 'ceil';
     let i = ORDER.indexOf(step === 'ceil' ? 'size' : step) + 1;
-    while (i < ORDER.length && A['_pre_' + ORDER[i]]) i++;
+    for (;;) {
+      const s = ORDER[i];
+      if (s === 'tier' && !choosable().length) { i++; continue; }
+      if (s === 'color' && A._pre_color && total() <= 1) { i++; continue; }
+      break;
+    }
     return ORDER[i] || 'result';
   }
-  function setProg(step) { document.getElementById('qdProg').style.width = (PROG[step] / 9 * 100) + '%'; document.getElementById('qdBack').disabled = !hist.length; }
+  function setProg(step) { document.getElementById('qdProg').style.width = (PROG[step] / 8 * 100) + '%'; document.getElementById('qdBack').disabled = !hist.length; }
   const toEnd = () => { log.scrollTop = log.scrollHeight; };
   // 아래 선택 영역(dock)이 나타나거나 커져 대화창 높이가 줄어도 마지막 말풍선이 보이게
   if ('ResizeObserver' in window) { let lh = 0; new ResizeObserver(() => { const h = log.clientHeight; if (h !== lh) { lh = h; toEnd(); } }).observe(log); }
@@ -2153,7 +2287,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   function ask(text, widget, small) { say(text, () => { dock.innerHTML = ''; dock.appendChild(widget); toEnd(); requestAnimationFrame(toEnd); }, small); }
   function chips(list, on) {
     const w = document.createElement('div'); w.className = 'qchips';
-    list.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qchip' + (/모르|괜찮|추천|몰라/.test(t) ? ' ghost' : ''); b.textContent = t; b.onclick = () => on(t); w.appendChild(b); });
+    list.forEach(t => { const b = document.createElement('button'); b.type = 'button'; b.className = 'qchip' + (/모르|괜찮|추천|몰라|다르게/.test(t) ? ' ghost' : ''); b.textContent = t; b.onclick = () => on(t); w.appendChild(b); });
     return w;
   }
   function cards(items, on, opts) {
@@ -2170,38 +2304,144 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   }
   const pct = (sz, tier) => { const [l, e] = P[sz][tier]; return Math.round((1 - e / l) * 100); };
   const unit = (sz, tier) => { const p = P[sz][tier]; return early1() ? p[1] : p[0]; };
+  const multiRate = n => n === 2 ? MULTI[2] : n === 3 ? MULTI[3] : 0;   // 4그루 이상은 별도 견적
+  const treesLabel = () => A.trees.map(t => sizeOf(t.size).name + (t.n > 1 ? ' ×' + t.n : '')).join(', ');
+
+  // 트리마다 고르기 (구성·색상): 한 줄에 트리 하나
+  function perTree(list, opts, cur, done) {
+    const w = document.createElement('div'); w.className = 'qpt';
+    const sel = {}; list.forEach(u => { sel[u.key] = cur(u); });
+    list.forEach(u => {
+      const r = document.createElement('div'); r.className = 'qpt-r';
+      r.innerHTML = '<span class="qpt-n">' + u.label + '</span>';
+      const g = document.createElement('span'); g.className = 'qpt-o' + (opts.dots ? ' dots' : ''); g.setAttribute('role', 'radiogroup'); g.setAttribute('aria-label', u.label);
+      opts.items.forEach(it => {
+        const b = document.createElement('button'); b.type = 'button'; b.setAttribute('aria-pressed', String(sel[u.key] === it.v)); b.setAttribute('aria-label', u.label + ' ' + it.b);
+        b.innerHTML = opts.dots ? '<i style="--a:' + it.a + ';--b:' + it.c + '"></i><em>' + it.short + '</em>' : it.b;
+        b.onclick = () => { sel[u.key] = it.v; [...g.children].forEach(x => x.setAttribute('aria-pressed', String(x === b))); };
+        g.appendChild(b);
+      });
+      r.appendChild(g); w.appendChild(r);
+    });
+    const row = document.createElement('div'); row.className = 'qrow';
+    const go = document.createElement('button'); go.type = 'button'; go.className = 'qgo'; go.textContent = '선택 완료'; go.onclick = () => done(sel);
+    row.appendChild(go); w.appendChild(row);
+    return w;
+  }
+  const COLOR_DOT = { '레드 & 골드': ['#9e2330', '#c7a463', '레드'], '화이트 & 샴페인': ['#f1eee7', '#d6c7a1', '화이트'], '세이지 그린 & 골드': ['#93a68a', '#c7b182', '세이지'], '네이비 & 골드': ['#1d2d45', '#c7a463', '네이비'] };
+
+  // 크기: 여러 크기를 섞어 수량까지 담기
+  function sizePicker() {
+    const qty = {}; SIZES.forEach(s => { qty[s.id] = 0; });
+    (A.trees || []).forEach(t => { if (qty[t.size] != null) qty[t.size] = t.n; });
+    const w = document.createElement('div');
+    const g = document.createElement('div'); g.className = 'qgrid qsz'; w.appendChild(g);
+    const go = document.createElement('button');
+    const sum = () => Object.values(qty).reduce((a, b) => a + b, 0);
+    const label = () => { const n = sum(); go.disabled = !n; go.textContent = !n ? '크기를 골라 주세요' : n >= 4 ? n + '그루 선택 완료 · 별도 견적' : n + '그루 선택 완료'; };
+    SIZES.forEach(s => {
+      const c = document.createElement('div'); c.className = 'qcard qsz-c';
+      c.innerHTML = '<button type="button" class="qsz-hit" aria-pressed="false"><img src="img/' + s.img + '.webp" alt="" loading="lazy">' + (s.tag ? '<span class="qt">' + s.tag + '</span>' : '') + '<b>' + s.name + '</b><span>' + s.sub + '</span></button>' +
+        '<div class="qx-st"><button type="button" aria-label="' + s.name + ' 한 그루 빼기">−</button><output aria-live="polite">0</output><button type="button" aria-label="' + s.name + ' 한 그루 더하기">+</button></div>';
+      const hit = c.querySelector('.qsz-hit'), [m, p] = c.querySelectorAll('.qx-st button'), o = c.querySelector('output');
+      const set = n => { qty[s.id] = Math.max(0, Math.min(10, n)); o.textContent = qty[s.id]; m.disabled = !qty[s.id]; p.disabled = qty[s.id] >= 10; c.classList.toggle('on', qty[s.id] > 0); hit.setAttribute('aria-pressed', String(qty[s.id] > 0)); label(); };
+      hit.onclick = () => set(qty[s.id] ? 0 : 1); m.onclick = () => set(qty[s.id] - 1); p.onclick = () => set(qty[s.id] + 1);
+      set(qty[s.id]); g.appendChild(c);
+    });
+    const row = document.createElement('div'); row.className = 'qrow';
+    go.type = 'button'; go.className = 'qgo'; label();
+    go.onclick = () => {
+      const trees = SIZES.filter(s => qty[s.id]).map(s => ({ size: s.id, n: qty[s.id] }));
+      if (!trees.length) return;
+      const n = trees.reduce((a, t) => a + t.n, 0);
+      answer('size', trees, trees.map(t => sizeOf(t.size).name + ' ' + t.n + '그루').join(', '), () => {
+        if (n >= 4) bubble('bot', n + '그루 기준 금액을 보여 드릴게요. <b>4그루 이상은 추가 할인을 따로 견적</b>해 드려요.');
+      });
+    };
+    row.appendChild(go); w.appendChild(row);
+    const c = chips(['잘 모르겠어요'], () => answer('size', '?', '잘 모르겠어요')); c.style.marginTop = '8px'; w.appendChild(c);
+    return w;
+  }
 
   const Q = {
     place: () => ask('어디에 두실 건가요?', chips(['카페·매장', '병원', '학교·학원', '기관·회사', '가정', '기타'], v => answer('place', v, v))),
-    size: () => ask('크기를 골라 주세요.', cards(SIZES.map(s => ({ v: s.id, b: s.name, s: s.sub, img: s.img, tag: s.tag })), v => answer('size', v, v === '?' ? '잘 모르겠어요' : sizeOf(v).name), { extra: [['?', '잘 모르겠어요']] }), '사진은 실제 설치 모습입니다.'),
+    size: () => ask('크기와 수량을 골라 주세요.', sizePicker(), '여러 크기를 함께 담을 수 있어요. 2그루 5%, 3그루 10% 추가 할인 · 4그루 이상은 별도 견적'),
     ceil: () => ask('설치할 곳 천장 높이가 어느 정도인가요?', chips(['2.4m 이하', '2.4~3m', '3m 이상', '잘 모르겠어요'], v => {
       const rec = v === '2.4m 이하' ? 's195' : v === '3m 이상' ? 's290' : 's230';
-      A.recFrom = v; answer('ceil', rec, v, () => bubble('bot', '그럼 <b>' + sizeOf(rec).name + '</b> 기준으로 계산해 볼게요. 상담 때 공간 사진을 보고 다시 맞춰 드려요.'));
+      A.recFrom = v; answer('ceil', rec, v, () => bubble('bot', '그럼 <b>' + sizeOf(rec).name + '</b> 한 그루 기준으로 계산해 볼게요. 상담 때 공간 사진을 보고 다시 맞춰 드려요.'));
     })),
-    count: () => ask('몇 그루 설치하실 건가요?', chips(['1그루', '2그루', '3그루', '4그루 이상', '크기가 다른 트리도 있어요'], v => {
-      if (v.indexOf('크기가') === 0) { A.mixed = true; return answer('count', 1, v, () => bubble('bot', '좋아요. 먼저 고르신 크기로 한 그루 금액을 보여 드리고, 나머지는 카톡에서 같이 맞춰 드릴게요.')); }
-      answer('count', parseInt(v, 10), v);
-    }), '2그루 5%, 3그루 이상 10% 추가 할인돼요.'),
     tier: () => {
-      const n = Math.min(A.count || 1, 3), s = sizeOf(A.size).name;
-      const lbl = early1() ? '1차 얼리버드가' : '정가';
-      const pr = t => { const [l, e] = P[A.size][t]; return early1() ? '<s class="qp-was">' + won(l) + '</s><span class="qp-now"><em class="qp-off">' + pct(A.size, t) + '%</em>' + won(e) + '</span>' : won(l); };
-      ask('구성을 골라 주세요.', cards([
+      const list = choosable(), lbl = early1() ? '1차 얼리버드가' : '정가';
+      const szs = [...new Set(list.map(u => u.size))];
+      const sum = t => list.reduce((a, u) => a + unit(u.size, t), 0), sumL = t => list.reduce((a, u) => a + P[u.size][t][0], 0);
+      const pr = t => early1() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
+      const w = cards([
         { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: pr('std') },
         { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', soon: '10월 30일 업데이트 예정', k: 'pre' },
-      ], v => answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'), { cls: 'two' }), s + ' 1그루 ' + lbl + ' · 부가세 별도');
+      ], v => { A.tierPer = null; answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'); }, { cls: 'two' });
+      if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
+        bubble('me', '트리마다 다르게 고를게요');
+        say('트리마다 구성을 골라 주세요.', () => {
+          dock.innerHTML = '';
+          dock.appendChild(perTree(list, { items: [{ v: 'std', b: '스탠다드' }, { v: 'pre', b: '프리미엄' }] }, u => (A.tierPer && A.tierPer[u.key]) || 'std', sel => {
+            const vals = Object.values(sel), same = vals.every(x => x === vals[0]);
+            const lab = same ? (vals[0] === 'pre' ? '프리미엄' : '스탠다드') : list.map(u => u.label + ' ' + (sel[u.key] === 'pre' ? '프리미엄' : '스탠다드')).join(', ');
+            answer('tier', vals[0], lab, null, { tierPer: same ? null : sel });
+          }));
+          toEnd();
+        });
+      }), { style: 'margin-top:10px' }));
+      const s135 = A.trees.some(t => t.size === 's135');
+      ask('구성을 골라 주세요.', w, (list.length === 1 ? sizeOf(list[0].size).name + ' 1그루 ' : (szs.length === 1 ? sizeOf(szs[0]).name + ' ' : '') + list.length + '그루 합계 ') + lbl + ' · 부가세 별도' + (s135 ? ' · 1.35m는 단일 구성' : ''));
     },
-    color: () => ask('장식 색상은요?', cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag })), v => answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v), { cls: 'sq', extra: [['추천', '사진 보고 추천받을게요']] })),
+    color: () => {
+      const list = units();
+      const w = cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag })), v => { answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v, null, { colorPer: null }); }, { cls: 'sq', extra: [['추천', '사진 보고 추천받을게요']] });
+      if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
+        bubble('me', '트리마다 다르게 고를게요');
+        say('트리마다 색상을 골라 주세요.', () => {
+          dock.innerHTML = '';
+          const items = COLORS.map(c => ({ v: c.name, b: c.name, a: COLOR_DOT[c.name][0], c: COLOR_DOT[c.name][1], short: COLOR_DOT[c.name][2] }));
+          dock.appendChild(perTree(list, { items, dots: 1 }, u => (A.colorPer && A.colorPer[u.key]) || (A.color && A.color !== '추천' ? A.color : COLORS[0].name), sel => {
+            const vals = Object.values(sel), same = vals.every(x => x === vals[0]);
+            const lab = same ? vals[0] : list.map(u => u.label + ' ' + COLOR_DOT[sel[u.key]][2]).join(', ');
+            answer('color', vals[0], lab, null, { colorPer: same ? null : sel });
+          }));
+          toEnd();
+        });
+      }), { style: 'margin-top:8px' }));
+      ask('장식 색상은요?', w, list.length > 1 ? '모두 같은 색이면 하나만 고르시면 돼요.' : '');
+    },
     extra: () => ask('추가 장식도 보시겠어요?', chips(['괜찮아요', '추가로 보고 싶어요'], v => {
       if (v === '괜찮아요') return answer('extra', [], '괜찮아요');
       bubble('me', '추가로 보고 싶어요'); extraPicker();
     }), '고르지 않아도 기본 구성으로 충분히 풍성해요.'),
     region: () => ask('설치 지역은 어디인가요?', chips(REGIONS.map(r => r.name), v => answer('region', v, v)), '서울은 운임이 무료예요.'),
-    when: () => ask('언제쯤 설치하고 싶으세요?', chips(['11월 초', '11월 중순', '11월 말', '12월', '아직 몰라요'], v => answer('when', v, v)), '설치는 11월부터 진행합니다.'),
+    when: () => {
+      // 설치 예약 현황 달력에서 날짜 고르기 (마감된 날은 못 고름)
+      const S = window.TL_SLOTS;
+      if (!S) return ask('언제쯤 설치하고 싶으세요?', chips(['11월 초', '11월 중순', '11월 말', '12월', '아직 몰라요'], v => answer('when', v, v)), '설치는 11월부터 진행합니다.');
+      const w = document.createElement('div'); w.className = 'qcal';
+      let m = S.firstOpen();
+      const tabs = document.createElement('div'); tabs.className = 'slots-tabs'; const cal = document.createElement('div'); cal.className = 'slots-cal';
+      const draw = () => {
+        tabs.innerHTML = S.months.map(x => '<button type="button" role="tab" aria-selected="' + (x === m) + '" data-m="' + x + '">' + x + '월</button>').join('');
+        [...tabs.children].forEach(b => { b.onclick = () => { m = +b.dataset.m; draw(); }; });
+        cal.innerHTML = S.month(m, true);
+        cal.querySelectorAll('button[data-k]').forEach(b => { b.onclick = () => { const [, mm, dd] = b.dataset.k.split('-'); const v = (+mm) + '월 ' + (+dd) + '일'; A.whenDate = b.dataset.k; answer('when', v, v); }; });
+      };
+      draw(); S.onChange(() => { if (w.isConnected) draw(); });
+      w.append(tabs, cal);
+      const c = chips(['아직 몰라요'], () => { A.whenDate = ''; answer('when', '아직 몰라요', '아직 몰라요'); }); c.style.marginTop = '10px'; w.appendChild(c);
+      ask('언제 설치하고 싶으세요?', w, '마감된 날짜는 고를 수 없어요. 일부 마감인 날은 가능한 시간으로 맞춰 드려요.');
+    },
   };
+  const BOX_BASE = { s135: 0, s195: 3, s230: 5, s230s: 5, s290: 8 };
   function extraPicker() {
-    const sel = EXTRAS.map(() => ({ on: false, pick: [] }));
+    const sel = EXTRAS.map(() => ({ on: false, pick: [], q: 0 }));
+    const N = total();
     let boxes = 0;
+    const baseBoxes = (A.trees || []).reduce((a, t) => a + BOX_BASE[t.size] * t.n, 0);
     say('필요한 걸 모두 골라 주세요.', () => {
       dock.innerHTML = '';
       const w = document.createElement('div');
@@ -2210,14 +2450,14 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const count = () => sel.filter(x => x.on).length + (boxes ? 1 : 0);
       const label = () => { const n = count(); go.textContent = n ? n + '개 선택 완료' : '선택 없이 넘어가기'; };
       EXTRAS.forEach((e, i) => {
-        const st = sel[i]; st.pick = (e.opts || []).map(() => 0);
-        if (A.size === 's135' && e.price === 0) return;   // 1.35m는 기본 하단 상자가 없어 '소품상자로 대체'가 해당 없음
+        const st = sel[i]; st.pick = (e.opts || []).map(() => 0); st.q = N;
+        if (!baseBoxes && e.price === 0) return;   // 기본 하단 상자가 없으면(1.35m만) '소품상자로 대체'가 해당 없음
         const card = document.createElement('div'); card.className = 'qcard qx-c';
         const pics = e.img ? [e.img] : ((e.opts && e.opts[0].v.filter(v => v[1]).map(v => v[1])) || []);
         const kinds = e.opts ? e.opts[0].v.map(v => v[0]) : [];
         card.innerHTML = '<button type="button" class="qx-hit" aria-pressed="false"><span class="qx-ph">' + pics.map((f, k) => '<img src="img/' + f + '.webp" alt="" loading="lazy"' + (k ? '' : ' class="on"') + '>').join('') +
           (pics.length > 1 ? '<em class="qx-n">' + pics.length + (e.opts[0].k === '색상' ? '색' : '종') + '</em><span class="qx-dots" aria-hidden="true">' + pics.map((f, k) => '<i' + (k ? '' : ' class="on"') + '></i>').join('') + '</span>' : '') + '</span>' +
-          '<b>' + e.name + '</b><span>' + (e.price ? '+' + won(e.price) : '') + (e.sub ? (e.price ? ' · ' : '') + e.sub : '') + '</span>' +
+          '<b>' + e.name + '</b><span>' + (e.price ? '+' + won(e.price) + (N > 1 ? ' · 1그루' : '') : '') + (e.sub ? (e.price ? ' · ' : '') + e.sub : '') + '</span>' +
           (kinds.length > 1 ? '<span class="qx-vs">' + kinds.join(' · ') + '</span>' : '') + '</button>';
         const hit = card.querySelector('.qx-hit'), ims = [...card.querySelectorAll('.qx-ph img')], dots = [...card.querySelectorAll('.qx-dots i')];
         let cur = 0, held = false;
@@ -2233,17 +2473,26 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
           });
           card.appendChild(row);
         });
+        // 여러 그루면 몇 그루에 넣을지 (기본은 전체)
+        let qrow = null;
+        if (N > 1 && e.price) {
+          qrow = document.createElement('div'); qrow.className = 'qx-q'; qrow.hidden = true;
+          qrow.innerHTML = '<span>몇 그루에</span><div class="qx-st"><button type="button" aria-label="' + e.name + ' 한 그루 빼기">−</button><output aria-live="polite">' + N + '</output><button type="button" aria-label="' + e.name + ' 한 그루 더하기">+</button></div>';
+          const [m, p] = qrow.querySelectorAll('button'), o = qrow.querySelector('output');
+          const qs = n => { st.q = Math.max(1, Math.min(N, n)); o.textContent = st.q; m.disabled = st.q <= 1; p.disabled = st.q >= N; };
+          m.onclick = () => qs(st.q - 1); p.onclick = () => qs(st.q + 1); qs(N);
+          card.appendChild(qrow);
+        }
         hit.onclick = () => { st.on = !st.on;
           if (st.on && ims.length > 1 && e.opts) {   // 보고 있던 사진의 종류로 선택
             const k = e.opts[0].v.findIndex(v => v[1] === pics[cur]); if (k >= 0) { st.pick[0] = k; held = true; const r0 = card.querySelector('.qx-o'); if (r0) [...r0.children].forEach((x, j) => x.setAttribute('aria-pressed', String(j === k))); }
           }
-          card.classList.toggle('on', st.on); hit.setAttribute('aria-pressed', String(st.on)); card.querySelectorAll('.qx-o').forEach(r => { r.hidden = !st.on; }); label(); };
+          card.classList.toggle('on', st.on); hit.setAttribute('aria-pressed', String(st.on)); card.querySelectorAll('.qx-o').forEach(r => { r.hidden = !st.on; }); if (qrow) qrow.hidden = !st.on; label(); };
         g.appendChild(card);
       });
       // 시그니처 상자 추가 (수량)
-      const base = (P[A.size] && { s135: 0, s195: 3, s230: 5, s230s: 5, s290: 8 }[A.size]) || 0;
       const bc = document.createElement('div'); bc.className = 'qcard qx-c qx-box';
-      bc.innerHTML = '<div class="qx-hit" aria-hidden="true"><img src="img/signature-box.webp" alt="" loading="lazy" style="object-fit:contain;background:#F1ECE3"><b>시그니처 상자 추가</b><span>개당 ' + won(BOX_EXTRA) + (base ? ' · 기본 하단 상자 ' + base + '개 포함' : '') + '</span></div>' +
+      bc.innerHTML = '<div class="qx-hit" aria-hidden="true"><img src="img/signature-box.webp" alt="" loading="lazy" style="object-fit:contain;background:#F1ECE3"><b>시그니처 상자 추가</b><span>개당 ' + won(BOX_EXTRA) + (baseBoxes ? ' · 기본 하단 상자 ' + baseBoxes + '개 포함' : '') + '</span></div>' +
         '<div class="qx-st"><button type="button" aria-label="시그니처 상자 한 개 빼기">−</button><output aria-live="polite">0</output><button type="button" aria-label="시그니처 상자 한 개 더하기">+</button></div>';
       const [bm, bp] = bc.querySelectorAll('.qx-st button'), bo = bc.querySelector('output');
       const bset = n => { boxes = Math.max(0, Math.min(20, n)); bo.textContent = boxes; bm.disabled = !boxes; bc.classList.toggle('on', boxes > 0); label(); };
@@ -2253,19 +2502,22 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       go.type = 'button'; go.className = 'qgo'; label();
       go.onclick = () => {
         const list = [];
-        EXTRAS.forEach((e, i) => { if (!sel[i].on) return; const o = (e.opts || []).map((op, oi) => op.v[sel[i].pick[oi]][0]).join('·'); list.push({ name: e.name + (o ? '(' + o + ')' : ''), price: e.price }); });
-        if (boxes) list.push({ name: '시그니처 상자 ' + boxes + '개 추가', price: boxes * BOX_EXTRA, once: true });
+        EXTRAS.forEach((e, i) => { if (!sel[i].on) return; const o = (e.opts || []).map((op, oi) => op.v[sel[i].pick[oi]][0]).join('·'); const q = e.price ? (N > 1 ? sel[i].q : 1) : N; list.push({ name: e.name + (o ? '(' + o + ')' : '') + (N > 1 && e.price ? ' ×' + q : ''), price: e.price, q }); });
+        if (boxes) list.push({ name: '시그니처 상자 ' + boxes + '개 추가', price: boxes * BOX_EXTRA, q: 1 });
         answer('extra', list, list.length ? list.map(x => x.name).join(', ') : '없이 진행할게요');
       };
       row.appendChild(go); w.appendChild(row); dock.appendChild(w); toEnd();
-    }, '가격은 트리 1그루 기준이에요. 고르면 종류를 정할 수 있어요.');
+    }, '가격은 트리 1그루 기준이에요. 고르면 종류를 정할 수 있어요.' + (N > 1 ? ' 여러 그루면 몇 그루에 넣을지도 정할 수 있어요.' : ''));
   }
   function run(step) { qIdx[step] = log.children.length; Q[step](); }
-  function answer(step, value, label, after) {
+  function answer(step, value, label, after, extra) {
     hist.push({ step, A: JSON.parse(JSON.stringify(A)) });
-    A[step] = value; if (step === 'ceil') A.size = value;
+    if (step === 'size') { if (value === '?') A.size = '?'; else { A.size = null; A.trees = value; A.recFrom = null; } }
+    else if (step === 'ceil') { A.size = value; A.trees = [{ size: value, n: 1 }]; }
+    else A[step] = value;
+    if (extra) Object.assign(A, extra);
     dock.innerHTML = ''; bubble('me', label);
-    track('quote_step', { step, value: Array.isArray(value) ? value.map(x => x.name).join('|') : String(value) });
+    track('quote_step', { step, value: step === 'size' && Array.isArray(value) ? value.map(t => t.size + 'x' + t.n).join('|') : Array.isArray(value) ? value.map(x => x.name).join('|') : String(value) });
     after && after();
     const nx = nextOf(step); setProg(nx);
     if (nx === 'result') return result();
@@ -2278,32 +2530,38 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     while (log.children.length > keep) log.lastChild.remove();
     setProg(h.step); run(h.step);
   }
-
   // ---------- 결과 ----------
   function calc() {
-    const s = sizeOf(A.size), n = Math.min(A.count || 1, 4), tier = A.tier || 'pre';
-    const [list, early] = P[A.size][tier], e1 = early1();
-    const u = e1 ? early : list, m = n >= 3 ? MULTI[3] : (MULTI[n] || 0);
-    const tree = Math.round(u * n * (1 - m) / 1000) * 1000;
-    const ex = (A.extra || []).reduce((a, x) => a + x.price * (x.once ? 1 : n), 0);
+    const us = units(), n = us.length, e1 = early1();
+    const list = us.reduce((a, u) => a + P[u.size][tierOf(u)][0], 0);
+    const sum = us.reduce((a, u) => a + unit(u.size, tierOf(u)), 0);
+    const m = multiRate(n);
+    const tree = Math.round(sum * (1 - m) / 1000) * 1000;
+    const ex = (A.extra || []).reduce((a, x) => a + x.price * (x.q || 1), 0);
     const reg = REGIONS.find(r => r.name === A.region);
-    return { s, n, tier, list, u, e1, m, tree, ex, reg, min: tree + ex + reg.min, max: tree + ex + reg.max };
+    // 같은 크기·구성·색상끼리 묶기
+    const gm = new Map();
+    us.forEach(u => { const t = tierOf(u), c = colorOf(u), k = u.size + '|' + t + '|' + c; const g = gm.get(k) || { size: u.size, tier: t, color: c, n: 0 }; g.n++; gm.set(k, g); });
+    const groups = [...gm.values()];
+    const tiers = [...new Set(us.map(tierOf))], sizes = [...new Set(us.map(u => u.size))];
+    const dpct = sizes.length === 1 && tiers.length === 1 ? pct(sizes[0], tiers[0]) : null;
+    return { n, list, sum, e1, m, tree, ex, reg, groups, dpct, min: tree + ex + reg.min, max: tree + ex + reg.max };
   }
   function makeId() { const d = new Date(Date.now() + 9 * 3600000), c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = ''; for (let i = 0; i < 3; i++) r += c[Math.floor(Math.random() * c.length)]; return 'TL-' + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0') + '-' + r; }
-  const cnt = c => c.n + (A.count >= 4 ? '그루 이상' : '그루');
-  const tierName = t => A.size === 's135' ? '단일 구성' : (t === 'pre' ? '프리미엄' : '스탠다드');
+  const tierName = (t, sz) => sz === 's135' ? '단일 구성' : (t === 'pre' ? '프리미엄' : '스탠다드');
+  const colorName = c => c === '추천' ? '색상 추천 요청' : c;
+  const groupLine = g => sizeOf(g.size).name + ' ' + tierName(g.tier, g.size) + ' · ' + colorName(g.color) + (g.n > 1 ? ' ×' + g.n : '');
+  const discLabel = c => (c.e1 ? '1차 얼리버드 ' + (c.dpct != null ? c.dpct + '%' : '할인') : '정가') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '');
   function quoteText(c, v) {
     const range = c.min === c.max ? won(c.min) : won(c.min) + ' ~ ' + won(c.max);
     const L = ['상호', '담당자', '연락처', '설치 주소'], who = (v || []).map((x, i) => x ? L[i] + ': ' + x : '').filter(Boolean);
-    return ['[트리랜드 예상 견적] ' + qid].concat(who, [
-      '설치 장소: ' + A.place,
-      '크기: ' + c.s.name + ' ' + cnt(c) + (A.recFrom ? ' (천장 ' + A.recFrom + ' 기준 추천)' : '') + (A.mixed ? ' + 다른 크기도 상담 원함' : ''),
-      '구성: ' + tierName(c.tier),
-      '색상: ' + (A.color === '추천' ? '사진 보고 추천 요청' : A.color),
+    const trees = c.groups.length === 1 ? ['트리: ' + groupLine(c.groups[0]) + (c.n === 1 ? ' 1그루' : '')] : ['트리 ' + c.n + '그루:'].concat(c.groups.map((g, i) => '  ' + NUM[i] + ' ' + groupLine(g)));
+    return ['[트리랜드 예상 견적] ' + qid].concat(who, ['설치 장소: ' + A.place], trees, [
+      A.recFrom ? '크기 추천: 천장 ' + A.recFrom + ' 기준' : null,
       '추가 장식: ' + ((A.extra || []).map(x => x.name).join(', ') || '없음'),
-      '설치 지역: ' + A.region, '희망 시기: ' + A.when,
-      '예상 합계: ' + range + ' (' + (c.e1 ? '1차 얼리버드 ' + pct(A.size, c.tier) + '%' : '정가 기준') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '') + ', 부가세 별도)',
-      '', '공간 사진을 함께 보내드립니다.']).join('\n');
+      '설치 지역: ' + A.region, (A.whenDate ? '희망 설치일: ' : '희망 시기: ') + A.when,
+      '예상 합계: ' + range + ' (' + discLabel(c) + ', 부가세 별도)' + (c.n >= 4 ? ' · 4그루 이상 추가 할인은 별도 견적 요청' : ''),
+      '', '공간 사진을 함께 보내드립니다.']).filter(x => x !== null).join('\n');
   }
   function copyNow(text) {
     let ok = false;
@@ -2335,16 +2593,17 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     const c = calc();
     say('예상 견적이 나왔어요.', () => {
       const range = c.min === c.max ? won(c.min) : won(c.min) + ' ~ ' + won(c.max);
-      const disc = c.e1 ? '1차 얼리버드 ' + pct(A.size, c.tier) + '%' : '정가';
+      const g0 = c.groups[0];
+      const head = c.groups.length === 1 ? tierName(g0.tier, g0.size) + ' · ' + sizeOf(g0.size).name + (c.n > 1 ? ' ×' + c.n : '') : '트리 ' + c.n + '그루';
       const d = document.createElement('div'); d.className = 'qm qres';
-      d.innerHTML = '<h4>' + tierName(c.tier) + ' · ' + c.s.name + '</h4><dl>' +
-        '<div><dt>트리 ' + cnt(c) + '</dt><dd>정가 ' + won(c.list * c.n) + '</dd></div>' +
-        '<div><dt>' + disc + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '') + '</dt><dd>' + won(c.tree) + '</dd></div>' +
+      d.innerHTML = '<h4>' + head + '</h4><dl>' +
+        (c.groups.length > 1 ? c.groups.map((g, i) => '<div class="qg"><dt>' + NUM[i] + ' ' + sizeOf(g.size).name + ' ' + tierName(g.tier, g.size) + '</dt><dd>' + colorName(g.color) + (g.n > 1 ? ' ×' + g.n : '') + '</dd></div>').join('') : '<div><dt>색상</dt><dd>' + colorName(g0.color) + '</dd></div>') +
+        '<div><dt>트리 ' + c.n + '그루 정가</dt><dd>' + won(c.list) + '</dd></div>' +
+        '<div><dt>' + discLabel(c) + '</dt><dd>' + won(c.tree) + '</dd></div>' +
         '<div><dt>추가 장식</dt><dd>' + (c.ex ? won(c.ex) : '없음') + '</dd></div>' +
         '<div><dt>운임 (' + A.region + ')</dt><dd>' + (c.reg.max ? won(c.reg.min) + ' ~ ' + won(c.reg.max) : '무료') + '</dd></div>' +
-        '<div><dt>색상</dt><dd>' + (A.color === '추천' ? '사진 보고 추천' : A.color) + '</dd></div>' +
-        '<div><dt>희망 시기</dt><dd>' + A.when + '</dd></div></dl>' +
-        '<p class="qincl">설치·철거 포함 · 기간 추가금 없음</p><div class="qtot"><span>예상 합계</span><b>' + range + '</b><small>부가세 별도 · 최종 금액은 상담 후 확정' + (c.e1 ? '' : ' · 2차 얼리버드 할인은 상담 시 안내') + (A.count >= 4 ? ' · 4그루 이상은 상담 시 따로 견적을 드려요' : '') + (A.mixed ? ' · 다른 크기는 카톡에서 함께 견적' : '') + '</small></div>' +
+        '<div><dt>' + (A.whenDate ? '희망 설치일' : '희망 시기') + '</dt><dd>' + A.when + '</dd></div></dl>' +
+        '<p class="qincl">설치·철거 포함 · 기간 추가금 없음</p><div class="qtot"><span>예상 합계</span><b>' + range + '</b><small>부가세 별도 · 최종 금액은 상담 후 확정' + (c.e1 ? '' : ' · 2차 얼리버드 할인은 상담 시 안내') + (c.n >= 4 ? ' · 4그루 이상 추가 할인은 상담 시 따로 견적을 드려요' : '') + '</small></div>' +
         '<div class="qinfo"><p class="qinfo-t">견적에 함께 보낼 정보 <small>선택</small></p>' +
         '<input id="qiOrg" type="text" autocomplete="organization" placeholder="상호 / 기관명 (예: ○○카페, ○○병원)" aria-label="상호 또는 기관명">' +
         '<input id="qiName" type="text" autocomplete="name" placeholder="담당자명" aria-label="담당자명">' +
@@ -2354,8 +2613,9 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
         '<button type="button" class="qskip" id="qSkip">생략하고 보내기</button>' +
         '<p class="qcall">전화 상담 <b>' + PHONE + '</b> · 평일 9시~18시</p>' +
         '<button type="button" class="qagain" id="qAgain">처음부터 다시 하기</button>';
-      log.appendChild(d); log.scrollTop = log.scrollHeight;
-      track('quote_result', { quote_id: qid, tier: c.tier, size: c.s.name, count: c.n, via });
+      log.appendChild(d); toEnd();
+      try { localStorage.setItem('tl_last_quote', JSON.stringify({ A: A, at: Date.now(), head: head, range: range })); } catch (x) {}
+      track('quote_result', { quote_id: qid, tier: [...new Set(c.groups.map(g => g.tier))].join('|'), size: treesLabel(), count: c.n, via });
       const info = () => ['qiOrg', 'qiName', 'qiTel', 'qiAddr'].map(id => (document.getElementById(id).value || '').trim());
       const send = skip => {
         const v = skip ? ['', '', '', ''] : info(), txt = quoteText(c, v), ok = copyNow(txt);
@@ -2369,17 +2629,33 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       document.getElementById('qAgain').addEventListener('click', () => start({}, via));
     });
   }
-
   // ---------- 열기 · 닫기 ----------
+  // 지난 견적 이어보기: 이 기기에서 마지막으로 낸 견적을 그대로 다시 계산해 결과부터 보여 줌 (가격이 바뀌었으면 지금 가격으로)
+  const LAST_DAYS = 30;
+  function lastQuote() { try { const j = JSON.parse(localStorage.getItem('tl_last_quote') || 'null'); if (!j || !j.A || Date.now() - j.at > LAST_DAYS * 864e5) return null; if (!(j.A.trees || []).every(t => P[t.size]) || !REGIONS.find(r => r.name === j.A.region)) return null; return j; } catch (x) { return null; } }
+  window.TL_resumeQuote = () => {
+    const j = lastQuote(); if (!j) return;
+    opener = document.activeElement;
+    if (!dlg.open) { if (dlg.showModal) dlg.showModal(); else dlg.setAttribute('open', ''); }
+    gen++; { const g = document.getElementById('qGuide'); if (g) g.hidden = true; }
+    A = j.A; hist = []; qIdx = {}; log.innerHTML = ''; dock.innerHTML = ''; via = 'resume';
+    setProg('result'); track('quote_resume', {});
+    say('다시 오셨네요. 지난번에 내 보신 견적이에요.', () => result());
+  };
+  (function heroResume(){
+    const b = document.getElementById('heroResume'), j = lastQuote(); if (!b || !j) return;
+    b.querySelector('span').innerHTML = '지난 견적 다시 보기 · <b>' + String(j.head).replace(/[<>&]/g, '') + '</b>';
+    b.hidden = false; b.addEventListener('click', window.TL_resumeQuote);
+  })();
   function start(pre, from) {
     gen++; { const g = document.getElementById('qGuide'); if (g) g.hidden = true; }
     A = {}; hist = []; qIdx = {}; log.innerHTML = ''; dock.innerHTML = ''; via = from || via || 'site';
     pre = pre || {};
-    if (pre.size && P[pre.size]) { A.size = pre.size; A._pre_size = 1; }
+    if (pre.size && P[pre.size]) { A.trees = [{ size: pre.size, n: 1 }]; A._preSize = pre.size; }
     if (pre.color) { A.color = pre.color; A._pre_color = 1; }
     setProg('place');
     track('quote_start', { via });
-    const intro = '안녕하세요, 트리랜드입니다.<br>몇 가지만 여쭤보고 예상 금액을 알려드릴게요.' + (A.size ? '<br><b>' + sizeOf(A.size).name + '</b>' + (A.color ? ' · <b>' + A.color + '</b>' : '') + ' 기준으로 시작할게요.' : (A.color ? '<br><b>' + A.color + '</b>로 시작할게요.' : ''));
+    const intro = '안녕하세요, 트리랜드입니다.<br>몇 가지만 여쭤보고 예상 금액을 알려드릴게요.' + (A._preSize ? '<br><b>' + sizeOf(A._preSize).name + '</b>' + (A.color ? ' · <b>' + A.color + '</b>' : '') + ' 기준으로 시작할게요.' : (A.color ? '<br><b>' + A.color + '</b>로 시작할게요.' : ''));
     say(intro, () => run('place'));
   }
   window.openQuote = (pre, from) => {
@@ -2460,6 +2736,94 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
   d.querySelector('.vd-x').addEventListener('click',close);
   d.addEventListener('click',function(e){ if(e.target===d) close(); });
   d.addEventListener('close',function(){ big.pause(); });
+})();
+</script><script>
+/* 설치 예약 현황: 견적 서버(일정표 연동)에서 날짜별 마감 여부만 받아 달력·첫 화면·1분 견적에 표시.
+   서버는 오전/오후를 따로 세지만, 손님에게는 날짜 단위로만 보여 줌 (둘 다 차면 마감, 하나만 차면 '일부 시간 마감' 점) */
+(function(){
+  var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
+  // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
+  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { pm: 1 }, '2026-11-07': { am: 1 }, '2026-11-20': { am: 1 } };
+  var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
+  var closed = {}, at = '', live = false, subs = [];
+  var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+  var key = function(m, d){ return YEAR + '-' + pad(m) + '-' + pad(d); };
+  var today = (function(){ var t = new Date(Date.now() + 9 * 3600000); return t.getUTCFullYear() + '-' + pad(t.getUTCMonth() + 1) + '-' + pad(t.getUTCDate()); })();
+  var dim = function(m){ return new Date(YEAR, m, 0).getDate(); };
+  // 11월 월·화·수·금(18일 제외)은 항상 '일부 마감'으로 표시 (대표님 지시 10/29). 실제 예약으로 하루가 다 차면 '마감'
+  function fixedPart(k){ var t = k.split('-'); if (+t[1] !== 11 || k === '2026-11-18') return false; var w = new Date(+t[0], +t[1] - 1, +t[2]).getDay(); return w === 1 || w === 2 || w === 3 || w === 5; }
+  function state(k){ if (k <= today) return 'past'; var c = closed[k] || {}; if (c.am && c.pm) return 'full'; return c.am || c.pm || fixedPart(k) ? 'part' : 'open'; }
+  // 달력 한 달 그리기 (사이트 달력과 1분 견적이 같이 씀). pick이 있으면 고를 수 있는 날짜는 버튼
+  function month(m, pick){
+    var h = WD.map(function(w, i){ return '<span class="sl-w' + (i === 0 ? ' sun' : i === 6 ? ' sat' : '') + '">' + w + '</span>'; }).join('');
+    var first = new Date(YEAR, m - 1, 1).getDay();
+    for (var i = 0; i < first; i++) h += '<span class="sl-d empty" aria-hidden="true"></span>';
+    for (var d = 1; d <= dim(m); d++) {
+      var k = key(m, d), st = state(k), lab = m + '월 ' + d + '일 ' + ({ past: '지난 날짜', full: '마감', part: '일부 시간 마감', open: '예약 가능' })[st];
+      var tagn = pick && (st === 'open' || st === 'part') ? 'button' : 'span';
+      h += '<' + tagn + (tagn === 'button' ? ' type="button" data-k="' + k + '"' : ' role="img"') + ' class="sl-d ' + st + '" aria-label="' + lab + '"><b>' + d + '</b>' + (st === 'part' ? '<em class="sl-t">일부 마감</em>' : st === 'full' ? '<em class="sl-t">마감</em>' : '') + '</' + tagn + '>';
+    }
+    return h;
+  }
+  window.TL_SLOTS = { month: month, state: state, months: MONTHS, firstOpen: function(){ for (var mi = 0; mi < MONTHS.length; mi++) for (var d = 1; d <= dim(MONTHS[mi]); d++) { var st = state(key(MONTHS[mi], d)); if (st === 'open' || st === 'part') return MONTHS[mi]; } return MONTHS[0]; }, onChange: function(f){ subs.push(f); } };
+
+  var box = document.getElementById('slots'), cur = null;
+  function draw(){
+    if (!box) return;
+    if (cur == null) cur = window.TL_SLOTS.firstOpen();
+    var tabs = box.querySelector('.slots-tabs'), cal = box.querySelector('.slots-cal');
+    tabs.innerHTML = MONTHS.map(function(m){ return '<button type="button" role="tab" aria-selected="' + (m === cur) + '" data-m="' + m + '">' + m + '월</button>'; }).join('');
+    [].forEach.call(tabs.children, function(b){ b.onclick = function(){ cur = +b.dataset.m; draw(); }; });
+    cal.innerHTML = month(cur, false);
+    var a = box.querySelector('.sl-at');
+    if (a) a.textContent = live && at ? at + ' 기준' : '';
+  }
+  // 첫 화면 문구는 '11월 초 일부 일정 마감'으로 고정 (대표님 지시 10/29). 11월에 마감·일부 마감이 하나라도 있으면 표시
+  function hero(){
+    var el = document.getElementById('heroSlot'); if (!el) return;
+    var any = false;
+    for (var d = 1; d <= 30; d++) { var st = state(key(11, d)); if (st === 'full' || st === 'part') { any = true; break; } }
+    if (!any) { el.hidden = true; return; }
+    el.querySelector('span').innerHTML = '<b>11월 초 일부 일정 마감</b> · 남은 일정 보기';
+    el.hidden = false;
+  }
+  function apply(c, t, isLive){ closed = c || {}; live = !!isLive; if (t) { var x = new Date(t); at = (x.getMonth() + 1) + '/' + x.getDate() + ' ' + pad(x.getHours()) + ':' + pad(x.getMinutes()); } draw(); hero(); subs.forEach(function(f){ try { f(); } catch (e) {} }); }
+  apply(FALLBACK, '', false);
+  try {
+    var ctl = 'AbortController' in window ? new AbortController() : null; if (ctl) setTimeout(function(){ ctl.abort(); }, 8000);
+    fetch(URL, ctl ? { signal: ctl.signal } : {}).then(function(r){ return r.json(); }).then(function(j){ if (j && j.ok && j.closed) apply(j.closed, j.at, true); }).catch(function(){});
+  } catch (e) {}
+  // 가격 구간 예약 현황: 말린 두루마리 → 누르면 아래로 펼침. 화면에 처음 보이면 축이 한 번 살짝 내려가며 눌러 보라는 신호
+  if (box) {
+    var head = box.querySelector('.sl-head');
+    if (head) head.addEventListener('click', function(){ var o = !box.classList.contains('open'); box.classList.toggle('open', o); head.setAttribute('aria-expanded', String(o)); if (o && window.gtag) try { gtag('event', 'slots_view', { via: 'price' }); } catch (x) {} });
+    if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { box.classList.add('nudge'); io.disconnect(); } }); }, { threshold: .8 }); io.observe(box); }
+  }
+  function summary(){ var el = document.getElementById('slSum'); if (!el) return; var any = false; for (var d = 1; d <= 30; d++) { var st = state(key(11, d)); if (st === 'full' || st === 'part') { any = true; break; } } el.textContent = any ? '11월 초 일부 일정 마감 · 눌러서 보기' : '눌러서 펼쳐 보기'; }
+  subs.push(summary); summary();
+  // 첫 화면 '남은 일정 보기' → 스크롤 대신 팝업으로 달력
+  var dlg = document.getElementById('slotsDlg'), dm = null;
+  function drawDlg(){
+    if (!dlg) return; if (dm == null) dm = window.TL_SLOTS.firstOpen();
+    var tabs = dlg.querySelector('.slots-tabs'), cal = dlg.querySelector('.slots-cal');
+    tabs.innerHTML = MONTHS.map(function(m){ return '<button type="button" role="tab" aria-selected="' + (m === dm) + '" data-m="' + m + '">' + m + '월</button>'; }).join('');
+    [].forEach.call(tabs.children, function(b){ b.onclick = function(){ dm = +b.dataset.m; drawDlg(); }; });
+    cal.innerHTML = month(dm, false);
+  }
+  subs.push(function(){ if (dlg && dlg.open) drawDlg(); });
+  if (dlg) {
+    var close = function(){ dlg.close(); };
+    document.getElementById('slotsDlgX').onclick = close; document.getElementById('slotsDlgC').onclick = close;
+    dlg.addEventListener('click', function(e){ if (e.target === dlg) close(); });
+    document.getElementById('slotsDlgQ').onclick = function(){ close(); if (window.openQuote) window.openQuote({}, 'slots'); };
+  }
+  document.addEventListener('click', function(e){
+    var a = e.target.closest && e.target.closest('a[href="#slots"]'); if (!a) return;
+    e.preventDefault();
+    if (dlg && dlg.showModal) { dm = null; drawDlg(); dlg.showModal(); dlg.querySelector('.cc-in').scrollTop = 0; }
+    else if (box) box.scrollIntoView({ block: 'start' });
+    if (window.gtag) try { gtag('event', 'slots_view', { via: 'hero' }); } catch (x) {}
+  });
 })();
 </script>
 

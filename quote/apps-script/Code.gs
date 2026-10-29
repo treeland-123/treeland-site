@@ -11,7 +11,11 @@ const FROM = 'info@treeland.kr';
 const FROM_NAME = '트리랜드';
 const COLS = ['no', 'cust', 'email', 'total', 'savedAt', 'sentAt', 'sentTo', 'state'];
 
-function doGet() { return out({ ok: true, service: 'treeland-quote' }); }
+function doGet(e) {
+  const a = e && e.parameter && e.parameter.action;
+  if (a === 'slots') { try { return out(slots()); } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); } }
+  return out({ ok: true, service: 'treeland-quote' });
+}
 
 function doPost(e) {
   let b = {};
@@ -40,10 +44,13 @@ function checkPin(pin) {
   try {
     const r = UrlFetchApp.fetch(CONTRACT_ENDPOINT, { method: 'post', contentType: 'text/plain;charset=utf-8', payload: JSON.stringify({ action: 'schedule', pin: String(pin) }), muteHttpExceptions: true, followRedirects: true });
     const j = JSON.parse(r.getContentText());
-    if (j && !j.error) { cache.put(key, '1', 21600); return true; }
+    if (j && !j.error) { cache.put(key, '1', 21600); rememberPin(pin); return true; }
   } catch (x) {}
   return false;
 }
+
+// 홈페이지 예약 현황(slots)이 계약 일정을 읽을 때 쓰는 비밀번호. 관리 화면에서 맞는 비밀번호로 접속하면 자동 저장(스크립트 속성, 코드에는 안 보임)
+function rememberPin(pin) { try { const p = PropertiesService.getScriptProperties(); if (p.getProperty('SITE_PIN') !== String(pin)) { p.setProperty('SITE_PIN', String(pin)); CacheService.getScriptCache().remove('slots_v1'); } } catch (x) {} }
 
 /* ---------- 시트 ---------- */
 function sheet() {
@@ -163,4 +170,67 @@ function setup() {
   Logger.log('sheet: ' + sheet().getParent().getUrl());
   Logger.log('aliases: ' + JSON.stringify(GmailApp.getAliases()));
   Logger.log('info@treeland.kr 준비: ' + aliasReady());
+}
+
+/* ---------- 홈페이지 설치 일정 (공개, 비밀번호 없음) ----------
+ * treeland.kr 이 GET ?action=slots 로 읽음. 날짜와 오전·오후 마감 여부만 내보내고, 손님 이름·장소 같은 정보는 내보내지 않음.
+ * - 계약 서버 일정(schedule)은 스크립트 속성 SITE_PIN 으로 읽음. 견적서·일정표 등 관리 화면에서 맞는 비밀번호로 이 서버에 접속하면 자동 저장됨
+ * - 서명대기 계약도 자리를 차지함 (중지·취소만 제외, 대표님 결정 10/29)
+ * - 한 칸(오전/오후)에 받을 수 있는 설치·회수 수: 스크립트 속성 SLOT_CAP (없으면 1)
+ * - 계약 없이 막아 둘 날은 「트리랜드 견적」 시트의 「일정마감」 탭에 적음: date(2026-11-07) / slot(오전·오후·종일) / memo
+ * - 오전 = 13시 전 시작, 오후 = 13시부터. 시간이 없는 일정은 마감 계산에서 뺌
+ * - 5분 캐시
+ */
+function slots() {
+  const cache = CacheService.getScriptCache(), hit = cache.get('slots_v1');
+  if (hit) return JSON.parse(hit);
+  const props = PropertiesService.getScriptProperties();
+  const cap = Math.max(1, Number(props.getProperty('SLOT_CAP') || 1));
+  const today = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd');
+  const cnt = {};   // { '2026-11-02': { am: 1, pm: 0 } }
+  const add = (d, half, n) => { if (!d || d < today) return; cnt[d] = cnt[d] || { am: 0, pm: 0 }; cnt[d][half] += n; };
+  let fromContracts = false;
+  const pin = props.getProperty('SITE_PIN');
+  if (pin) {
+    try {
+      const r = UrlFetchApp.fetch(CONTRACT_ENDPOINT, { method: 'post', contentType: 'text/plain;charset=utf-8', payload: JSON.stringify({ action: 'schedule', pin: String(pin) }), muteHttpExceptions: true, followRedirects: true });
+      const j = JSON.parse(r.getContentText());
+      if (j && j.items) {
+        fromContracts = true;
+        j.items.forEach(it => {
+          if (/중지|취소/.test(String(it.status || ''))) return;
+          [it.install, it.retrieve].forEach(v => { const k = kst(v); if (k && k.hm) add(k.d, k.hm < '13:00' ? 'am' : 'pm', 1); });
+        });
+      }
+    } catch (x) {}
+  }
+  const closed = {};
+  Object.keys(cnt).forEach(d => { const c = cnt[d], o = {}; if (c.am >= cap) o.am = 1; if (c.pm >= cap) o.pm = 1; if (o.am || o.pm) closed[d] = o; });
+  // 직접 막아 둔 날
+  const sh = manualSheet(), n = sh.getLastRow() - 1;
+  if (n > 0) sh.getRange(2, 1, n, 2).getValues().forEach(([d, slot]) => {
+    const k = d instanceof Date ? Utilities.formatDate(d, 'Asia/Seoul', 'yyyy-MM-dd') : String(d || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(k) || k < today) return;
+    const s = String(slot || '종일');
+    closed[k] = closed[k] || {};
+    if (/오전|종일/.test(s)) closed[k].am = 1;
+    if (/오후|종일/.test(s)) closed[k].pm = 1;
+  });
+  const res = { ok: true, closed, cap, fromContracts, at: new Date().toISOString() };
+  cache.put('slots_v1', JSON.stringify(res), 300);
+  return res;
+}
+function kst(v) {
+  if (!v) return null;
+  if (v instanceof Date) return { d: Utilities.formatDate(v, 'Asia/Seoul', 'yyyy-MM-dd'), hm: Utilities.formatDate(v, 'Asia/Seoul', 'HH:mm') };
+  const s = String(v).trim();
+  if (/[zZ]$|[+-]\d{2}:?\d{2}$/.test(s)) { const t = new Date(s); if (isNaN(t)) return null; return kst(t); }
+  const m = s.match(/^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}:\d{2}))?/);
+  return m ? { d: m[1], hm: m[2] || '' } : null;
+}
+function manualSheet() {
+  const ss = sheet().getParent();
+  let sh = ss.getSheetByName('일정마감');
+  if (!sh) { sh = ss.insertSheet('일정마감'); sh.getRange(1, 1, 1, 3).setValues([['date', 'slot', 'memo']]); sh.setFrozenRows(1); }
+  return sh;
 }
