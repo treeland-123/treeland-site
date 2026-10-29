@@ -72,10 +72,15 @@ input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--
 .cell.sel{background:var(--soft)}
 .cell.sel .n{background:var(--act);color:var(--act-ink);box-shadow:none}
 .mk{display:flex;flex-direction:column;gap:2px;align-items:center}
-.mk span,.lines span{font-size:11px;font-weight:700;line-height:1.55;border-radius:3px;padding:0 4px;white-space:nowrap}
-.mk .in,.lines .in{background:var(--act);color:var(--act-ink)}
-.mk .out,.lines .out{box-shadow:inset 0 0 0 1px var(--ink)}
+.lines span{font-size:11px;font-weight:700;line-height:1.55;border-radius:3px;padding:0 4px;white-space:nowrap}
+.lines .in{background:var(--act);color:var(--act-ink)}
+.lines .out{box-shadow:inset 0 0 0 1px var(--ink)}
 .mk .dim,.lines .dim{opacity:.4}
+.mk .m{display:flex;flex-direction:column;align-items:center;gap:0}
+.mk b{font-size:9.5px;font-weight:700;line-height:1.5;border-radius:3px;padding:0 3px;white-space:nowrap}
+.mk .in b{background:var(--act);color:var(--act-ink)}
+.mk .out b{box-shadow:inset 0 0 0 1px var(--ink)}
+.mk i{font-style:normal;font-size:9px;line-height:1.3;color:var(--sub);font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
 .lines{display:none}
 @media (min-width:640px){
   .mk{display:none}
@@ -342,7 +347,9 @@ function renderCal(){
       const d = new Date(y, m - 1, 1 - lead + w * 7 + i), k = keyOf(d), l = byDay.get(k) || [];
       const ins = l.filter(e => e.kind === "in"), outs = l.filter(e => e.kind === "out");
       const cls = ["cell", k.slice(0, 7) !== calMonth && "oth", k < t0 && "past", k === t0 && "today", k === selDay && "sel"].filter(Boolean).join(" ");
-      const mk = (ins.length ? `<span class="in${allTbd(ins) ? " dim" : ""}">설${ins.length}</span>` : "") + (outs.length ? `<span class="out${allTbd(outs) ? " dim" : ""}">회${outs.length}</span>` : "");
+      const firstHm = arr => arr.map(e => e.p.hm).filter(Boolean).sort()[0] || "";
+      const mark = (arr, kind, t) => { const hm = firstHm(arr); return `<span class="m ${kind}${allTbd(arr) ? " dim" : ""}"><b>${t}${arr.length}</b>${hm ? `<i>${hm}</i>` : ""}</span>`; };
+      const mk = (ins.length ? mark(ins, "in", "설") : "") + (outs.length ? mark(outs, "out", "회") : "");
       const lines = l.slice(0, 3).map(e => `<span class="${e.kind}${e.it.status !== "서명완료" ? " dim" : ""}">${e.p.hm ? e.p.hm + " " : ""}${esc(e.it.name || e.it.place)}</span>`).join("") + (l.length > 3 ? `<span class="more">외 ${l.length - 3}건</span>` : "");
       const label = `${d.getMonth() + 1}월 ${d.getDate()}일` + (ins.length ? `, 설치 ${ins.length}건` : "") + (outs.length ? `, 회수 ${outs.length}건` : "");
       rows += `<button type="button" class="${cls}" data-day="${k}" aria-label="${label}"${k === selDay ? ' aria-current="date"' : ""}><span class="n">${d.getDate()}</span><span class="mk">${mk}</span><span class="lines">${lines}</span></button>`;
