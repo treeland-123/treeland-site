@@ -39,5 +39,6 @@
 - 가격은 열 때마다 메인 index.html의 「크기별 가격」 표(.sheet-row/.tp)와 견적 계산기 스크립트(EXTRAS, BOX_EXTRA, MULTI, REGIONS, 배열형 COLORS), "1차 얼리버드 할인은 ○월 ○일까지" 문장에서 읽음 → 이 구조나 문장을 바꾸면 /quote/도 확인할 것.
 - 도장은 quote/stamp.png로 공개 저장(대표님 결정, 2026-10-28)해 자동 적용. 기기별로 다른 도장을 고르면 그게 우선(localStorage).
 - 견적 서버: Apps Script 「트리랜드 견적」(hongjs100418), 코드 사본 quote/apps-script/Code.gs. 발행 내역 공유(시트 「트리랜드 견적」), 견적 번호 발급, 메일 발송(발신 info@treeland.kr — Gmail 보내는 주소 별칭). 재배포는 배포 관리 → 새 버전(주소 유지).
+- 계약 관리(/contract/admin.html)가 견적을 불러와 링크를 만들면 /quote/?embed=1 을 숨은 창으로 열어 window.tlQuotePdf(state)로 견적서 PDF를 받아 서명본 메일에 함께 첨부함(합계가 저장된 견적과 다르면 중단). 견적서 쪽 renderForm·calc·capture·fileBase나 시작 부분을 바꾸면 이 기능도 확인할 것.
 - 견적 번호는 내부 관리번호: 고객에게는 견적서 왼쪽 위에만. 계약서·카톡 문구·메일·파일 이름에 넣지 않음.
 - 4그루 이상 추가 할인율, 2차 얼리버드 할인율은 견적마다 직접 입력.
