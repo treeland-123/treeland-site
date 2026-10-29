@@ -253,9 +253,11 @@ button{font:inherit;cursor:pointer}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const fmt = n => (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
+// ?embed=1 : 계약 관리 화면이 숨은 창으로 열어 견적서 PDF만 만들어 감(서명본 메일 첨부용). 작성 중 임시 저장은 건드리지 않음
+const EMBED = new URLSearchParams(location.search).has('embed');
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  set(k, v) { if (EMBED && k === 'tl-quote-draft') return true; try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
 };
 function korean(n) {
   const d = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'], u = ['', '십', '백', '천'], big = ['', '만', '억'];
@@ -770,6 +772,17 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '';
   $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
   $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}까지)` : ''}`;
+  if (EMBED) {
+    window.tlQuotePdf = async st => {
+      S = JSON.parse(JSON.stringify(st)); renderForm();
+      const R = calc(), c = await capture();
+      const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
+      pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
+      return { b64: pdf.output('datauristring').split(',')[1], total: R.total, filename: fileBase() + '.pdf' };
+    };
+    parent.postMessage({ tlQuoteReady: true }, location.origin);
+    return;
+  }
   const draft = store.get('tl-quote-draft', null);
   S = draft && draft.trees ? draft : freshState();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });

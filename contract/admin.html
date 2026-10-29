@@ -104,7 +104,7 @@ a{color:var(--ink)}
     <h2 id="h-new">새 계약 링크 만들기</h2>
     <form id="newForm" novalidate>
       <div class="wrap" style="gap:12px">
-        <div class="field" id="fromQuote" hidden><label for="n-quote">견적서에서 불러오기</label><select id="n-quote"><option value="">고르면 아래 칸이 채워집니다</option></select><span class="hint">이 기기에서 저장한 견적서의 상호·트리 구성·임대료·운임·견적 번호를 가져옵니다. 설치 장소와 일시는 직접 넣어 주세요.</span></div>
+        <div class="field" id="fromQuote" hidden><label for="n-quote">견적서에서 불러오기</label><select id="n-quote"><option value="">고르면 아래 칸이 채워집니다</option></select><span class="hint" id="quoteAttach"></span></div>
         <div class="field"><label for="n-customer">고객 상호 (선택, 미리 채워짐)</label><input type="text" id="n-customer"></div>
         <div class="field"><label for="n-place">설치 장소</label><input type="text" id="n-place" placeholder="예: 서울 성북구 ○○카페 1층 입구"></div>
         <div class="field"><span class="flabel">트리 구성</span>
@@ -281,17 +281,26 @@ $("#newForm").addEventListener("submit", async e => {
   if(v("#n-ship") === "") return err("운임을 입력해 주세요. 서울이면 0입니다.");
   const ship = Number(v("#n-ship").replace(/[^\d]/g, ""));
   if(ship >= price) return err("운임이 임대료보다 클 수 없습니다. 임대료는 운임을 포함한 공급가액입니다.");
+  if(QUOTE && price !== supplyOf(Number(QUOTE.total) || 0)) return err(`임대료가 불러온 견적서의 공급가액(${won(supplyOf(Number(QUOTE.total) || 0))}원)과 다릅니다. 금액을 바꿀 거면 견적서를 고쳐 다시 저장한 뒤 불러오세요. 견적서 없이 만들려면 위에서 견적서 선택을 해제하세요.`);
   $("#newErr").hidden = true;
-  const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
+  const btn = $("#newBtn"); btn.disabled = true;
   try{
     const contract = { customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
       install:v("#n-install"), retrieve:v("#n-retrieve"), price, ship, qno:v("#n-qno") };
+    if(QUOTE){
+      btn.textContent = "견적서 PDF 만드는 중…";
+      const qp = await quotePdf(QUOTE.state || {});
+      if(qp.total !== Number(QUOTE.total)) throw new Error(`견적서를 다시 그려 보니 합계가 ${won(qp.total)}원으로 저장된 견적(${won(QUOTE.total)}원)과 다릅니다. 홈페이지 가격이 바뀐 것 같습니다. 견적서를 새로 저장한 뒤 다시 불러오세요.`);
+      contract.quotePdf = qp.b64; contract.quoteName = qp.filename;
+    }
+    btn.textContent = "만드는 중…";
     const j = await api({action:"create", pin:pin(), contract});
     if(!j.ok && j.error === "pin"){ pinState(false, "비밀번호가 틀렸습니다. 다시 입력해 주세요."); $("#pin").scrollIntoView({block:"center"}); $("#pin").focus(); throw new Error("비밀번호가 틀려서 링크를 만들지 못했습니다. 맨 위 비밀번호를 확인해 주세요."); }
     if(!j.ok) throw new Error(j.error);
+    delete contract.quotePdf;
     $("#r-msg").value = msg(j.url, contract); $("#openLink").href = j.url; $("#result").hidden = false;
     e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
-    trees = []; renderTrees(); priceHint(); clearDraft(); $("#n-quote").value = "";
+    trees = []; renderTrees(); priceHint(); clearDraft(); $("#n-quote").value = ""; QUOTE = null; quoteNote();
     $("#result").scrollIntoView({behavior:"smooth", block:"center"});
     load();
   }catch(ex){ err(ex.message || "링크를 만들지 못했습니다."); }
@@ -361,7 +370,26 @@ function supplyOf(total){   // 합계(부가세 포함) → 공급가액. 견적
   for(const s of [g, g - 1, g + 1, g - 2, g + 2]) if(s + Math.round(s * 0.1) === total) return s;
   return g;
 }
+let QUOTE = null;   // 불러온 견적 → 링크 만들 때 견적서 PDF를 만들어 서명본 메일에 함께 첨부
+function quoteNote(){
+  $("#quoteAttach").textContent = QUOTE ? "이 견적서 PDF가 서명본 메일에 함께 첨부됩니다. 설치 장소와 일시만 넣어 주세요." : "견적서를 고르지 않으면 서명본 메일에 견적서가 첨부되지 않습니다.";
+}
+function quotePdf(st){   // /quote/ 를 숨은 창으로 열어 같은 양식의 견적서 PDF를 받음
+  return new Promise((res, rej) => {
+    const f = document.createElement("iframe");
+    f.style.cssText = "position:fixed;left:-12000px;top:0;width:1100px;height:1600px;border:0";
+    const done = (fn, v) => { clearTimeout(t); removeEventListener("message", on); f.remove(); fn(v); };
+    const t = setTimeout(() => done(rej, new Error("견적서 PDF를 만들지 못했습니다. 다시 눌러 주세요.")), 40000);
+    const on = async e => {
+      if(e.source !== f.contentWindow || !e.data || !e.data.tlQuoteReady) return;
+      try{ done(res, await f.contentWindow.tlQuotePdf(st)); }catch(x){ done(rej, x); }
+    };
+    addEventListener("message", on);
+    f.src = "/quote/?embed=1"; document.body.appendChild(f);
+  });
+}
 function fillFromQuote(h){
+  QUOTE = h; quoteNote();
   const st = h.state || {};
   if(st.cust) $("#n-customer").value = st.cust;
   const rows = [];
@@ -391,9 +419,13 @@ async function initQuote(){
   if(!list.length) return;
   $("#n-quote").insertAdjacentHTML("beforeend", list.map((h, i) => `<option value="${i}">${esc(h.cust || "(상호 없음)")} · No. ${esc(h.no)} · 합계 ${won(h.total)}원</option>`).join(""));
   $("#fromQuote").hidden = false;
-  $("#n-quote").addEventListener("change", e => { const h = list[+e.target.value]; if(e.target.value !== "" && h) fillFromQuote(h); });
+  $("#n-quote").addEventListener("change", e => { const h = list[+e.target.value]; if(e.target.value !== "" && h) fillFromQuote(h); else { QUOTE = null; quoteNote(); } });
   const q = new URLSearchParams(location.search).get("q");
   if(q){ const i = list.findIndex(h => h.no === q); if(i >= 0){ $("#n-quote").value = String(i); fillFromQuote(list[i]); $("#n-place").focus(); } }
+  else if($("#n-qno").value){   // 작성 중이던 내용에 견적 번호가 있으면 그 견적을 다시 연결
+    const i = list.findIndex(h => h.no === $("#n-qno").value.trim()); if(i >= 0){ $("#n-quote").value = String(i); QUOTE = list[i]; }
+  }
+  quoteNote();
 }
 
 // 임대료: 쉼표 자동, 부가세 포함 금액·한글 금액 안내
