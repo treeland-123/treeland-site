@@ -46,6 +46,12 @@ dd{margin:0;min-width:0;overflow-wrap:anywhere}
 input[type=text],input[type=tel],input[type=email]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
 input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.addr-row{display:flex;gap:8px}.addr-row input{flex:1;min-width:0}.addr-row .ghost{flex:0 0 auto;padding:0 14px;font-size:14px}
+#addrLayer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+#addrLayer[hidden]{display:none}
+#addrLayer .box{background:#fff;border-radius:10px;width:100%;max-width:480px;height:min(560px,85vh);display:flex;flex-direction:column;overflow:hidden}
+#addrLayer .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #e5e5e0;font-size:14px;color:#222}
+#addrBox{flex:1}
 @media (max-width:480px){.grid2{grid-template-columns:1fr}}
 fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 legend{font-size:13px;color:var(--sub);margin-bottom:6px;padding:0}
@@ -127,6 +133,11 @@ html.loading #app{display:none}
       <div class="field"><label for="f-tel">연락처 <span class="req">*</span></label><input type="tel" id="f-tel" autocomplete="tel" inputmode="tel" required></div>
       <div class="field"><label for="f-email">이메일 <span class="req">*</span></label><input type="email" id="f-email" autocomplete="email" required></div>
     </div>
+    <div class="field" style="margin-top:12px"><label for="f-addr">설치 주소 <span class="req">*</span></label>
+      <div class="addr-row"><input type="text" id="f-addr" placeholder="주소 찾기를 누르거나 직접 입력" autocomplete="street-address"><button type="button" class="ghost" id="addrBtn">주소 찾기</button></div>
+      <input type="text" id="f-addr2" placeholder="상세 주소 (층·호수)" style="margin-top:6px">
+    </div>
+    <div class="field" style="margin-top:12px"><label for="f-outlet">콘센트 위치 <span class="req">*</span></label><input type="text" id="f-outlet" placeholder="예: 입구 왼쪽 벽, 트리 놓을 자리에서 2m"></div>
     <fieldset>
       <legend>결제 방법 <span class="req" style="color:var(--err)">*</span></legend>
       <div class="opts">
@@ -191,6 +202,7 @@ html.loading #app{display:none}
   </section>
   </div>
   </form>
+<div id="addrLayer" hidden role="dialog" aria-label="주소 찾기"><div class="box"><div class="hd"><span>주소 찾기</span><button type="button" class="ghost" id="addrClose">닫기</button></div><div id="addrBox"></div></div></div>
 
   <footer>트리랜드 (TREELAND) · 대표 홍준서 · 사업자등록번호 360-69-00592 · 070-4571-7467 · info@treeland.kr</footer>
 </div>
@@ -213,7 +225,7 @@ html.loading #app{display:none}
 const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
 
 const SAMPLE = {
-  id: "DEMO", place: "서울 성북구 ○○카페 1층 입구", size: "2.3m 프리미엄 트리 1대, 1.35m 트리 1대", color: "레드 & 골드 (2.3m 프리미엄), 네이비 & 골드 (1.35m)",
+  id: "DEMO", place: "", size: "2.3m 프리미엄 트리 1대, 1.35m 트리 1대", color: "레드 & 골드 (2.3m 프리미엄), 네이비 & 골드 (1.35m)",
   extra: "", install: "2026-11-24T14:00", retrieve: "2027-01-12T10:00",
   price: 920550, ship: 0, qno: "2026-003", customer: ""
 };
@@ -279,7 +291,7 @@ function renderTerms(){
 }
 
 function renderSummary(){
-  $("#summary").innerHTML = contentRows(C).map(([k,v]) => `<dt>${esc(k)}</dt><dd${k==="임대료"?' class="amount"':""}>${esc(v)}</dd>`).join("");
+  $("#summary").innerHTML = contentRows(C).filter(([k, v]) => v !== "" && v != null).map(([k,v]) => `<dt>${esc(k)}</dt><dd${k==="임대료"?' class="amount"':""}>${esc(v)}</dd>`).join("");
   if(C.customer) $("#f-name").value = C.customer;
 }
 
@@ -321,7 +333,7 @@ function radio(n){ return document.querySelector(`input[name=${n}]:checked`)?.va
 function showErr(m, focusEl){ const e = $("#err"); e.textContent = m; e.hidden = false; if(focusEl) focusEl.focus(); }
 
 function collect(){
-  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"]];
+  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"],["#f-addr","설치 주소를"],["#f-outlet","콘센트 위치를"]];
   for(const [id,label] of req) if(!val(id)) return showErr(`${label} 입력해 주세요.`, $(id));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#f-email"))) return showErr("이메일 주소 형식을 확인해 주세요.", $("#f-email"));
   if(!radio("pay")) return showErr("결제 방법을 골라 주세요.", $("#pay-1"));
@@ -335,7 +347,7 @@ function collect(){
   $("#err").hidden = true;
   return {
     name: val("#f-name"), rep: val("#f-rep"), biz: val("#f-biz"), contact: val("#f-contact"), tel: val("#f-tel"),
-    email: val("#f-email"), addr: "", pay: radio("pay"), photo: photoChoice()[0],
+    email: val("#f-email"), addr: [val("#f-addr"), val("#f-addr2")].filter(Boolean).join(" "), outlet: val("#f-outlet"), pay: radio("pay"), photo: photoChoice()[0],
     tag: photoChoice()[1], ig: radio("q1") === "y" && radio("q2") === "y" ? val("#f-ig") : ""
   };
 }
@@ -448,6 +460,7 @@ $("#form").addEventListener("submit", async e => {
   const btn = $("#submit"); btn.disabled = true; btn.textContent = "계약서를 만드는 중…";
   try{
     const signedAt = new Date().toISOString();
+    C.place = g.addr;   // 계약서 제2조 '설치 장소'는 고객이 입력한 설치 주소
     const sigUrl = cv.toDataURL("image/png");
     const hash = await sha256(JSON.stringify({contract:C, customer:g, signedAt, terms:TERMS}));
     const pdf = await makePdf(buildPaper(g, sigUrl, signedAt, hash));
@@ -489,11 +502,27 @@ async function init(){
     if(j.signed){ showApp(); $("#app").hidden = true; $("#doneView").hidden = false; $("#doneView h1").textContent = "이미 서명된 계약입니다"; $("#doneMsg").textContent = "서명한 계약서는 서명 당시 입력하신 이메일로 발송되었습니다. 다시 받으셔야 하면 070-4571-7467로 연락해 주세요."; return; }
     C = j.contract; if(j.stamp) C.stamp = j.stamp;
   } else { C = SAMPLE; $("#demoNote").hidden = false; }
+  if(C.place && !$("#f-addr").value) $("#f-addr").value = C.place;
   showApp();
   renderSummary(); renderTerms(); syncPhoto(); sizePad();
   setTimeout(() => loadLibs().catch(() => {}), 300);
 }
 document.querySelectorAll('input[name=pay]').forEach(r => r.addEventListener("change", () => { document.getElementById("cardNote").hidden = !document.getElementById("pay-2").checked; }));
+// 주소 찾기: 다음 우편번호 서비스(카카오). 카톡 안 브라우저에서도 되도록 새 창 대신 화면 위에 띄움
+function loadPostcode(){
+  if(window.daum && daum.Postcode) return Promise.resolve();
+  return new Promise((res, rej) => { const sc = document.createElement("script"); sc.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+}
+$("#addrBtn").addEventListener("click", async () => {
+  try{ await loadPostcode(); }catch(e){ showErr("주소 검색을 불러오지 못했습니다. 주소를 직접 입력해 주세요.", $("#f-addr")); return; }
+  $("#addrBox").innerHTML = ""; $("#addrLayer").hidden = false;
+  new daum.Postcode({ width:"100%", height:"100%", oncomplete: d => {
+    const base = d.roadAddress || d.jibunAddress || d.address;
+    $("#f-addr").value = base + (d.buildingName ? ` (${d.buildingName})` : "");
+    $("#addrLayer").hidden = true; $("#f-addr2").focus();
+  }}).embed($("#addrBox"));
+});
+$("#addrClose").addEventListener("click", () => { $("#addrLayer").hidden = true; });
 init();
 </script>
 

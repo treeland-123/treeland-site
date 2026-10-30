@@ -106,7 +106,6 @@ a{color:var(--ink)}
       <div class="wrap" style="gap:12px">
         <div class="field" id="fromQuote" hidden><label for="n-quote">견적서에서 불러오기</label><select id="n-quote"><option value="">고르면 아래 칸이 채워집니다</option></select><span class="hint" id="quoteAttach"></span></div>
         <div class="field"><label for="n-customer">고객 상호 (선택, 미리 채워짐)</label><input type="text" id="n-customer"></div>
-        <div class="field"><label for="n-place">설치 장소</label><input type="text" id="n-place" placeholder="예: 서울 성북구 ○○카페 1층 입구"></div>
         <div class="field"><span class="flabel">트리 구성</span>
           <div class="chips" id="sizeChips" role="group" aria-label="트리 추가">
             <button type="button" data-v="1.35m">+ 1.35m</button><button type="button" data-v="1.95m 슬림">+ 1.95m 슬림</button><button type="button" data-v="2.3m">+ 2.3m</button><button type="button" data-v="2.3m 스노우">+ 2.3m 스노우</button><button type="button" data-v="2.9m">+ 2.9m</button>
@@ -272,7 +271,6 @@ $("#newForm").addEventListener("submit", async e => {
   const v = id => $(id).value.trim();
   const price = Number(v("#n-price").replace(/[^\d]/g, ""));
   const err = m => { $("#newErr").textContent = m; $("#newErr").hidden = false; };
-  if(!v("#n-place")) return err("설치 장소를 입력해 주세요.");
   if(!v("#n-size")) return err("트리 구성을 추가하거나 임대물 크기·수량을 입력해 주세요.");
   if(!v("#n-install")) return err("설치 예정 일시를 골라 주세요.");
   if(!v("#n-retrieve")) return err("회수 예정 일시를 골라 주세요.");
@@ -285,7 +283,7 @@ $("#newForm").addEventListener("submit", async e => {
   $("#newErr").hidden = true;
   const btn = $("#newBtn"); btn.disabled = true;
   try{
-    const contract = { customer:v("#n-customer"), place:v("#n-place"), size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
+    const contract = { customer:v("#n-customer"), place:"", size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
       install:v("#n-install"), retrieve:v("#n-retrieve"), price, ship, qno:v("#n-qno") };
     if(QUOTE){
       btn.textContent = "견적서 PDF 만드는 중…";
@@ -372,7 +370,7 @@ function supplyOf(total){   // 합계(부가세 포함) → 공급가액. 견적
 }
 let QUOTE = null;   // 불러온 견적 → 링크 만들 때 견적서 PDF를 만들어 서명본 메일에 함께 첨부
 function quoteNote(){
-  $("#quoteAttach").textContent = QUOTE ? "이 견적서 PDF가 서명본 메일에 함께 첨부됩니다. 설치 장소와 일시만 넣어 주세요." : "견적서를 고르지 않으면 서명본 메일에 견적서가 첨부되지 않습니다.";
+  $("#quoteAttach").textContent = QUOTE ? "이 견적서 PDF가 서명본 메일에 함께 첨부됩니다. 설치·회수 일시만 넣어 주세요." : "견적서를 고르지 않으면 서명본 메일에 견적서가 첨부되지 않습니다.";
 }
 function quotePdf(st){   // /quote/ 를 숨은 창으로 열어 같은 양식의 견적서 PDF를 받음
   return new Promise((res, rej) => {
@@ -421,7 +419,7 @@ async function initQuote(){
   $("#fromQuote").hidden = false;
   $("#n-quote").addEventListener("change", e => { const h = list[+e.target.value]; if(e.target.value !== "" && h) fillFromQuote(h); else { QUOTE = null; quoteNote(); } });
   const q = new URLSearchParams(location.search).get("q");
-  if(q){ const i = list.findIndex(h => h.no === q); if(i >= 0){ $("#n-quote").value = String(i); fillFromQuote(list[i]); $("#n-place").focus(); } }
+  if(q){ const i = list.findIndex(h => h.no === q); if(i >= 0){ $("#n-quote").value = String(i); fillFromQuote(list[i]); $("#n-install").focus(); } }
   else if($("#n-qno").value){   // 작성 중이던 내용에 견적 번호가 있으면 그 견적을 다시 연결
     const i = list.findIndex(h => h.no === $("#n-qno").value.trim()); if(i >= 0){ $("#n-quote").value = String(i); QUOTE = list[i]; }
   }
@@ -457,11 +455,11 @@ $("#n-retrieve").addEventListener("focus", e => {
   }
 });
 // 작성 중인 내용 임시 저장 (이 기기에만)
-const DRAFT_IDS = ["#n-customer","#n-place","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno"];
-function saveDraft(){ try{ localStorage.setItem("tl_draft", JSON.stringify({ f: DRAFT_IDS.map(id => $(id).value), trees })); }catch(e){} }
-function clearDraft(){ try{ localStorage.removeItem("tl_draft"); }catch(e){} }
+const DRAFT_IDS = ["#n-customer","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno"];
+function saveDraft(){ try{ localStorage.setItem("tl_draft2", JSON.stringify({ f: DRAFT_IDS.map(id => $(id).value), trees })); }catch(e){} }
+function clearDraft(){ try{ localStorage.removeItem("tl_draft2"); }catch(e){} }
 try{
-  const d = JSON.parse(localStorage.getItem("tl_draft") || "null");
+  const d = JSON.parse(localStorage.getItem("tl_draft2") || "null");
   if(d){ trees = d.trees || []; renderTrees(); DRAFT_IDS.forEach((id, i) => { if(d.f[i]) $(id).value = d.f[i]; }); priceHint(); }
 }catch(e){}
 $("#newForm").addEventListener("input", saveDraft);
