@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<title>트리랜드 근로계약서</title>
+<meta name="robots" content="noindex,nofollow">
+<script>if(/[?&]id=/.test(location.search))document.documentElement.classList.add("loading")</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 휴대폰 한 손 기준 단일 칼럼: 근무 조건 확인 → 내 정보 → 계약서 확인 → 동의·서명 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --warn:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --warn:#e8c27a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{padding-top:28px;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:24px;margin:0;font-weight:700}
+.lead{margin:0;color:var(--sub);font-size:14px}
+.demo{font-size:13px;background:var(--soft);border:1px dashed var(--line);padding:8px 12px;border-radius:6px;color:var(--sub)}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-size:16px;margin:0;display:flex;gap:10px;align-items:baseline}
+h2 .n{font-size:12px;color:var(--sub);font-weight:500}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px}
+dt{color:var(--sub);white-space:nowrap}
+dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.amount{font-weight:700}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:13px;color:var(--sub)}
+.req{color:var(--err)}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+input[readonly]{background:var(--soft);color:var(--sub)}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:12.5px;color:var(--sub)}
+.notice{font-size:13.5px;border-radius:8px;padding:10px 12px;background:var(--soft);color:var(--warn)}
+details{border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+summary{cursor:pointer;padding:12px 14px;font-size:14px;font-weight:500}
+.terms{max-height:46vh;overflow:auto;padding:4px 14px 14px;font-size:13.5px;border-top:1px solid var(--line)}
+.terms h3{font-size:14px;margin:14px 0 4px}
+.terms p{margin:0 0 4px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--act)}
+.privacy{font-size:12.5px;color:var(--sub);margin:0 0 0 30px}
+.pad{position:relative;border:1px solid var(--line);border-radius:8px;background:#fff;touch-action:none}
+.pad canvas{display:block;width:100%;height:180px}
+.pad .ph{position:absolute;inset:0;display:grid;place-items:center;color:#9a9a95;font-size:14px;pointer-events:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+button,.btn{font:inherit;cursor:pointer}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none;display:inline-block}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:15px;font-size:16px;font-weight:700;width:100%;text-align:center;text-decoration:none;display:block}
+.primary[disabled]{opacity:.5;cursor:wait}
+.error{color:var(--err);font-size:14px;margin:0}
+footer{font-size:12px;color:var(--sub);text-align:center}
+#loadingView{display:none;min-height:70vh;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+html.loading #loadingView{display:flex}
+html.loading #app{display:none}
+.spin{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="loadingView" role="status" aria-live="polite">
+  <div class="brand">TREELAND</div>
+  <div class="spin" aria-hidden="true"></div>
+  <p style="margin:0;font-weight:500">근로계약서를 불러오는 중입니다</p>
+</div>
+
+<div class="wrap" id="app">
+  <header>
+    <div class="brand">TREELAND</div>
+    <h1>근로계약서</h1>
+    <p class="lead">근무 조건을 확인하고, 정보를 입력한 뒤 서명해 주세요. 서명이 끝나면 계약서 PDF를 바로 받을 수 있습니다.</p>
+    <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 내용은 예시이며 제출해도 저장되지 않습니다.</div>
+  </header>
+
+  <section aria-labelledby="h-sum">
+    <h2 id="h-sum"><span class="n">1</span>근무 조건</h2>
+    <dl id="summary"></dl>
+  </section>
+
+  <form id="form" novalidate>
+  <div class="wrap">
+  <section aria-labelledby="h-info">
+    <h2 id="h-info"><span class="n">2</span>내 정보</h2>
+    <div class="grid2">
+      <div class="field"><label for="f-name">이름 <span class="req">*</span></label><input type="text" id="f-name" autocomplete="name" required></div>
+      <div class="field"><label for="f-tel">연락처 <span class="req">*</span></label><input type="tel" id="f-tel" autocomplete="tel" inputmode="tel" placeholder="010-0000-0000" required></div>
+    </div>
+    <div class="field"><label for="f-rrn">주민등록번호 (외국인은 외국인등록번호) <span class="req">*</span></label>
+      <input type="text" id="f-rrn" inputmode="numeric" autocomplete="off" placeholder="000000-0000000" maxlength="14" required>
+      <span class="hint">고용보험 신고와 소득 신고에 필요해서 받습니다. 계약서에는 생년월일만 표시됩니다.</span>
+    </div>
+    <p class="notice" id="ageNote" hidden></p>
+    <div class="grid2">
+      <div class="field"><label for="f-bank">은행 <span class="req">*</span></label><input type="text" id="f-bank" list="banks" autocomplete="off" placeholder="예: 카카오뱅크"></div>
+      <div class="field"><label for="f-acc">계좌번호 <span class="req">*</span></label><input type="text" id="f-acc" inputmode="numeric" autocomplete="off"></div>
+    </div>
+    <datalist id="banks"><option>카카오뱅크</option><option>국민은행</option><option>신한은행</option><option>우리은행</option><option>하나은행</option><option>농협은행</option><option>기업은행</option><option>토스뱅크</option><option>새마을금고</option><option>우체국</option><option>케이뱅크</option><option>SC제일은행</option></datalist>
+    <span class="hint">임금은 본인 명의 계좌로만 지급합니다.</span>
+  </section>
+
+  <section aria-labelledby="h-terms">
+    <h2 id="h-terms"><span class="n">3</span>계약서 확인</h2>
+    <details><summary>근로계약서 전문 보기 (10개 조)</summary><div class="terms" id="terms"></div></details>
+  </section>
+
+  <section aria-labelledby="h-sign">
+    <h2 id="h-sign"><span class="n">4</span>동의 및 서명</h2>
+    <label class="check"><input type="checkbox" id="c-privacy"><span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
+    <p class="privacy">수집 항목: 이름, 연락처, 주민등록번호, 계좌 정보, 서명 · 목적: 근로계약 체결, 임금 지급, 고용보험 근로내용확인신고, 일용근로소득 지급명세서 제출 · 주민등록번호는 고용보험법·소득세법 시행령에 따라 수집 · 보유 기간: 계약 종료 후 5년</p>
+    <label class="check"><input type="checkbox" id="c-agree"><span>근로계약서 전문을 확인했으며, 위 조건으로 근로계약을 체결합니다. (필수)</span></label>
+    <div class="row"><span>아래 서명란에 서명해 주세요</span><button type="button" class="ghost" id="clearSig">다시 쓰기</button></div>
+    <div class="pad"><canvas id="sig" aria-label="서명란"></canvas><div class="ph" id="sigPh">여기에 서명</div></div>
+    <p class="error" id="err" role="alert" hidden></p>
+    <button type="submit" class="primary" id="submit">서명하고 계약하기</button>
+  </section>
+  </div>
+  </form>
+  <footer>트리랜드 (TREELAND) · 대표 홍준서 · 070-4571-7467</footer>
+</div>
+
+<div class="wrap" id="doneView" hidden>
+  <header><div class="brand">TREELAND</div><h1>계약이 완료되었습니다</h1></header>
+  <section>
+    <p style="margin:0" id="doneMsg">서명한 근로계약서를 저장해 두세요.</p>
+    <a class="primary" id="savePdf" href="#" download="트리랜드_근로계약서.pdf">계약서 PDF 저장</a>
+    <a class="ghost" id="viewPdf" href="#" target="_blank" rel="noopener" style="text-align:center">계약서 열어보기</a>
+    <p class="hint" style="margin:0">카카오톡 안에서 저장이 안 되면 오른쪽 위 메뉴에서 '다른 브라우저로 열기'를 누르거나, 대표에게 계약서를 다시 받으시면 됩니다.</p>
+  </section>
+  <footer>문의 070-4571-7467</footer>
+</div>
+
+<script src="/staff/shared.js"></script>
+<script>
+const SAMPLE = { id:"DEMO", dates:"2026-11-14", start:"14:00", end:"16:00", breakMin:0, place:"서울 성북구 아리랑로19길 87 (트리랜드 작업장)", job:"트리 오너먼트 장식 작업", wage:12000, payDay:"근로일 당일" };
+let C = null, STAMP = "";
+
+function renderSummary(){
+  const k = calc(C);
+  $("#summary").innerHTML = [
+    ["근무일", k.dates.map(s => fmtDay(s)).join(", ")],
+    ["근무 시간", `${C.start} ~ ${C.end}` + (Number(C.breakMin) ? ` (휴게 ${C.breakMin}분)` : "") + ` · 하루 ${hText(k.hours)}`],
+    ["장소", C.place], ["업무", C.job],
+    ["시급", `${won(C.wage)}원`],
+    ["임금", `${won(k.total)}원` + (k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
+    ["지급", `${C.payDay || "근로일 당일"}, 본인 계좌 입금`],
+  ].map(([a, b]) => `<dt>${esc(a)}</dt><dd${a === "임금" ? ' class="amount"' : ""}>${esc(b)}</dd>`).join("");
+  $("#terms").innerHTML = `<p>${esc(PREAMBLE)}</p>` + terms(C).map(([h, ps]) => `<h3>${esc(h)}</h3>` + ps.map(p => `<p>${esc(p)}</p>`).join("")).join("");
+}
+
+// 주민번호: 숫자만 받아 6자리 뒤에 하이픈, 나이·외국인 안내
+$("#f-rrn").addEventListener("input", e => {
+  const d = e.target.value.replace(/\D/g, "").slice(0, 13);
+  e.target.value = d.length > 6 ? d.slice(0, 6) + "-" + d.slice(6) : d;
+  const info = rrnInfo(e.target.value, dateList(C.dates)[0]), n = $("#ageNote");
+  if(!info){ n.hidden = true; return; }
+  const msgs = [];
+  if(info.age < 15) msgs.push("만 15세 미만은 이 링크로 계약할 수 없습니다. 대표에게 연락해 주세요.");
+  else if(info.age < 18) msgs.push("만 18세 미만은 친권자 동의서와 가족관계증명서가 필요합니다. 첫 근무 전에 대표에게 주세요.");
+  if(info.foreign) msgs.push("외국인은 외국인등록증의 체류자격을 첫 근무 전에 대표에게 확인받아야 합니다.");
+  n.textContent = msgs.join(" "); n.hidden = !msgs.length;
+});
+
+// 서명 패드
+const cv = $("#sig"), ctx = cv.getContext("2d"); let drawing = false, signed = false, last = null;
+function sizePad(){
+  const r = cv.getBoundingClientRect(), dpr = Math.max(1, window.devicePixelRatio || 1);
+  const keep = signed ? cv.toDataURL() : null;
+  cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+  if(keep){ const im = new Image(); im.onload = () => ctx.drawImage(im,0,0,r.width,r.height); im.src = keep; }
+}
+const pt = e => { const r = cv.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; };
+cv.addEventListener("pointerdown", e => { drawing = true; last = pt(e); cv.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.arc(last.x,last.y,1.2,0,7); ctx.fillStyle="#111"; ctx.fill(); });
+cv.addEventListener("pointermove", e => { if(!drawing) return; const p = pt(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last = p; if(!signed){ signed = true; $("#sigPh").hidden = true; } });
+["pointerup","pointercancel","pointerleave"].forEach(t => cv.addEventListener(t, () => drawing = false));
+$("#clearSig").onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signed = false; $("#sigPh").hidden = false; };
+window.addEventListener("resize", sizePad);
+
+const val = id => $(id).value.trim();
+function showErr(m, el){ const e = $("#err"); e.textContent = m; e.hidden = false; if(el) el.focus(); }
+function collect(){
+  if(!val("#f-name")) return showErr("이름을 입력해 주세요.", $("#f-name"));
+  if(val("#f-tel").replace(/\D/g, "").length < 9) return showErr("연락처를 확인해 주세요.", $("#f-tel"));
+  const info = rrnInfo(val("#f-rrn"), dateList(C.dates)[0]);
+  if(!info) return showErr("주민등록번호 13자리를 확인해 주세요.", $("#f-rrn"));
+  if(info.age < 15) return showErr("만 15세 미만은 이 링크로 계약할 수 없습니다. 대표에게 연락해 주세요.", $("#f-rrn"));
+  if(!val("#f-bank")) return showErr("은행을 입력해 주세요.", $("#f-bank"));
+  if(val("#f-acc").replace(/\D/g, "").length < 8) return showErr("계좌번호를 확인해 주세요.", $("#f-acc"));
+  if(!$("#c-privacy").checked) return showErr("개인정보 수집·이용에 동의해 주세요.", $("#c-privacy"));
+  if(!$("#c-agree").checked) return showErr("계약 체결 동의에 체크해 주세요.", $("#c-agree"));
+  if(!signed) return showErr("서명란에 서명해 주세요.", cv);
+  $("#err").hidden = true;
+  return { name: val("#f-name"), tel: val("#f-tel"), rrn: val("#f-rrn"), bank: val("#f-bank"), account: val("#f-acc"), holder: val("#f-name"), birth: info.birthText, age: info.age, foreign: info.foreign };
+}
+
+async function sha256(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join(""); }
+
+function buildPaper(w, sigUrl, signedAt, hash){
+  const k = calc(C), d = new Date(signedAt);
+  const cond = `<table>
+    <tr><th style="width:120px">근로일</th><td>${esc(k.dates.map(s => fmtDay(s)).join(", "))}</td></tr>
+    <tr><th>근로시간</th><td>${esc(C.start)} ~ ${esc(C.end)}${Number(C.breakMin) ? ` (휴게 ${esc(C.breakMin)}분)` : " (휴게 없음)"} · 1일 ${hText(k.hours)}</td></tr>
+    <tr><th>근무 장소</th><td>${esc(C.place)}</td></tr><tr><th>업무 내용</th><td>${esc(C.job)}</td></tr>
+    <tr><th>임금</th><td>시급 ${won(C.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)</td></tr>
+    <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 계좌 (${esc(w.bank)} ${esc(w.account)})</td></tr></table>`;
+  const body = terms(C).map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>${ps.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("");
+  return `<h1>근로계약서</h1><div class="subt">단시간 · 일용</div><p>${esc(PREAMBLE)}</p>${cond}${body}
+    <div class="avoid"><p class="c" style="margin-top:16px">본 계약의 성립을 증명하기 위하여 계약서를 작성하고 사업주와 근로자가 서명 또는 날인한다.</p>
+    <p class="c" style="margin:8px 0">계약일 : ${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일</p>
+    <table class="sig"><tr><th colspan="2">사업주</th><th colspan="2">근로자</th></tr>
+    <tr><th>상호</th><td>${BOSS.name}</td><th>성명</th><td>${esc(w.name)}</td></tr>
+    <tr><th>사업자등록번호</th><td>${BOSS.biz}</td><th>생년월일</th><td>${esc(w.birth)}</td></tr>
+    <tr><th>주소</th><td>${BOSS.addr}</td><th>연락처</th><td>${esc(w.tel)}</td></tr>
+    <tr><th>대표자</th><td>${BOSS.rep}　<span class="seal">(인)${STAMP ? `<img class="stamp" src="${STAMP}" alt="">` : ""}</span></td><th>서명</th><td><img src="${sigUrl}" alt=""></td></tr></table>
+    <div class="audit">전자서명 기록 · 계약번호 ${esc(C.id)} · 서명 일시 ${d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})} (KST) · 개인정보 수집·이용 동의 및 계약 체결 동의 확인 · 기기 ${esc(navigator.userAgent)} · 문서 확인값(SHA-256) ${hash}</div></div>`;
+}
+
+const PAPER_CSS = `#paper{width:794px;background:#fff;color:#000;font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:12.5px;line-height:1.65;padding:48px 56px}
+#paper h1{font-size:24px;text-align:center;margin:0}#paper .subt{text-align:center;font-size:12px;margin:2px 0 18px}
+#paper table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:12px}
+#paper th,#paper td{border:1px solid #000;padding:5px 8px;text-align:left;vertical-align:middle}
+#paper th{background:#f2f2f2;font-weight:700;text-align:center;white-space:nowrap}
+#paper h3{font-size:13px;margin:12px 0 3px}#paper p{margin:0 0 2px}#paper .c{text-align:center}
+#paper .sig img{height:44px;vertical-align:middle}#paper .seal{position:relative;display:inline-block}
+#paper .sig img.stamp{position:absolute;left:-1px;top:-5px;width:28px;height:28px}
+#paper .avoid{break-inside:avoid}#paper .audit{margin-top:14px;font-size:10px;color:#444;border-top:1px solid #999;padding-top:6px;overflow-wrap:anywhere}`;
+const LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"];
+let libsP = null;
+function loadLibs(){
+  if(!libsP) libsP = Promise.all(LIBS.map(src => new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => { libsP = null; rej(new Error("lib")); }; document.head.appendChild(s); })));
+  return libsP;
+}
+async function makePdf(html){
+  await loadLibs();
+  const W = 794, PAGE = Math.round(W * 297 / 210), M = 45;
+  const fr = document.createElement("iframe");
+  fr.setAttribute("aria-hidden", "true"); fr.tabIndex = -1;
+  fr.style.cssText = `position:fixed;left:0;top:0;width:${W}px;height:${PAGE}px;border:0;opacity:0;pointer-events:none;z-index:-1`;
+  document.body.appendChild(fr);
+  try{
+    const doc = fr.contentDocument; doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"><style>*{box-sizing:border-box}html,body{margin:0;background:#fff}${PAPER_CSS}</style></head><body><div id="paper">${html}</div></body></html>`);
+    doc.close();
+    await new Promise(r => { if(doc.readyState === "complete") r(); else fr.onload = r; setTimeout(r, 4000); });
+    try{ await Promise.race([doc.fonts.ready, new Promise(r => setTimeout(r, 3000))]); }catch(e){}
+    await Promise.all([...doc.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+    const paper = doc.getElementById("paper"), H = Math.ceil(paper.scrollHeight);
+    fr.style.height = H + "px";
+    const canvas = await html2canvas(paper, { scale:2, backgroundColor:"#ffffff", width:W, height:H, windowWidth:W, windowHeight:H });
+    const tops = [...paper.children].map(el => el.offsetTop).filter(t => t > 0).sort((a, b) => a - b);
+    const cuts = []; let y = 0, first = true;
+    while(y < H){
+      const cap = PAGE - (first ? M : 2 * M), limit = y + cap;
+      if(limit >= H){ cuts.push([y, H]); break; }
+      const t = tops.filter(t => t > y + cap * 0.4 && t <= limit).pop(), end = t || limit;
+      cuts.push([y, end]); y = end; first = false;
+    }
+    const { jsPDF } = window.jspdf, pdf = new jsPDF({ unit:"mm", format:"a4" }), kx = canvas.width / W, mm = 210 / W;
+    cuts.forEach(([a, b], i) => {
+      if(i) pdf.addPage();
+      const c = document.createElement("canvas"); c.width = canvas.width; c.height = Math.round((b - a) * kx);
+      const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
+      cx.drawImage(canvas, 0, Math.round(a * kx), c.width, c.height, 0, 0, c.width, c.height);
+      pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, i ? M * mm : 0, 210, (b - a) * mm);
+    });
+    return pdf;
+  }finally{ fr.remove(); }
+}
+
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const w = collect(); if(!w) return;
+  const btn = $("#submit"); btn.disabled = true; btn.textContent = "계약서를 만드는 중…";
+  try{
+    const signedAt = new Date().toISOString();
+    const hash = await sha256(JSON.stringify({ contract:C, worker:{...w, rrn:undefined}, signedAt, terms:terms(C) }));
+    const pdf = await makePdf(buildPaper(w, cv.toDataURL("image/png"), signedAt, hash));
+    if(STAFF_ENDPOINT && C.id !== "DEMO"){
+      btn.textContent = "저장하는 중…";
+      const r = await fetch(STAFF_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
+        body: JSON.stringify({ action:"sign", id:C.id, worker:w, signedAt, hash, ua:navigator.userAgent, pdf: pdf.output("datauristring").split(",")[1] }) });
+      const j = await r.json();
+      if(j.error === "already") throw Object.assign(new Error(), { msg:"이미 서명된 계약입니다." });
+      if(!j.ok) throw new Error(j.error || "save");
+    }
+    const url = URL.createObjectURL(pdf.output("blob")), fname = `트리랜드_근로계약서_${dateList(C.dates)[0]}_${w.name}.pdf`;
+    $("#savePdf").href = url; $("#savePdf").download = fname; $("#viewPdf").href = url;
+    $("#app").hidden = true; $("#doneView").hidden = false; window.scrollTo(0, 0);
+    if(!STAFF_ENDPOINT) $("#doneMsg").textContent = "미리보기 모드라 저장하지 않았습니다. 아래에서 만들어진 계약서를 확인할 수 있습니다.";
+  }catch(err){
+    showErr(err.msg || "제출되지 않았습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요. 계속 안 되면 070-4571-7467로 연락해 주세요.");
+    console.error(err);
+  }finally{ btn.disabled = false; btn.textContent = "서명하고 계약하기"; }
+});
+
+function showApp(){ document.documentElement.classList.remove("loading"); }
+function failView(title, msg, retry){
+  showApp();
+  $("#app").innerHTML = `<header><div class="brand">TREELAND</div><h1>${title}</h1><p class="lead">${msg}</p></header>` + (retry ? `<button type="button" class="primary" onclick="location.reload()">다시 불러오기</button>` : "");
+}
+async function loadStamp(){
+  try{ const b = await (await fetch("/quote/stamp.png")).blob(); STAMP = await new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); }); }catch(e){}
+}
+async function init(){
+  const id = new URLSearchParams(location.search).get("id");
+  loadStamp();
+  if(STAFF_ENDPOINT && id){
+    let j;
+    try{ j = await (await fetch(`${STAFF_ENDPOINT}?action=get&id=${encodeURIComponent(id)}`)).json(); }
+    catch(e){ return failView("계약서를 불러오지 못했습니다", "인터넷 연결을 확인한 뒤 다시 불러와 주세요. 계속 안 되면 070-4571-7467로 연락해 주세요.", true); }
+    if(!j.ok) return failView(j.error === "stopped" ? "사용할 수 없는 링크입니다" : "계약서를 찾을 수 없습니다", "대표에게 새 링크를 받아 주세요. 문의 070-4571-7467");
+    if(j.signed) return failView("이미 서명된 계약입니다", "서명한 계약서가 필요하면 대표에게 다시 받으시면 됩니다.");
+    C = j.contract;
+  }else{ C = SAMPLE; $("#demoNote").hidden = false; }
+  showApp(); renderSummary(); sizePad();
+  setTimeout(() => loadLibs().catch(() => {}), 300);
+}
+init();
+</script>
+</body>
+</html>

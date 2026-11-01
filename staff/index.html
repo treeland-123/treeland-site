@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<meta name="robots" content="noindex,nofollow">
+<title>트리랜드 근로계약</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 계약 관리 화면과 같은 틀: 위 링크 만들기 → 계약 목록 → 월별 신고 정리 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --ok:#2e6b3a; --wait:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{padding-top:28px;display:flex;flex-direction:column;gap:4px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+.links{display:flex;gap:6px;flex-wrap:wrap}
+h1{font-size:22px;margin:0}
+.lead{margin:0;color:var(--sub);font-size:14px}
+.demo{font-size:13px;background:var(--soft);border:1px dashed var(--line);padding:8px 12px;border-radius:6px;color:var(--sub)}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-size:16px;margin:0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:520px){.grid2,.grid3{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label,.flabel{font-size:13px;color:var(--sub)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:110px;font-size:14px}
+input:focus-visible,button:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--sub)}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:13px;font-size:15px;font-weight:700}
+.primary[disabled]{opacity:.5;cursor:wait}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none;display:inline-block}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row input{flex:1;min-width:0}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--soft);border-radius:999px;padding:4px 6px 4px 12px;font-size:13.5px}
+.chip button{border:0;background:none;color:var(--sub);font-size:15px;line-height:1;padding:2px 6px}
+.chips .pick{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:5px 12px;font-size:13px}
+.chips .pick[aria-pressed="true"]{background:var(--act);color:var(--act-ink);border-color:var(--act)}
+.calc{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:14px}
+.error{color:var(--err);font-size:14px;margin:0}
+.result{background:var(--soft);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
+.item:first-child{border-top:0}
+.item .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.item .m{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
+.item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.item dl{grid-column:1/-1;margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;background:var(--soft);border-radius:8px;padding:10px 12px}
+.item dt{color:var(--sub)}.item dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.badge{font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid currentColor;white-space:nowrap}
+.b-ok{color:var(--ok)}.b-wait{color:var(--wait)}.b-stop{color:var(--sub)}
+.flag{color:var(--err);font-size:12.5px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums}
+th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertical-align:top}
+th{color:var(--sub);font-weight:500;font-size:12.5px}
+td.n,th.n{text-align:right}
+.tbl{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top"><div class="brand">TREELAND</div>
+      <nav class="links"><a class="ghost" href="/admin">계약 관리</a><a class="ghost" href="/schedule/">일정표</a><a class="ghost" href="/ledger">장부</a></nav></div>
+    <h1>근로계약 (알바)</h1>
+    <p class="lead">근무 조건을 넣으면 알바에게 보낼 서명 링크가 만들어집니다. 서명본은 드라이브에 저장되고, 알바는 서명 직후 PDF를 받습니다.</p>
+    <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 서버가 연결되기 전이라 예시 데이터로 동작합니다.</div>
+  </header>
+
+  <section>
+    <div class="field"><label for="pin">관리자 비밀번호 (계약 관리와 같음)</label>
+      <div class="row"><input type="password" id="pin" autocomplete="current-password" enterkeyhint="go"><button type="button" class="ghost" id="loadBtn">확인</button></div>
+      <span class="hint" id="pinMsg" role="status">이 기기에서는 다음부터 자동으로 입력됩니다.</span>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-new">
+    <h2 id="h-new">새 근로계약 링크</h2>
+    <form id="newForm" novalidate>
+      <div class="wrap" style="gap:12px">
+        <div class="field"><span class="flabel">근무일</span>
+          <div class="row"><input type="date" id="n-date"><button type="button" class="ghost" id="addDate">추가</button></div>
+          <div class="chips" id="dates"></div>
+          <span class="hint">같은 시간으로 여러 날 일하면 날짜를 계속 추가하세요.</span>
+        </div>
+        <div class="grid3">
+          <div class="field"><label for="n-start">시작</label><input type="time" id="n-start" value="14:00" step="600"></div>
+          <div class="field"><label for="n-end">종료</label><input type="time" id="n-end" value="16:00" step="600"></div>
+          <div class="field"><label for="n-break">휴게 (분)</label><input type="number" id="n-break" value="0" min="0" step="10" inputmode="numeric"></div>
+        </div>
+        <span class="hint" id="breakHint"></span>
+        <div class="field"><label for="n-wage">시급 (원)</label><input type="text" id="n-wage" inputmode="numeric" placeholder="예: 12,000" autocomplete="off"></div>
+        <div class="calc" id="calcBox">근무일과 시급을 넣으면 임금이 계산됩니다.</div>
+        <div class="field"><span class="flabel">지급일</span>
+          <div class="chips" id="payChips"><button type="button" class="pick" data-v="근로일 당일" aria-pressed="true">당일</button><button type="button" class="pick" data-v="근로일 다음 날">다음 날</button><button type="button" class="pick" data-v="마지막 근로일 다음 날">마지막 근무 다음 날</button></div>
+          <input type="text" id="n-pay" value="근로일 당일">
+        </div>
+        <div class="field"><label for="n-place">근무 장소</label><input type="text" id="n-place" value="서울 성북구 아리랑로19길 87 (트리랜드 작업장)"></div>
+        <div class="field"><label for="n-job">업무 내용</label><input type="text" id="n-job" value="트리 오너먼트 장식 작업"></div>
+        <div class="field"><label for="n-memo">내부 메모 (선택, 알바에게 안 보임)</label><input type="text" id="n-memo" placeholder="예: 지인 소개, 2.3m 3그루"></div>
+        <p class="error" id="newErr" role="alert" hidden></p>
+        <button type="submit" class="primary" id="newBtn">링크 만들기</button>
+      </div>
+    </form>
+    <div class="result" id="result" hidden>
+      <div class="field"><label for="r-msg">알바에게 보낼 카톡 문구</label><textarea id="r-msg"></textarea></div>
+      <div class="row"><button type="button" class="primary" id="copyBtn" style="flex:1">문구 복사</button><a class="ghost" id="openLink" href="#" target="_blank" rel="noopener">서명 화면 열어보기</a></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-list">
+    <div class="row" style="justify-content:space-between"><h2 id="h-list">계약 목록</h2><button type="button" class="ghost" id="reload">새로고침</button></div>
+    <div class="list" id="list"><p class="lead">비밀번호를 넣고 확인을 누르세요.</p></div>
+  </section>
+
+  <section aria-labelledby="h-rep">
+    <h2 id="h-rep">월별 신고 정리</h2>
+    <p class="lead">서명완료된 계약만 모읍니다. 근로내용확인신고는 다음 달 15일까지(고용·산재보험 토털서비스), 일용근로소득 지급명세서는 다음 달 말일까지(홈택스) 제출합니다.</p>
+    <div class="row"><input type="month" id="r-month" style="max-width:200px"><button type="button" class="ghost" id="copyRep">표 복사 (엑셀 붙여넣기용)</button></div>
+    <div class="tbl" id="report"><p class="lead">목록을 불러오면 표시됩니다.</p></div>
+  </section>
+</div>
+
+<script src="/staff/shared.js"></script>
+<script>
+if(!STAFF_ENDPOINT) $("#demoNote").hidden = false;
+let ITEMS = [], DATES = [];
+const DEMO = [
+  { id:"demo1", created:"2026-11-01 18:10", status:"서명완료", dates:"2026-11-14,2026-11-15", start:"14:00", end:"16:00", breakMin:"0", place:"서울 성북구 아리랑로19길 87 (트리랜드 작업장)", job:"트리 오너먼트 장식 작업", wage:"12000", payDay:"근로일 당일", memo:"", name:"김예시", tel:"010-1234-5678", rrn:"050312-3123456", bank:"카카오뱅크", account:"3333-01-1234567", holder:"김예시", signedAt:"2026-11-01 18:20:11", pdfUrl:"#", url:"#" },
+  { id:"demo2", created:"2026-11-01 18:12", status:"서명대기", dates:"2026-11-20", start:"10:00", end:"15:00", breakMin:"30", place:"고객 매장", job:"트리 오너먼트 장식 작업", wage:"11000", payDay:"근로일 당일", memo:"", url:"#" },
+];
+
+async function api(body){
+  if(!STAFF_ENDPOINT){
+    if(body.action === "list") return { ok:true, items:DEMO };
+    if(body.action === "create") return { ok:true, id:"demo123", url:location.origin + "/staff/sign/" };
+    return { ok:true };
+  }
+  const r = await fetch(STAFF_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body) });
+  return r.json();
+}
+const pin = () => $("#pin").value.trim();
+function pinState(ok, text){
+  const m = $("#pinMsg"); m.textContent = text; m.style.color = ok === false ? "var(--err)" : ok ? "var(--ok)" : "";
+  try{ if(ok) localStorage.setItem("tl_pin", pin()); else if(ok === false) localStorage.removeItem("tl_pin"); }catch(e){}
+}
+try{ const p = localStorage.getItem("tl_pin"); if(p) $("#pin").value = p; }catch(e){}
+
+/* ---------- 새 계약 ---------- */
+const num = s => Number(String(s).replace(/[^\d]/g, "")) || 0;
+function form(){ return { dates: DATES.join(","), start: $("#n-start").value, end: $("#n-end").value, breakMin: num($("#n-break").value), wage: num($("#n-wage").value), payDay: $("#n-pay").value.trim(), place: $("#n-place").value.trim(), job: $("#n-job").value.trim(), memo: $("#n-memo").value.trim() }; }
+function renderDates(){
+  $("#dates").innerHTML = DATES.map(d => `<span class="chip">${fmtDay(d, true)}<button type="button" data-rm="${d}" aria-label="${d} 빼기">×</button></span>`).join("");
+  updateCalc();
+}
+$("#addDate").onclick = () => { const v = $("#n-date").value; if(v && !DATES.includes(v)){ DATES.push(v); DATES.sort(); renderDates(); } };
+$("#n-date").addEventListener("change", () => $("#addDate").click());
+$("#dates").addEventListener("click", e => { const d = e.target.dataset.rm; if(d){ DATES = DATES.filter(x => x !== d); renderDates(); } });
+$("#n-wage").addEventListener("input", e => { const n = num(e.target.value); e.target.value = n ? won(n) : ""; updateCalc(); });
+["#n-start","#n-end","#n-break"].forEach(id => $(id).addEventListener("input", updateCalc));
+$("#payChips").addEventListener("click", e => { const b = e.target.closest(".pick"); if(!b) return; $("#n-pay").value = b.dataset.v; syncPay(); });
+$("#n-pay").addEventListener("input", syncPay);
+function syncPay(){ document.querySelectorAll("#payChips .pick").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === $("#n-pay").value.trim()))); }
+function updateCalc(){
+  const c = form(), k = calc(c);
+  let span = toMin(c.end) - toMin(c.start); if(span <= 0) span += 1440;
+  $("#breakHint").textContent = span >= 480 && c.breakMin < 60 ? "8시간 이상이면 휴게 1시간 이상이 필요합니다." : span >= 240 && c.breakMin < 30 ? "4시간 이상이면 휴게 30분 이상이 필요합니다." : "";
+  $("#breakHint").style.color = $("#breakHint").textContent ? "var(--err)" : "";
+  if(!k.dates.length || !c.wage){ $("#calcBox").textContent = "근무일과 시급을 넣으면 임금이 계산됩니다."; return; }
+  const low = c.wage < MIN_WAGE ? ` · 최저시급(${won(MIN_WAGE)}원)보다 낮습니다` : "";
+  $("#calcBox").innerHTML = `하루 ${hText(k.hours)} × ${won(c.wage)}원 = <b>${won(k.dayPay)}원</b>` + (k.dates.length > 1 ? ` · ${k.dates.length}일 합계 <b>${won(k.total)}원</b>` : "") + `<br><span class="hint">${k.under15 ? "주 15시간 미만이라 주휴수당 없음" : "주 15시간 이상이라 주휴수당 대상입니다 (별도 지급)"}${k.hours > 8 ? " · 하루 8시간 초과" : ""}</span>` + (low ? `<br><span class="flag">${low.slice(3)}</span>` : "");
+}
+function newErr(m){ const e = $("#newErr"); e.textContent = m; e.hidden = !m; }
+$("#newForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const c = form(), k = calc(c);
+  if(!k.dates.length) return newErr("근무일을 추가해 주세요.");
+  if(!c.start || !c.end) return newErr("시작·종료 시각을 넣어 주세요.");
+  if(c.wage < MIN_WAGE) return newErr(`시급은 최저시급 ${won(MIN_WAGE)}원 이상이어야 합니다.`);
+  if($("#breakHint").textContent) return newErr($("#breakHint").textContent);
+  if(!c.place || !c.job) return newErr("근무 장소와 업무 내용을 넣어 주세요.");
+  newErr(""); const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
+  try{
+    const j = await api({ action:"create", pin:pin(), contract:c });
+    if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); return newErr("비밀번호를 확인해 주세요."); }
+    if(!j.ok) return newErr("만들지 못했습니다. 입력값을 확인해 주세요.");
+    pinState(true, "확인되었습니다.");
+    const days = k.dates.map(d => fmtDay(d, true)).join(", ");
+    $("#r-msg").value = `안녕하세요, 트리랜드입니다.\n${days} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요. 서명하면 계약서 PDF를 바로 받으실 수 있어요.\n\n${j.url}`;
+    $("#openLink").href = j.url; $("#result").hidden = false;
+    loadList();
+  }catch(err){ newErr("서버에 연결하지 못했습니다. 잠시 뒤 다시 눌러 주세요."); }
+  finally{ btn.disabled = false; btn.textContent = "링크 만들기"; }
+});
+$("#copyBtn").onclick = async () => { try{ await navigator.clipboard.writeText($("#r-msg").value); $("#copyBtn").textContent = "복사됨"; }catch(e){ $("#r-msg").select(); $("#copyBtn").textContent = "선택됨 — 길게 눌러 복사"; } setTimeout(() => $("#copyBtn").textContent = "문구 복사", 2000); };
+
+/* ---------- 목록 ---------- */
+async function loadList(){
+  if(STAFF_ENDPOINT && !pin()){ pinState(false, "비밀번호를 입력해 주세요."); $("#pin").focus(); return; }
+  $("#list").innerHTML = `<p class="lead">불러오는 중…</p>`;
+  try{
+    const j = await api({ action:"list", pin:pin() });
+    if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); $("#list").innerHTML = `<p class="lead">비밀번호를 확인해 주세요.</p>`; return; }
+    if(!j.ok) throw new Error(j.error);
+    pinState(true, "확인되었습니다."); ITEMS = j.items || []; renderList(); renderReport();
+  }catch(e){ $("#list").innerHTML = `<p class="error">불러오지 못했습니다. 새로고침을 눌러 주세요.</p>`; }
+}
+const badge = s => `<span class="badge ${s === "서명완료" ? "b-ok" : s === "서명대기" ? "b-wait" : "b-stop"}">${esc(s)}</span>`;
+function flags(it){
+  const info = rrnInfo(it.rrn, dateList(it.dates)[0]); if(!info) return "";
+  const f = []; if(info.age < 18) f.push(`만 ${info.age}세 — 친권자 동의서·가족관계증명서 받기`); if(info.foreign) f.push("외국인 — 체류자격 확인");
+  return f.length ? `<span class="flag">${f.join(" · ")}</span>` : "";
+}
+function renderList(){
+  if(!ITEMS.length){ $("#list").innerHTML = `<p class="lead">아직 계약이 없습니다.</p>`; return; }
+  $("#list").innerHTML = ITEMS.map(it => {
+    const k = calc(it), days = k.dates.map(d => fmtDay(d, true)).join(", ");
+    const done = it.status === "서명완료";
+    const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}</dl>` : (it.memo ? `<div class="m" style="grid-column:1/-1">메모 ${esc(it.memo)}</div>` : "");
+    const acts = done
+      ? `${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button>`
+      : it.status === "서명대기"
+        ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
+        : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
+    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}</div>
+      <div class="m">${esc(it.start)}~${esc(it.end)} · 시급 ${won(it.wage)}원 · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
+      ${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
+      <div class="acts">${acts}<button type="button" class="ghost" data-act="delete" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--sub)">삭제</button></div></div>`;
+  }).join("");
+}
+$("#list").addEventListener("click", async e => {
+  const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.copy != null){ try{ await navigator.clipboard.writeText(b.dataset.copy); const t = b.textContent; b.textContent = "복사됨"; setTimeout(() => b.textContent = t, 1500); }catch(x){} return; }
+  const act = b.dataset.act; if(!act) return;
+  if(act === "delete"){
+    if(b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제 (서명본 포함)"; b.style.color = "var(--err)"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "삭제"; b.style.color = "var(--sub)"; }, 4000); return; }
+  }
+  b.disabled = true;
+  const j = await api({ action:act, pin:pin(), id:b.dataset.id }).catch(() => ({}));
+  if(!j.ok){ b.disabled = false; b.textContent = "실패 — 다시"; return; }
+  loadList();
+});
+$("#loadBtn").onclick = loadList; $("#reload").onclick = loadList;
+$("#pin").addEventListener("keydown", e => { if(e.key === "Enter") loadList(); });
+
+/* ---------- 월별 신고 정리 ---------- */
+const now = new Date(); $("#r-month").value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+$("#r-month").addEventListener("change", renderReport);
+let REP = [];
+function renderReport(){
+  const m = $("#r-month").value, by = {};
+  ITEMS.filter(it => it.status === "서명완료").forEach(it => {
+    const k = calc(it), days = k.dates.filter(d => d.startsWith(m)); if(!days.length) return;
+    const key = it.rrn || it.name, p = by[key] || (by[key] = { name:it.name, rrn:it.rrn, days:[], pay:0, hours:0 });
+    p.days.push(...days); p.pay += k.dayPay * days.length; p.hours += k.hours * days.length;
+  });
+  REP = Object.values(by).map(p => ({ ...p, days:[...new Set(p.days)].sort() }));
+  if(!REP.length){ $("#report").innerHTML = `<p class="lead">${m.replace("-", "년 ")}월 서명완료 계약이 없습니다.</p>`; return; }
+  const sum = REP.reduce((a, p) => a + p.pay, 0);
+  $("#report").innerHTML = `<table><thead><tr><th>이름</th><th>주민등록번호</th><th>근로일</th><th class="n">일수</th><th class="n">시간</th><th class="n">지급액</th></tr></thead><tbody>`
+    + REP.map(p => `<tr><td>${esc(p.name)}</td><td>${esc(p.rrn)}</td><td>${p.days.map(d => +d.slice(8)).join(", ")}일</td><td class="n">${p.days.length}</td><td class="n">${hText(p.hours).replace("시간", "")}</td><td class="n">${won(p.pay)}</td></tr>`).join("")
+    + `</tbody><tfoot><tr><th colspan="5">합계</th><th class="n">${won(sum)}</th></tr></tfoot></table><p class="hint">일당 15만원 이하는 소득세가 나오지 않습니다. 지급명세서는 세금이 0원이어도 제출해야 합니다.</p>`;
+}
+$("#copyRep").onclick = async () => {
+  if(!REP.length) return;
+  const tsv = ["이름\t주민등록번호\t근로일\t일수\t근로시간\t지급액"].concat(REP.map(p => [p.name, p.rrn, p.days.map(d => +d.slice(8)).join(","), p.days.length, Math.round(p.hours * 100) / 100, p.pay].join("\t"))).join("\n");
+  try{ await navigator.clipboard.writeText(tsv); $("#copyRep").textContent = "복사됨"; setTimeout(() => $("#copyRep").textContent = "표 복사 (엑셀 붙여넣기용)", 1500); }catch(e){}
+};
+
+renderDates(); updateCalc();
+if(pin() || !STAFF_ENDPOINT) loadList();
+</script>
+</body>
+</html>
