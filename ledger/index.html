@@ -138,7 +138,7 @@ details.card[open] summary{margin-bottom:6px}
   <header>
     <div class="brand"><small>TREELAND</small><h1>지출 장부</h1></div>
     <div class="season-pick">
-      <span class="links"><a href="/admin">계약 관리</a><a href="/quote/">견적서</a><a href="/schedule">일정표</a><a href="/stats">통계</a><a href="/proposals">제안서</a></span>
+      <span class="links"><a href="/admin">계약 관리</a><a href="/quote/">견적서</a><a href="/schedule">일정표</a><a href="/stats">통계</a><a href="/staff/">근로계약</a><a href="/proposals">제안서</a></span>
       <select id="seasonSel" aria-label="시즌"></select>
     </div>
   </header>
@@ -284,9 +284,11 @@ details.card[open] summary{margin-bottom:6px}
 // 장부 저장 서버(트리랜드 장부 Apps Script)와 계약 서버(트리랜드 전자계약 Apps Script)
 const LEDGER_ENDPOINT = "https://script.google.com/macros/s/AKfycbxQ3PcUoyJs9t2awb8TAfD2-7T_Ov4vpXLXpr8VPOAfQVD0uO_4rpuvrcFEPLz2nJnQ/exec";
 const CONTRACT_ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
+// 알바 근로계약 서버(/staff). 서명완료 계약을 인건비 지출로 자동 표시(장부에서는 수정 불가, 근로계약 화면에서 관리)
+const STAFF_ENDPOINT = "https://script.google.com/macros/s/AKfycby9b3OOPHYM7FhITma4Ltg6UaIPe23l70mv0ha2xBhQGE7Jg6vutDdGouxd285gVH5u/exec";
 
 const DEFAULT_CATS=["트리 구매","장식·오너먼트","수입·통관","운송·퀵","인건비","차량·유류","보관·창고","광고·마케팅","사이트·툴","소모품","기타"];
-const S={expenses:[],sites:[],contracts:[],extras:{},seasons:["2026 크리스마스"],season:null,cat:DEFAULT_CATS[0],editExp:null,editSite:null,openSite:null,ready:false,contractErr:""};
+const S={staff:[],expenses:[],sites:[],contracts:[],extras:{},seasons:["2026 크리스마스"],season:null,cat:DEFAULT_CATS[0],editExp:null,editSite:null,openSite:null,ready:false,contractErr:""};
 const $=id=>document.getElementById(id);
 const won=n=>(Math.round(n)||0).toLocaleString("ko-KR");
 const parseNum=v=>Number(String(v||"").replace(/[^\d-]/g,""))||0;
@@ -328,6 +330,16 @@ function contractSites(){
   });
 }
 const grossOf=s=>s.vat==="in"?(s.revenueInput||Math.round((s.revenue||0)*1.1)):Math.round((s.revenueInput||s.revenue||0)*1.1);
+function staffExp(){   // 서명완료 근로계약 → 인건비 지출 (총 임금 = 시급 × 실근로시간 × 근로일수)
+  return (S.staff||[]).filter(t=>t.status==="서명완료").map(t=>{
+    const days=String(t.dates||"").split(",").filter(Boolean).sort(),[sh,sm]=String(t.start).split(":").map(Number),[eh,em]=String(t.end).split(":").map(Number);
+    let span=(eh*60+em)-(sh*60+sm);if(span<=0)span+=1440;
+    const hours=Math.max(0,span-(Number(t.breakMin)||0))/60,amount=Math.round((Number(t.wage)||0)*hours)*days.length;
+    return {id:"s:"+t.id,fromStaff:true,amount,category:"인건비",date:days[0]||"",siteId:"",season:seasonOf(days[0]),vendor:t.name,pay:"계좌이체",
+      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}`,createdAt:0};
+  });
+}
+const allExp=()=>S.expenses.concat(staffExp());
 const allSites=()=>contractSites().concat(S.sites.map(s=>({...s,gross:grossOf(s)})));
 
 // tabs
@@ -346,11 +358,11 @@ function fmtPhone(v){const d=String(v||"").replace(/\D/g,"").slice(0,12);
   return h+"-"+(r.length<=3?r:r.length<=7?r.slice(0,3)+"-"+r.slice(3):r.slice(0,4)+"-"+r.slice(4))}
 $("sPhone").addEventListener("input",e=>{e.target.value=fmtPhone(e.target.value)});
 
-function seasons(){const set=new Set(S.seasons||[]);S.expenses.forEach(e=>e.season&&set.add(e.season));allSites().forEach(s=>s.season&&set.add(s.season));return [...set]}
+function seasons(){const set=new Set(S.seasons||[]);allExp().forEach(e=>e.season&&set.add(e.season));allSites().forEach(s=>s.season&&set.add(s.season));return [...set]}
 function curSeason(){const list=seasons();if(!S.season||!list.includes(S.season))S.season=list[list.length-1]||"2026 크리스마스";return S.season}
 function cats(){const set=new Set(DEFAULT_CATS);S.expenses.forEach(e=>e.category&&set.add(e.category));return [...set]}
 const seasonSites=()=>allSites().filter(s=>s.season===curSeason()).sort((a,b)=>(a.date||"9").localeCompare(b.date||"9"));
-const seasonExp=()=>S.expenses.filter(e=>e.season===curSeason()).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
+const seasonExp=()=>allExp().filter(e=>e.season===curSeason()).sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));
 const siteName=id=>{const s=allSites().find(x=>x.id===id);return s?s.name:""};
 const md=d=>d?d.slice(5).replace("-","."):"";
 
@@ -372,7 +384,7 @@ function render(){
   renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);
 }
 function itemHtml(e){
-  const where=e.siteId?`<span class="tag">${esc(siteName(e.siteId)||"삭제된 현장")}</span>`:`<span class="tag common">공통</span>`;
+  const where=(e.siteId?`<span class="tag">${esc(siteName(e.siteId)||"삭제된 현장")}</span>`:`<span class="tag common">공통</span>`)+(e.fromStaff?`<span class="tag">근로계약</span>`:"");
   const sub=[e.vendor,e.memo,e.pay].filter(Boolean).map(esc).join(" · ");
   return `<div class="item" data-id="${esc(e.id)}" tabindex="0"><span class="d">${md(e.date)}</span><span class="t"><b>${esc(e.category)}</b>${where}${sub?`<small>${sub}</small>`:""}</span><span class="a">${won(e.amount)}</span></div>`;
 }
@@ -427,7 +439,7 @@ async function run(fn,okMsg){
 }
 
 // 지출
-function editExp(id){const e=S.expenses.find(x=>x.id===id);if(!e)return;S.editExp=id;S.cat=e.category;
+function editExp(id){if(String(id).startsWith("s:")){location.href="/staff/";return}const e=S.expenses.find(x=>x.id===id);if(!e)return;S.editExp=id;S.cat=e.category;
   showTab("rec");render();
   $("fAmount").value=won(e.amount);$("fDate").value=e.date||today();$("fSite").value=e.siteId||"";$("fVendor").value=e.vendor||"";$("fPay").value=e.pay||"카드";$("fMemo").value=e.memo||"";
   $("expMode").hidden=false;$("expCancel").hidden=false;$("expSave").textContent="수정 저장";
@@ -517,9 +529,10 @@ async function load(){
   if(!LEDGER_ENDPOINT){status("저장 서버 주소가 아직 연결되지 않았습니다.");return}
   if(!getPin()){showPin();return}
   status("");
-  const [L,C]=await Promise.allSettled([
+  const [L,C,W]=await Promise.allSettled([
     ledger("load"),
-    post(CONTRACT_ENDPOINT,{action:"schedule",pin:getPin()})
+    post(CONTRACT_ENDPOINT,{action:"schedule",pin:getPin()}),
+    post(STAFF_ENDPOINT,{action:"list",pin:getPin()})
   ]);
   if(L.status==="rejected"){
     if(L.reason&&L.reason.code==="pin"){showPin("비밀번호가 맞지 않습니다.");return}
@@ -528,6 +541,8 @@ async function load(){
   S.expenses=j.expenses||[];S.sites=j.sites||[];S.extras=j.extras||{};S.seasons=j.seasons&&j.seasons.length?j.seasons:S.seasons;
   if(C.status==="fulfilled"&&C.value&&C.value.ok){S.contracts=C.value.items||[];S.contractErr=""}
   else{S.contractErr="계약 목록을 불러오지 못해 계약 현장이 빠져 있습니다. 잠시 후 새로고침하세요."}
+  if(W.status==="fulfilled"&&W.value&&W.value.ok){S.staff=W.value.items||[]}
+  else{S.contractErr=(S.contractErr?S.contractErr+" ":"")+"근로계약(인건비)을 불러오지 못했습니다."}
   S.ready=true;$("pinBox").hidden=true;$("main").hidden=false;render();
 }
 // 다른 탭(계약 관리)에서 서명이 끝난 뒤 돌아오면 다시 불러오기
