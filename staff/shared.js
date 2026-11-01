@@ -1,6 +1,6 @@
 // 근로계약 공통: 서버 주소, 계산, 계약서 조항 (관리 화면·서명 화면이 같이 씀)
 // 서버 주소가 비어 있으면 관리 화면은 미리보기 모드. 알바 서명 화면은 Apps Script가 직접 띄움(apps-script/Sign.html)
-const STAFF_ENDPOINT = "";
+const STAFF_ENDPOINT = "https://script.google.com/macros/s/AKfycby9b3OOPHYM7FhITma4Ltg6UaIPe23l70mv0ha2xBhQGE7Jg6vutDdGouxd285gVH5u/exec";
 const MIN_WAGE = 10320;   // 2026년 최저시급
 // 알바에게는 트리랜드 브랜드를 드러내지 않음(대표님 지시, 2026-11-01): 사업주는 대표자 이름·사업자등록번호만 표기
 const BOSS = { rep:"홍준서", biz:"360-69-00592" };
