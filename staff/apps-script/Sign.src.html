@@ -2,11 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<link rel="icon" href="/favicon.ico">
-<title>트리랜드 근로계약서</title>
-<meta name="robots" content="noindex,nofollow">
-<script>if(/[?&]id=/.test(location.search))document.documentElement.classList.add("loading")</script>
+<base target="_top">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
@@ -64,25 +60,16 @@ button,.btn{font:inherit;cursor:pointer}
 .primary[disabled]{opacity:.5;cursor:wait}
 .error{color:var(--err);font-size:14px;margin:0}
 footer{font-size:12px;color:var(--sub);text-align:center}
-#loadingView{display:none;min-height:70vh;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
-html.loading #loadingView{display:flex}
-html.loading #app{display:none}
-.spin{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+#pages img{width:100%;border:1px solid var(--line);border-radius:6px;margin-top:10px;display:block}
+.x{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion:reduce){.spin{animation:none}}
+@media (prefers-reduced-motion:reduce){.x{animation:none}}
 </style>
 </head>
 <body>
 
-<div class="wrap" id="loadingView" role="status" aria-live="polite">
-  <div class="brand">TREELAND</div>
-  <div class="spin" aria-hidden="true"></div>
-  <p style="margin:0;font-weight:500">근로계약서를 불러오는 중입니다</p>
-</div>
-
 <div class="wrap" id="app">
   <header>
-    <div class="brand">TREELAND</div>
     <h1>근로계약서</h1>
     <p class="lead">근무 조건을 확인하고, 정보를 입력한 뒤 서명해 주세요. 서명이 끝나면 계약서 PDF를 바로 받을 수 있습니다.</p>
     <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 내용은 예시이며 제출해도 저장되지 않습니다.</div>
@@ -131,24 +118,27 @@ html.loading #app{display:none}
   </section>
   </div>
   </form>
-  <footer>트리랜드 (TREELAND) · 대표 홍준서 · 070-4571-7467</footer>
+  <footer>문의는 계약서를 보낸 분께 해 주세요.</footer>
 </div>
 
 <div class="wrap" id="doneView" hidden>
-  <header><div class="brand">TREELAND</div><h1>계약이 완료되었습니다</h1></header>
+  <header><h1>계약이 완료되었습니다</h1></header>
   <section>
-    <p style="margin:0" id="doneMsg">서명한 근로계약서를 저장해 두세요.</p>
-    <a class="primary" id="savePdf" href="#" download="트리랜드_근로계약서.pdf">계약서 PDF 저장</a>
-    <a class="ghost" id="viewPdf" href="#" target="_blank" rel="noopener" style="text-align:center">계약서 열어보기</a>
-    <p class="hint" style="margin:0">카카오톡 안에서 저장이 안 되면 오른쪽 위 메뉴에서 '다른 브라우저로 열기'를 누르거나, 대표에게 계약서를 다시 받으시면 됩니다.</p>
+    <p style="margin:0" id="doneMsg">서명한 근로계약서입니다. 저장해 두세요.</p>
+    <a class="primary" id="savePdf" href="#" download="근로계약서.pdf">계약서 PDF 저장</a>
+    <p class="hint" style="margin:0">PDF 저장이 안 되면 아래 계약서 이미지를 길게 눌러 저장하거나 캡처해 두세요. 계약서를 보낸 분께 다시 받으셔도 됩니다.</p>
+    <div id="pages"></div>
   </section>
-  <footer>문의 070-4571-7467</footer>
 </div>
 
-<script src="/staff/shared.js"></script>
 <script>
-const SAMPLE = { id:"DEMO", dates:"2026-11-14", start:"14:00", end:"16:00", breakMin:0, place:"서울 성북구 아리랑로19길 87 (트리랜드 작업장)", job:"트리 오너먼트 장식 작업", wage:12000, payDay:"근로일 당일" };
-let C = null, STAMP = "";
+/*@SHARED@*/
+</script>
+<script>
+const SAMPLE = { id:"DEMO", dates:"2026-11-14", start:"14:00", end:"16:00", breakMin:0, place:"서울 성북구 아리랑로19길 87 (작업장)", job:"트리 오너먼트 장식 작업", wage:12000, payDay:"근로일 당일" };
+let C = null;
+const STAMP = "/*@STAMP@*/";
+const DATA = /*@DATA@*/null;   // Apps Script가 넣어 줌. 없으면 미리보기
 
 function renderSummary(){
   const k = calc(C);
@@ -218,16 +208,16 @@ function buildPaper(w, sigUrl, signedAt, hash){
     <tr><th>근로시간</th><td>${esc(C.start)} ~ ${esc(C.end)}${Number(C.breakMin) ? ` (휴게 ${esc(C.breakMin)}분)` : " (휴게 없음)"} · 1일 ${hText(k.hours)}</td></tr>
     <tr><th>근무 장소</th><td>${esc(C.place)}</td></tr><tr><th>업무 내용</th><td>${esc(C.job)}</td></tr>
     <tr><th>임금</th><td>시급 ${won(C.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)</td></tr>
-    <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 계좌 (${esc(w.bank)} ${esc(w.account)})</td></tr></table>`;
+    <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 예금 계좌</td></tr></table>`;
   const body = terms(C).map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>${ps.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("");
   return `<h1>근로계약서</h1><div class="subt">단시간 · 일용</div><p>${esc(PREAMBLE)}</p>${cond}${body}
     <div class="avoid"><p class="c" style="margin-top:16px">본 계약의 성립을 증명하기 위하여 계약서를 작성하고 사업주와 근로자가 서명 또는 날인한다.</p>
     <p class="c" style="margin:8px 0">계약일 : ${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일</p>
     <table class="sig"><tr><th colspan="2">사업주</th><th colspan="2">근로자</th></tr>
-    <tr><th>상호</th><td>${BOSS.name}</td><th>성명</th><td>${esc(w.name)}</td></tr>
+    <tr><th>성명</th><td>${BOSS.rep}</td><th>성명</th><td>${esc(w.name)}</td></tr>
     <tr><th>사업자등록번호</th><td>${BOSS.biz}</td><th>생년월일</th><td>${esc(w.birth)}</td></tr>
-    <tr><th>주소</th><td>${BOSS.addr}</td><th>연락처</th><td>${esc(w.tel)}</td></tr>
-    <tr><th>대표자</th><td>${BOSS.rep}　<span class="seal">(인)${STAMP ? `<img class="stamp" src="${STAMP}" alt="">` : ""}</span></td><th>서명</th><td><img src="${sigUrl}" alt=""></td></tr></table>
+    <tr><th>연락처</th><td>-</td><th>연락처</th><td>${esc(w.tel)}</td></tr>
+    <tr><th>서명</th><td>${BOSS.rep}　<span class="seal">(인)${STAMP ? `<img class="stamp" src="${STAMP}" alt="">` : ""}</span></td><th>서명</th><td><img src="${sigUrl}" alt=""></td></tr></table>
     <div class="audit">전자서명 기록 · 계약번호 ${esc(C.id)} · 서명 일시 ${d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})} (KST) · 개인정보 수집·이용 동의 및 계약 체결 동의 확인 · 기기 ${esc(navigator.userAgent)} · 문서 확인값(SHA-256) ${hash}</div></div>`;
 }
 
@@ -271,15 +261,16 @@ async function makePdf(html){
       const t = tops.filter(t => t > y + cap * 0.4 && t <= limit).pop(), end = t || limit;
       cuts.push([y, end]); y = end; first = false;
     }
-    const { jsPDF } = window.jspdf, pdf = new jsPDF({ unit:"mm", format:"a4" }), kx = canvas.width / W, mm = 210 / W;
+    const { jsPDF } = window.jspdf, pdf = new jsPDF({ unit:"mm", format:"a4" }), kx = canvas.width / W, mm = 210 / W, pages = [];
     cuts.forEach(([a, b], i) => {
       if(i) pdf.addPage();
       const c = document.createElement("canvas"); c.width = canvas.width; c.height = Math.round((b - a) * kx);
       const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
       cx.drawImage(canvas, 0, Math.round(a * kx), c.width, c.height, 0, 0, c.width, c.height);
-      pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", 0, i ? M * mm : 0, 210, (b - a) * mm);
+      const img = c.toDataURL("image/jpeg", 0.92); pages.push(img);
+      pdf.addImage(img, "JPEG", 0, i ? M * mm : 0, 210, (b - a) * mm);
     });
-    return pdf;
+    return { pdf, pages };
   }finally{ fr.remove(); }
 }
 
@@ -290,45 +281,35 @@ $("#form").addEventListener("submit", async e => {
   try{
     const signedAt = new Date().toISOString();
     const hash = await sha256(JSON.stringify({ contract:C, worker:{...w, rrn:undefined}, signedAt, terms:terms(C) }));
-    const pdf = await makePdf(buildPaper(w, cv.toDataURL("image/png"), signedAt, hash));
-    if(STAFF_ENDPOINT && C.id !== "DEMO"){
+    const { pdf, pages } = await makePdf(buildPaper(w, cv.toDataURL("image/png"), signedAt, hash));
+    if(DATA){
       btn.textContent = "저장하는 중…";
-      const r = await fetch(STAFF_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"},
-        body: JSON.stringify({ action:"sign", id:C.id, worker:w, signedAt, hash, ua:navigator.userAgent, pdf: pdf.output("datauristring").split(",")[1] }) });
-      const j = await r.json();
-      if(j.error === "already") throw Object.assign(new Error(), { msg:"이미 서명된 계약입니다." });
-      if(!j.ok) throw new Error(j.error || "save");
+      const j = await new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)
+        .signFromPage({ id:C.id, worker:w, signedAt, hash, ua:navigator.userAgent, pdf: pdf.output("datauristring").split(",")[1] }));
+      if(j && j.error === "already") throw Object.assign(new Error(), { msg:"이미 서명된 계약입니다." });
+      if(!j || !j.ok) throw new Error((j && j.error) || "save");
     }
-    const url = URL.createObjectURL(pdf.output("blob")), fname = `트리랜드_근로계약서_${dateList(C.dates)[0]}_${w.name}.pdf`;
-    $("#savePdf").href = url; $("#savePdf").download = fname; $("#viewPdf").href = url;
+    const fname = `근로계약서_${dateList(C.dates)[0]}_${w.name}.pdf`;
+    $("#savePdf").href = pdf.output("datauristring", { filename: fname }); $("#savePdf").download = fname;
+    $("#pages").innerHTML = pages.map((src, i) => `<img src="${src}" alt="근로계약서 ${i + 1}쪽">`).join("");
     $("#app").hidden = true; $("#doneView").hidden = false; window.scrollTo(0, 0);
-    if(!STAFF_ENDPOINT) $("#doneMsg").textContent = "미리보기 모드라 저장하지 않았습니다. 아래에서 만들어진 계약서를 확인할 수 있습니다.";
+    if(!DATA) $("#doneMsg").textContent = "미리보기 모드라 저장하지 않았습니다. 아래가 만들어진 계약서입니다.";
   }catch(err){
-    showErr(err.msg || "제출되지 않았습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요. 계속 안 되면 070-4571-7467로 연락해 주세요.");
+    showErr(err.msg || "제출되지 않았습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요. 계속 안 되면 계약서를 보낸 분께 연락해 주세요.");
     console.error(err);
   }finally{ btn.disabled = false; btn.textContent = "서명하고 계약하기"; }
 });
 
-function showApp(){ document.documentElement.classList.remove("loading"); }
-function failView(title, msg, retry){
-  showApp();
-  $("#app").innerHTML = `<header><div class="brand">TREELAND</div><h1>${title}</h1><p class="lead">${msg}</p></header>` + (retry ? `<button type="button" class="primary" onclick="location.reload()">다시 불러오기</button>` : "");
+function failView(title, msg){
+  $("#app").innerHTML = `<header><h1>${title}</h1><p class="lead">${msg}</p></header>`;
 }
-async function loadStamp(){
-  try{ const b = await (await fetch("/quote/stamp.png")).blob(); STAMP = await new Promise(r => { const f = new FileReader(); f.onload = () => r(f.result); f.readAsDataURL(b); }); }catch(e){}
-}
-async function init(){
-  const id = new URLSearchParams(location.search).get("id");
-  loadStamp();
-  if(STAFF_ENDPOINT && id){
-    let j;
-    try{ j = await (await fetch(`${STAFF_ENDPOINT}?action=get&id=${encodeURIComponent(id)}`)).json(); }
-    catch(e){ return failView("계약서를 불러오지 못했습니다", "인터넷 연결을 확인한 뒤 다시 불러와 주세요. 계속 안 되면 070-4571-7467로 연락해 주세요.", true); }
-    if(!j.ok) return failView(j.error === "stopped" ? "사용할 수 없는 링크입니다" : "계약서를 찾을 수 없습니다", "대표에게 새 링크를 받아 주세요. 문의 070-4571-7467");
-    if(j.signed) return failView("이미 서명된 계약입니다", "서명한 계약서가 필요하면 대표에게 다시 받으시면 됩니다.");
-    C = j.contract;
+function init(){
+  if(DATA){
+    if(!DATA.ok) return failView(DATA.error === "stopped" ? "사용할 수 없는 링크입니다" : "계약서를 찾을 수 없습니다", "계약서를 보낸 분께 새 링크를 받아 주세요.");
+    if(DATA.signed) return failView("이미 서명된 계약입니다", "서명한 계약서가 필요하면 계약서를 보낸 분께 다시 받으시면 됩니다.");
+    C = DATA.contract;
   }else{ C = SAMPLE; $("#demoNote").hidden = false; }
-  showApp(); renderSummary(); sizePad();
+  renderSummary(); sizePad();
   setTimeout(() => loadLibs().catch(() => {}), 300);
 }
 init();

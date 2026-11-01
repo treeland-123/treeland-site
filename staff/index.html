@@ -79,7 +79,7 @@ td.n,th.n{text-align:right}
     <div class="top"><div class="brand">TREELAND</div>
       <nav class="links"><a class="ghost" href="/admin">계약 관리</a><a class="ghost" href="/schedule/">일정표</a><a class="ghost" href="/ledger">장부</a></nav></div>
     <h1>근로계약 (알바)</h1>
-    <p class="lead">근무 조건을 넣으면 알바에게 보낼 서명 링크가 만들어집니다. 서명본은 드라이브에 저장되고, 알바는 서명 직후 PDF를 받습니다.</p>
+    <p class="lead">근무 조건을 넣으면 알바에게 보낼 서명 링크가 만들어집니다. 알바 화면·계약서·카톡 문구에는 트리랜드가 나오지 않습니다(사업주는 홍준서·사업자번호만, 링크는 구글 주소).</p>
     <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 서버가 연결되기 전이라 예시 데이터로 동작합니다.</div>
   </header>
 
@@ -111,7 +111,7 @@ td.n,th.n{text-align:right}
           <div class="chips" id="payChips"><button type="button" class="pick" data-v="근로일 당일" aria-pressed="true">당일</button><button type="button" class="pick" data-v="근로일 다음 날">다음 날</button><button type="button" class="pick" data-v="마지막 근로일 다음 날">마지막 근무 다음 날</button></div>
           <input type="text" id="n-pay" value="근로일 당일">
         </div>
-        <div class="field"><label for="n-place">근무 장소</label><input type="text" id="n-place" value="서울 성북구 아리랑로19길 87 (트리랜드 작업장)"></div>
+        <div class="field"><label for="n-place">근무 장소</label><input type="text" id="n-place" value="서울 성북구 아리랑로19길 87 (작업장)"></div>
         <div class="field"><label for="n-job">업무 내용</label><input type="text" id="n-job" value="트리 오너먼트 장식 작업"></div>
         <div class="field"><label for="n-memo">내부 메모 (선택, 알바에게 안 보임)</label><input type="text" id="n-memo" placeholder="예: 지인 소개, 2.3m 3그루"></div>
         <p class="error" id="newErr" role="alert" hidden></p>
@@ -142,14 +142,14 @@ td.n,th.n{text-align:right}
 if(!STAFF_ENDPOINT) $("#demoNote").hidden = false;
 let ITEMS = [], DATES = [];
 const DEMO = [
-  { id:"demo1", created:"2026-11-01 18:10", status:"서명완료", dates:"2026-11-14,2026-11-15", start:"14:00", end:"16:00", breakMin:"0", place:"서울 성북구 아리랑로19길 87 (트리랜드 작업장)", job:"트리 오너먼트 장식 작업", wage:"12000", payDay:"근로일 당일", memo:"", name:"김예시", tel:"010-1234-5678", rrn:"050312-3123456", bank:"카카오뱅크", account:"3333-01-1234567", holder:"김예시", signedAt:"2026-11-01 18:20:11", pdfUrl:"#", url:"#" },
+  { id:"demo1", created:"2026-11-01 18:10", status:"서명완료", dates:"2026-11-14,2026-11-15", start:"14:00", end:"16:00", breakMin:"0", place:"서울 성북구 아리랑로19길 87 (작업장)", job:"트리 오너먼트 장식 작업", wage:"12000", payDay:"근로일 당일", memo:"", name:"김예시", tel:"010-1234-5678", rrn:"050312-3123456", bank:"카카오뱅크", account:"3333-01-1234567", holder:"김예시", signedAt:"2026-11-01 18:20:11", pdfUrl:"#", url:"#" },
   { id:"demo2", created:"2026-11-01 18:12", status:"서명대기", dates:"2026-11-20", start:"10:00", end:"15:00", breakMin:"30", place:"고객 매장", job:"트리 오너먼트 장식 작업", wage:"11000", payDay:"근로일 당일", memo:"", url:"#" },
 ];
 
 async function api(body){
   if(!STAFF_ENDPOINT){
     if(body.action === "list") return { ok:true, items:DEMO };
-    if(body.action === "create") return { ok:true, id:"demo123", url:location.origin + "/staff/sign/" };
+    if(body.action === "create") return { ok:true, id:"demo123", url:"https://script.google.com/macros/s/.../exec?id=demo123" };
     return { ok:true };
   }
   const r = await fetch(STAFF_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body) });
@@ -202,7 +202,7 @@ $("#newForm").addEventListener("submit", async e => {
     if(!j.ok) return newErr("만들지 못했습니다. 입력값을 확인해 주세요.");
     pinState(true, "확인되었습니다.");
     const days = k.dates.map(d => fmtDay(d, true)).join(", ");
-    $("#r-msg").value = `안녕하세요, 트리랜드입니다.\n${days} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요. 서명하면 계약서 PDF를 바로 받으실 수 있어요.\n\n${j.url}`;
+    $("#r-msg").value = `안녕하세요.\n${days} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요. 서명하면 계약서 PDF를 바로 받으실 수 있어요.\n\n${j.url}`;
     $("#openLink").href = j.url; $("#result").hidden = false;
     loadList();
   }catch(err){ newErr("서버에 연결하지 못했습니다. 잠시 뒤 다시 눌러 주세요."); }

@@ -1,6 +1,8 @@
 /**
  * 트리랜드 근로계약 서버 (Apps Script 「트리랜드 근로계약」, 계정 hongjs100418@gmail.com)
- * - 알바(일용·단시간) 전자 근로계약: 관리 화면 treeland.kr/staff/ , 서명 화면 treeland.kr/staff/sign/?id=...
+ * - 알바(일용·단시간) 전자 근로계약: 관리 화면 treeland.kr/staff/
+ * - 알바 서명 화면은 이 웹 앱이 직접 띄움(웹앱주소?id=...) — 알바에게 트리랜드를 드러내지 않기 위해 treeland.kr을 쓰지 않음
+ * - 파일 2개: Code.gs, Sign.html (Sign.html은 저장소 staff/apps-script/build_sign.py로 생성)
  * - 데이터: 드라이브 시트 「트리랜드 근로계약」(처음 실행 때 자동 생성, 스크립트 속성 SHEET_ID)
  *           서명본 PDF: 드라이브 폴더 「트리랜드 근로계약 서명본」(자동 생성, 스크립트 속성 FOLDER_ID) — 비공개
  * - 비밀번호: 따로 없음. 계약 서버(전자계약)에 schedule 액션으로 물어보고 맞으면 6시간 캐시 (장부·통계와 같은 방식)
@@ -8,15 +10,18 @@
  * - 재배포: 배포 → 배포 관리 → 연필 → 버전: 새 버전 (새 배포 금지, 주소 바뀜)
  */
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
-const SIGN_URL = 'https://treeland.kr/staff/sign/?id=';
 const COLS = ['id', 'created', 'status', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'memo',
   'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl'];
 const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay'];
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
-  if (p.action === 'get') return out(getPublic(p.id));
-  return out({ ok: true, service: 'treeland-staff' });
+  if (p.id) {
+    const t = HtmlService.createTemplateFromFile('Sign');
+    t.data = JSON.stringify(getPublic(p.id)).replace(/</g, '\\u003c');
+    return t.evaluate().setTitle('근로계약서').addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  }
+  return out({ ok: true, service: 'staff' });
 }
 
 function doPost(e) {
@@ -35,6 +40,11 @@ function doPost(e) {
     }
   } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); }
 }
+
+function signUrl(id) { return ScriptApp.getService().getUrl() + '?id=' + id; }
+
+/** 서명 화면(google.script.run)에서 호출 */
+function signFromPage(b) { return sign(b || {}); }
 
 function out(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
 
@@ -80,7 +90,7 @@ function folder() {
 function readAll() {
   const sh = sheet(), n = sh.getLastRow();
   if (n < 2) return [];
-  return sh.getRange(2, 1, n - 1, COLS.length).getDisplayValues().map(toObj).map((o) => Object.assign(o, { url: SIGN_URL + o.id })).reverse();
+  return sh.getRange(2, 1, n - 1, COLS.length).getDisplayValues().map(toObj).map((o) => Object.assign(o, { url: signUrl(o.id) })).reverse();
 }
 function toObj(r) { const o = {}; COLS.forEach((c, i) => { o[c] = r[i]; }); return o; }
 function findRow(id) {
@@ -116,7 +126,7 @@ function create(c) {
     breakMin: Math.max(0, Math.round(Number(c.breakMin) || 0)), place: c.place || '', job: c.job || '', wage: wage, payDay: c.payDay || '', memo: c.memo || '' };
   const sh = sheet();
   sh.appendRow(COLS.map((k) => String(row[k] == null ? '' : row[k])));
-  return { ok: true, id: id, url: SIGN_URL + id };
+  return { ok: true, id: id, url: signUrl(id) };
 }
 
 function getPublic(id) {
@@ -141,7 +151,7 @@ function sign(b) {
     const w = b.worker || {};
     if (!w.name || !w.tel || !/^\d{6}-?\d{7}$/.test(String(w.rrn || '')) || !w.account || !b.pdf) return { error: 'missing' };
     const day = o.dates.split(',')[0];
-    const file = folder().createFile(Utilities.newBlob(Utilities.base64Decode(b.pdf), 'application/pdf', `근로계약서_${day}_${w.name}.pdf`));
+    const file = folder().createFile(Utilities.newBlob(Utilities.base64Decode(b.pdf), 'application/pdf', '근로계약서_' + day + '_' + w.name + '.pdf'));
     setCells(r, { status: '서명완료', name: w.name, tel: w.tel, rrn: String(w.rrn).replace(/^(\d{6})-?(\d{7})$/, '$1-$2'), bank: w.bank || '', account: w.account,
       holder: w.holder || w.name, signedAt: Utilities.formatDate(new Date(b.signedAt || Date.now()), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'), hash: b.hash || '', ua: String(b.ua || '').slice(0, 300),
       pdfId: file.getId(), pdfUrl: file.getUrl() });

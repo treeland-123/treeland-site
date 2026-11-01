@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 휴대폰 한 손 기준 단일 칼럼: 근무 조건 확인 → 내 정보 → 계약서 확인 → 동의·서명 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --warn:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --warn:#e8c27a; color-scheme:dark}}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:640px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{padding-top:28px;display:flex;flex-direction:column;gap:6px}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:24px;margin:0;font-weight:700}
+.lead{margin:0;color:var(--sub);font-size:14px}
+.demo{font-size:13px;background:var(--soft);border:1px dashed var(--line);padding:8px 12px;border-radius:6px;color:var(--sub)}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-size:16px;margin:0;display:flex;gap:10px;align-items:baseline}
+h2 .n{font-size:12px;color:var(--sub);font-weight:500}
+dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px}
+dt{color:var(--sub);white-space:nowrap}
+dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.amount{font-weight:700}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:13px;color:var(--sub)}
+.req{color:var(--err)}
+input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+input[readonly]{background:var(--soft);color:var(--sub)}
+input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.grid2{grid-template-columns:1fr}}
+.hint{font-size:12.5px;color:var(--sub)}
+.notice{font-size:13.5px;border-radius:8px;padding:10px 12px;background:var(--soft);color:var(--warn)}
+details{border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+summary{cursor:pointer;padding:12px 14px;font-size:14px;font-weight:500}
+.terms{max-height:46vh;overflow:auto;padding:4px 14px 14px;font-size:13.5px;border-top:1px solid var(--line)}
+.terms h3{font-size:14px;margin:14px 0 4px}
+.terms p{margin:0 0 4px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer}
+.check input{width:20px;height:20px;margin:2px 0 0;flex:none;accent-color:var(--act)}
+.privacy{font-size:12.5px;color:var(--sub);margin:0 0 0 30px}
+.pad{position:relative;border:1px solid var(--line);border-radius:8px;background:#fff;touch-action:none}
+.pad canvas{display:block;width:100%;height:180px}
+.pad .ph{position:absolute;inset:0;display:grid;place-items:center;color:#9a9a95;font-size:14px;pointer-events:none}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+button,.btn{font:inherit;cursor:pointer}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none;display:inline-block}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:15px;font-size:16px;font-weight:700;width:100%;text-align:center;text-decoration:none;display:block}
+.primary[disabled]{opacity:.5;cursor:wait}
+.error{color:var(--err);font-size:14px;margin:0}
+footer{font-size:12px;color:var(--sub);text-align:center}
+#pages img{width:100%;border:1px solid var(--line);border-radius:6px;margin-top:10px;display:block}
+.x{width:28px;height:28px;border:2.5px solid var(--line);border-top-color:var(--ink);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.x{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+  <header>
+    <h1>근로계약서</h1>
+    <p class="lead">근무 조건을 확인하고, 정보를 입력한 뒤 서명해 주세요. 서명이 끝나면 계약서 PDF를 바로 받을 수 있습니다.</p>
+    <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 내용은 예시이며 제출해도 저장되지 않습니다.</div>
+  </header>
+
+  <section aria-labelledby="h-sum">
+    <h2 id="h-sum"><span class="n">1</span>근무 조건</h2>
+    <dl id="summary"></dl>
+  </section>
+
+  <form id="form" novalidate>
+  <div class="wrap">
+  <section aria-labelledby="h-info">
+    <h2 id="h-info"><span class="n">2</span>내 정보</h2>
+    <div class="grid2">
+      <div class="field"><label for="f-name">이름 <span class="req">*</span></label><input type="text" id="f-name" autocomplete="name" required></div>
+      <div class="field"><label for="f-tel">연락처 <span class="req">*</span></label><input type="tel" id="f-tel" autocomplete="tel" inputmode="tel" placeholder="010-0000-0000" required></div>
+    </div>
+    <div class="field"><label for="f-rrn">주민등록번호 (외국인은 외국인등록번호) <span class="req">*</span></label>
+      <input type="text" id="f-rrn" inputmode="numeric" autocomplete="off" placeholder="000000-0000000" maxlength="14" required>
+      <span class="hint">고용보험 신고와 소득 신고에 필요해서 받습니다. 계약서에는 생년월일만 표시됩니다.</span>
+    </div>
+    <p class="notice" id="ageNote" hidden></p>
+    <div class="grid2">
+      <div class="field"><label for="f-bank">은행 <span class="req">*</span></label><input type="text" id="f-bank" list="banks" autocomplete="off" placeholder="예: 카카오뱅크"></div>
+      <div class="field"><label for="f-acc">계좌번호 <span class="req">*</span></label><input type="text" id="f-acc" inputmode="numeric" autocomplete="off"></div>
+    </div>
+    <datalist id="banks"><option>카카오뱅크</option><option>국민은행</option><option>신한은행</option><option>우리은행</option><option>하나은행</option><option>농협은행</option><option>기업은행</option><option>토스뱅크</option><option>새마을금고</option><option>우체국</option><option>케이뱅크</option><option>SC제일은행</option></datalist>
+    <span class="hint">임금은 본인 명의 계좌로만 지급합니다.</span>
+  </section>
+
+  <section aria-labelledby="h-terms">
+    <h2 id="h-terms"><span class="n">3</span>계약서 확인</h2>
+    <details><summary>근로계약서 전문 보기 (10개 조)</summary><div class="terms" id="terms"></div></details>
+  </section>
+
+  <section aria-labelledby="h-sign">
+    <h2 id="h-sign"><span class="n">4</span>동의 및 서명</h2>
+    <label class="check"><input type="checkbox" id="c-privacy"><span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
+    <p class="privacy">수집 항목: 이름, 연락처, 주민등록번호, 계좌 정보, 서명 · 목적: 근로계약 체결, 임금 지급, 고용보험 근로내용확인신고, 일용근로소득 지급명세서 제출 · 주민등록번호는 고용보험법·소득세법 시행령에 따라 수집 · 보유 기간: 계약 종료 후 5년</p>
+    <label class="check"><input type="checkbox" id="c-agree"><span>근로계약서 전문을 확인했으며, 위 조건으로 근로계약을 체결합니다. (필수)</span></label>
+    <div class="row"><span>아래 서명란에 서명해 주세요</span><button type="button" class="ghost" id="clearSig">다시 쓰기</button></div>
+    <div class="pad"><canvas id="sig" aria-label="서명란"></canvas><div class="ph" id="sigPh">여기에 서명</div></div>
+    <p class="error" id="err" role="alert" hidden></p>
+    <button type="submit" class="primary" id="submit">서명하고 계약하기</button>
+  </section>
+  </div>
+  </form>
+  <footer>문의는 계약서를 보낸 분께 해 주세요.</footer>
+</div>
+
+<div class="wrap" id="doneView" hidden>
+  <header><h1>계약이 완료되었습니다</h1></header>
+  <section>
+    <p style="margin:0" id="doneMsg">서명한 근로계약서입니다. 저장해 두세요.</p>
+    <a class="primary" id="savePdf" href="#" download="근로계약서.pdf">계약서 PDF 저장</a>
+    <p class="hint" style="margin:0">PDF 저장이 안 되면 아래 계약서 이미지를 길게 눌러 저장하거나 캡처해 두세요. 계약서를 보낸 분께 다시 받으셔도 됩니다.</p>
+    <div id="pages"></div>
+  </section>
+</div>
+
+<script>
+const MIN_WAGE = 10320;   // 2026년 최저시급
+const BOSS = { rep:"홍준서", biz:"360-69-00592" };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n || 0).toLocaleString("ko-KR");
+const WD = "일월화수목금토";
+const dateList = v => String(v || "").split(",").map(s => s.trim()).filter(s => /^\d{4}-\d{2}-\d{2}$/.test(s)).sort();
+function fmtDay(s, short){
+  const [y, m, d] = s.split("-").map(Number), w = WD[new Date(y, m-1, d).getDay()];
+  return short ? `${m}/${d}(${w})` : `${y}년 ${m}월 ${d}일(${w})`;
+}
+const toMin = t => { const [h, m] = String(t || "0:0").split(":").map(Number); return h * 60 + m; };
+
+function calc(c){
+  const dates = dateList(c.dates);
+  let span = toMin(c.end) - toMin(c.start); if(span <= 0) span += 1440;
+  const work = Math.max(0, span - (Number(c.breakMin) || 0));
+  const hours = work / 60, wage = Number(c.wage) || 0;
+  const dayPay = Math.round(wage * hours);
+  const weeks = {};
+  dates.forEach(s => { const d = new Date(s + "T00:00:00"); const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7)); const k = mon.toDateString(); weeks[k] = (weeks[k] || 0) + hours; });
+  const maxWeek = Math.max(0, ...Object.values(weeks));
+  return { dates, work, hours, dayPay, total: dayPay * dates.length, maxWeek, under15: maxWeek < 15 };
+}
+const hText = h => (Math.round(h * 100) / 100).toString().replace(/\.0+$/, "") + "시간";
+
+function terms(c){
+  const k = calc(c);
+  return [
+    ["제1조 (근로계약기간 및 근로일)", [`근로일은 ${k.dates.map(s => fmtDay(s)).join(", ")}${k.dates.length > 1 ? ` (총 ${k.dates.length}일)` : ""}로 하며, 근로계약기간은 위 근로일로 한다. 근로일의 근로가 끝나면 본 계약은 종료된다.`]],
+    ["제2조 (근무 장소)", [c.place || "-"]],
+    ["제3조 (업무 내용)", [c.job || "-"]],
+    ["제4조 (근로시간 및 휴게시간)", [`① 근로시간은 ${c.start}부터 ${c.end}까지로 하며, ` + (Number(c.breakMin) ? `휴게시간 ${c.breakMin}분을 제외한 실근로시간은 1일 ${hText(k.hours)}으로 한다. 휴게시간은 근로자가 자유롭게 이용한다.` : `실근로시간은 1일 ${hText(k.hours)}으로 한다.`), "② 사업주와 근로자는 합의하여 근로일과 근로시간을 변경할 수 있다."]],
+    ["제5조 (임금)", [`① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
+      `② 임금은 ${c.payDay || "근로일 당일"}에 근로자 명의의 예금 계좌로 지급한다.`,
+      "③ 임금은 소득세 등 관계 법령에 따라 공제할 금액을 공제한 후 지급한다.",
+      "④ 연장·야간·휴일근로가 발생하는 경우 관계 법령에 따라 임금을 지급한다."]],
+    ["제6조 (휴일 및 휴가)", [k.under15
+      ? "1주 소정근로시간이 15시간 미만이므로 근로기준법 제18조 제3항에 따라 주휴일과 연차유급휴가는 적용하지 아니한다."
+      : "주휴일과 연차유급휴가는 근로기준법에서 정하는 바에 따른다."]],
+    ["제7조 (사회보험)", ["① 근로자에게는 산업재해보상보험과 고용보험을 적용한다.", "② 국민연금과 국민건강보험은 관계 법령에서 정한 가입 요건에 해당하는 경우에 적용한다."]],
+    ["제8조 (안전)", ["근로자는 사업주의 안전 지시에 따르며, 작업 중 다치거나 물품이 파손된 경우 즉시 사업주에게 알린다."]],
+    ["제9조 (근로계약서 교부)", ["사업주는 근로계약을 체결함과 동시에 본 계약서를 근로자에게 교부한다(근로기준법 제17조). 교부는 전자문서로 할 수 있다."]],
+    ["제10조 (기타)", ["본 계약에 정하지 아니한 사항은 근로기준법 등 관계 법령에 따른다."]],
+  ];
+}
+const PREAMBLE = `${BOSS.rep}(이하 "사업주"라 한다)와 근로자(이하 "근로자"라 한다)는 다음과 같이 근로계약을 체결한다.`;
+
+function rrnInfo(rrn, onDate){
+  const m = String(rrn || "").match(/^(\d{2})(\d{2})(\d{2})-?(\d)\d{6}$/); if(!m) return null;
+  const g = +m[4], cent = [1,2,5,6].includes(g) ? 1900 : [3,4,7,8].includes(g) ? 2000 : 1800;
+  const y = cent + +m[1], mo = +m[2], d = +m[3];
+  if(mo < 1 || mo > 12 || d < 1 || d > 31) return null;
+  const on = onDate ? new Date(onDate + "T00:00:00") : new Date();
+  let age = on.getFullYear() - y; if(on.getMonth() + 1 < mo || (on.getMonth() + 1 === mo && on.getDate() < d)) age--;
+  return { birth: `${y}-${String(mo).padStart(2,"0")}-${String(d).padStart(2,"0")}`, birthText: `${y}년 ${mo}월 ${d}일`, age, foreign: g >= 5 && g <= 8 };
+}
+</script>
+<script>
+const SAMPLE = { id:"DEMO", dates:"2026-11-14", start:"14:00", end:"16:00", breakMin:0, place:"서울 성북구 아리랑로19길 87 (작업장)", job:"트리 오너먼트 장식 작업", wage:12000, payDay:"근로일 당일" };
+let C = null;
+const STAMP = "data:image/png;base64,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";
+const DATA = <?!= data ?>;   // Apps Script가 넣어 줌. 없으면 미리보기
+
+function renderSummary(){
+  const k = calc(C);
+  $("#summary").innerHTML = [
+    ["근무일", k.dates.map(s => fmtDay(s)).join(", ")],
+    ["근무 시간", `${C.start} ~ ${C.end}` + (Number(C.breakMin) ? ` (휴게 ${C.breakMin}분)` : "") + ` · 하루 ${hText(k.hours)}`],
+    ["장소", C.place], ["업무", C.job],
+    ["시급", `${won(C.wage)}원`],
+    ["임금", `${won(k.total)}원` + (k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
+    ["지급", `${C.payDay || "근로일 당일"}, 본인 계좌 입금`],
+  ].map(([a, b]) => `<dt>${esc(a)}</dt><dd${a === "임금" ? ' class="amount"' : ""}>${esc(b)}</dd>`).join("");
+  $("#terms").innerHTML = `<p>${esc(PREAMBLE)}</p>` + terms(C).map(([h, ps]) => `<h3>${esc(h)}</h3>` + ps.map(p => `<p>${esc(p)}</p>`).join("")).join("");
+}
+
+// 주민번호: 숫자만 받아 6자리 뒤에 하이픈, 나이·외국인 안내
+$("#f-rrn").addEventListener("input", e => {
+  const d = e.target.value.replace(/\D/g, "").slice(0, 13);
+  e.target.value = d.length > 6 ? d.slice(0, 6) + "-" + d.slice(6) : d;
+  const info = rrnInfo(e.target.value, dateList(C.dates)[0]), n = $("#ageNote");
+  if(!info){ n.hidden = true; return; }
+  const msgs = [];
+  if(info.age < 15) msgs.push("만 15세 미만은 이 링크로 계약할 수 없습니다. 대표에게 연락해 주세요.");
+  else if(info.age < 18) msgs.push("만 18세 미만은 친권자 동의서와 가족관계증명서가 필요합니다. 첫 근무 전에 대표에게 주세요.");
+  if(info.foreign) msgs.push("외국인은 외국인등록증의 체류자격을 첫 근무 전에 대표에게 확인받아야 합니다.");
+  n.textContent = msgs.join(" "); n.hidden = !msgs.length;
+});
+
+// 서명 패드
+const cv = $("#sig"), ctx = cv.getContext("2d"); let drawing = false, signed = false, last = null;
+function sizePad(){
+  const r = cv.getBoundingClientRect(), dpr = Math.max(1, window.devicePixelRatio || 1);
+  const keep = signed ? cv.toDataURL() : null;
+  cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.lineWidth = 2.4; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#111";
+  if(keep){ const im = new Image(); im.onload = () => ctx.drawImage(im,0,0,r.width,r.height); im.src = keep; }
+}
+const pt = e => { const r = cv.getBoundingClientRect(); return {x:e.clientX - r.left, y:e.clientY - r.top}; };
+cv.addEventListener("pointerdown", e => { drawing = true; last = pt(e); cv.setPointerCapture(e.pointerId); ctx.beginPath(); ctx.arc(last.x,last.y,1.2,0,7); ctx.fillStyle="#111"; ctx.fill(); });
+cv.addEventListener("pointermove", e => { if(!drawing) return; const p = pt(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last = p; if(!signed){ signed = true; $("#sigPh").hidden = true; } });
+["pointerup","pointercancel","pointerleave"].forEach(t => cv.addEventListener(t, () => drawing = false));
+$("#clearSig").onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signed = false; $("#sigPh").hidden = false; };
+window.addEventListener("resize", sizePad);
+
+const val = id => $(id).value.trim();
+function showErr(m, el){ const e = $("#err"); e.textContent = m; e.hidden = false; if(el) el.focus(); }
+function collect(){
+  if(!val("#f-name")) return showErr("이름을 입력해 주세요.", $("#f-name"));
+  if(val("#f-tel").replace(/\D/g, "").length < 9) return showErr("연락처를 확인해 주세요.", $("#f-tel"));
+  const info = rrnInfo(val("#f-rrn"), dateList(C.dates)[0]);
+  if(!info) return showErr("주민등록번호 13자리를 확인해 주세요.", $("#f-rrn"));
+  if(info.age < 15) return showErr("만 15세 미만은 이 링크로 계약할 수 없습니다. 대표에게 연락해 주세요.", $("#f-rrn"));
+  if(!val("#f-bank")) return showErr("은행을 입력해 주세요.", $("#f-bank"));
+  if(val("#f-acc").replace(/\D/g, "").length < 8) return showErr("계좌번호를 확인해 주세요.", $("#f-acc"));
+  if(!$("#c-privacy").checked) return showErr("개인정보 수집·이용에 동의해 주세요.", $("#c-privacy"));
+  if(!$("#c-agree").checked) return showErr("계약 체결 동의에 체크해 주세요.", $("#c-agree"));
+  if(!signed) return showErr("서명란에 서명해 주세요.", cv);
+  $("#err").hidden = true;
+  return { name: val("#f-name"), tel: val("#f-tel"), rrn: val("#f-rrn"), bank: val("#f-bank"), account: val("#f-acc"), holder: val("#f-name"), birth: info.birthText, age: info.age, foreign: info.foreign };
+}
+
+async function sha256(t){ const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join(""); }
+
+function buildPaper(w, sigUrl, signedAt, hash){
+  const k = calc(C), d = new Date(signedAt);
+  const cond = `<table>
+    <tr><th style="width:120px">근로일</th><td>${esc(k.dates.map(s => fmtDay(s)).join(", "))}</td></tr>
+    <tr><th>근로시간</th><td>${esc(C.start)} ~ ${esc(C.end)}${Number(C.breakMin) ? ` (휴게 ${esc(C.breakMin)}분)` : " (휴게 없음)"} · 1일 ${hText(k.hours)}</td></tr>
+    <tr><th>근무 장소</th><td>${esc(C.place)}</td></tr><tr><th>업무 내용</th><td>${esc(C.job)}</td></tr>
+    <tr><th>임금</th><td>시급 ${won(C.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)</td></tr>
+    <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 예금 계좌</td></tr></table>`;
+  const body = terms(C).map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>${ps.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("");
+  return `<h1>근로계약서</h1><div class="subt">단시간 · 일용</div><p>${esc(PREAMBLE)}</p>${cond}${body}
+    <div class="avoid"><p class="c" style="margin-top:16px">본 계약의 성립을 증명하기 위하여 계약서를 작성하고 사업주와 근로자가 서명 또는 날인한다.</p>
+    <p class="c" style="margin:8px 0">계약일 : ${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일</p>
+    <table class="sig"><tr><th colspan="2">사업주</th><th colspan="2">근로자</th></tr>
+    <tr><th>성명</th><td>${BOSS.rep}</td><th>성명</th><td>${esc(w.name)}</td></tr>
+    <tr><th>사업자등록번호</th><td>${BOSS.biz}</td><th>생년월일</th><td>${esc(w.birth)}</td></tr>
+    <tr><th>연락처</th><td>-</td><th>연락처</th><td>${esc(w.tel)}</td></tr>
+    <tr><th>서명</th><td>${BOSS.rep}　<span class="seal">(인)${STAMP ? `<img class="stamp" src="${STAMP}" alt="">` : ""}</span></td><th>서명</th><td><img src="${sigUrl}" alt=""></td></tr></table>
+    <div class="audit">전자서명 기록 · 계약번호 ${esc(C.id)} · 서명 일시 ${d.toLocaleString("ko-KR",{timeZone:"Asia/Seoul"})} (KST) · 개인정보 수집·이용 동의 및 계약 체결 동의 확인 · 기기 ${esc(navigator.userAgent)} · 문서 확인값(SHA-256) ${hash}</div></div>`;
+}
+
+const PAPER_CSS = `#paper{width:794px;background:#fff;color:#000;font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:12.5px;line-height:1.65;padding:48px 56px}
+#paper h1{font-size:24px;text-align:center;margin:0}#paper .subt{text-align:center;font-size:12px;margin:2px 0 18px}
+#paper table{width:100%;border-collapse:collapse;margin:8px 0 4px;font-size:12px}
+#paper th,#paper td{border:1px solid #000;padding:5px 8px;text-align:left;vertical-align:middle}
+#paper th{background:#f2f2f2;font-weight:700;text-align:center;white-space:nowrap}
+#paper h3{font-size:13px;margin:12px 0 3px}#paper p{margin:0 0 2px}#paper .c{text-align:center}
+#paper .sig img{height:44px;vertical-align:middle}#paper .seal{position:relative;display:inline-block}
+#paper .sig img.stamp{position:absolute;left:-1px;top:-5px;width:28px;height:28px}
+#paper .avoid{break-inside:avoid}#paper .audit{margin-top:14px;font-size:10px;color:#444;border-top:1px solid #999;padding-top:6px;overflow-wrap:anywhere}`;
+const LIBS = ["https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js", "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"];
+let libsP = null;
+function loadLibs(){
+  if(!libsP) libsP = Promise.all(LIBS.map(src => new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => { libsP = null; rej(new Error("lib")); }; document.head.appendChild(s); })));
+  return libsP;
+}
+async function makePdf(html){
+  await loadLibs();
+  const W = 794, PAGE = Math.round(W * 297 / 210), M = 45;
+  const fr = document.createElement("iframe");
+  fr.setAttribute("aria-hidden", "true"); fr.tabIndex = -1;
+  fr.style.cssText = `position:fixed;left:0;top:0;width:${W}px;height:${PAGE}px;border:0;opacity:0;pointer-events:none;z-index:-1`;
+  document.body.appendChild(fr);
+  try{
+    const doc = fr.contentDocument; doc.open();
+    doc.write(`<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap"><style>*{box-sizing:border-box}html,body{margin:0;background:#fff}${PAPER_CSS}</style></head><body><div id="paper">${html}</div></body></html>`);
+    doc.close();
+    await new Promise(r => { if(doc.readyState === "complete") r(); else fr.onload = r; setTimeout(r, 4000); });
+    try{ await Promise.race([doc.fonts.ready, new Promise(r => setTimeout(r, 3000))]); }catch(e){}
+    await Promise.all([...doc.images].map(im => im.complete ? 0 : new Promise(r => { im.onload = im.onerror = r; })));
+    const paper = doc.getElementById("paper"), H = Math.ceil(paper.scrollHeight);
+    fr.style.height = H + "px";
+    const canvas = await html2canvas(paper, { scale:2, backgroundColor:"#ffffff", width:W, height:H, windowWidth:W, windowHeight:H });
+    const tops = [...paper.children].map(el => el.offsetTop).filter(t => t > 0).sort((a, b) => a - b);
+    const cuts = []; let y = 0, first = true;
+    while(y < H){
+      const cap = PAGE - (first ? M : 2 * M), limit = y + cap;
+      if(limit >= H){ cuts.push([y, H]); break; }
+      const t = tops.filter(t => t > y + cap * 0.4 && t <= limit).pop(), end = t || limit;
+      cuts.push([y, end]); y = end; first = false;
+    }
+    const { jsPDF } = window.jspdf, pdf = new jsPDF({ unit:"mm", format:"a4" }), kx = canvas.width / W, mm = 210 / W, pages = [];
+    cuts.forEach(([a, b], i) => {
+      if(i) pdf.addPage();
+      const c = document.createElement("canvas"); c.width = canvas.width; c.height = Math.round((b - a) * kx);
+      const cx = c.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, c.width, c.height);
+      cx.drawImage(canvas, 0, Math.round(a * kx), c.width, c.height, 0, 0, c.width, c.height);
+      const img = c.toDataURL("image/jpeg", 0.92); pages.push(img);
+      pdf.addImage(img, "JPEG", 0, i ? M * mm : 0, 210, (b - a) * mm);
+    });
+    return { pdf, pages };
+  }finally{ fr.remove(); }
+}
+
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const w = collect(); if(!w) return;
+  const btn = $("#submit"); btn.disabled = true; btn.textContent = "계약서를 만드는 중…";
+  try{
+    const signedAt = new Date().toISOString();
+    const hash = await sha256(JSON.stringify({ contract:C, worker:{...w, rrn:undefined}, signedAt, terms:terms(C) }));
+    const { pdf, pages } = await makePdf(buildPaper(w, cv.toDataURL("image/png"), signedAt, hash));
+    if(DATA){
+      btn.textContent = "저장하는 중…";
+      const j = await new Promise((res, rej) => google.script.run.withSuccessHandler(res).withFailureHandler(rej)
+        .signFromPage({ id:C.id, worker:w, signedAt, hash, ua:navigator.userAgent, pdf: pdf.output("datauristring").split(",")[1] }));
+      if(j && j.error === "already") throw Object.assign(new Error(), { msg:"이미 서명된 계약입니다." });
+      if(!j || !j.ok) throw new Error((j && j.error) || "save");
+    }
+    const fname = `근로계약서_${dateList(C.dates)[0]}_${w.name}.pdf`;
+    $("#savePdf").href = pdf.output("datauristring", { filename: fname }); $("#savePdf").download = fname;
+    $("#pages").innerHTML = pages.map((src, i) => `<img src="${src}" alt="근로계약서 ${i + 1}쪽">`).join("");
+    $("#app").hidden = true; $("#doneView").hidden = false; window.scrollTo(0, 0);
+    if(!DATA) $("#doneMsg").textContent = "미리보기 모드라 저장하지 않았습니다. 아래가 만들어진 계약서입니다.";
+  }catch(err){
+    showErr(err.msg || "제출되지 않았습니다. 인터넷 연결을 확인한 뒤 다시 눌러 주세요. 계속 안 되면 계약서를 보낸 분께 연락해 주세요.");
+    console.error(err);
+  }finally{ btn.disabled = false; btn.textContent = "서명하고 계약하기"; }
+});
+
+function failView(title, msg){
+  $("#app").innerHTML = `<header><h1>${title}</h1><p class="lead">${msg}</p></header>`;
+}
+function init(){
+  if(DATA){
+    if(!DATA.ok) return failView(DATA.error === "stopped" ? "사용할 수 없는 링크입니다" : "계약서를 찾을 수 없습니다", "계약서를 보낸 분께 새 링크를 받아 주세요.");
+    if(DATA.signed) return failView("이미 서명된 계약입니다", "서명한 계약서가 필요하면 계약서를 보낸 분께 다시 받으시면 됩니다.");
+    C = DATA.contract;
+  }else{ C = SAMPLE; $("#demoNote").hidden = false; }
+  renderSummary(); sizePad();
+  setTimeout(() => loadLibs().catch(() => {}), 300);
+}
+init();
+</script>
+</body>
+</html>

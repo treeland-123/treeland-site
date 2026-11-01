@@ -1,8 +1,9 @@
 // 근로계약 공통: 서버 주소, 계산, 계약서 조항 (관리 화면·서명 화면이 같이 씀)
-// 서버 주소가 비어 있으면 두 화면 모두 미리보기 모드로 동작
+// 서버 주소가 비어 있으면 관리 화면은 미리보기 모드. 알바 서명 화면은 Apps Script가 직접 띄움(apps-script/Sign.html)
 const STAFF_ENDPOINT = "";
 const MIN_WAGE = 10320;   // 2026년 최저시급
-const BOSS = { name:"트리랜드 (TREELAND)", rep:"홍준서", biz:"360-69-00592", addr:"서울 성북구 아리랑로19길 87", tel:"070-4571-7467" };
+// 알바에게는 트리랜드 브랜드를 드러내지 않음(대표님 지시, 2026-11-01): 사업주는 대표자 이름·사업자등록번호만 표기
+const BOSS = { rep:"홍준서", biz:"360-69-00592" };
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -51,7 +52,7 @@ function terms(c){
     ["제10조 (기타)", ["본 계약에 정하지 아니한 사항은 근로기준법 등 관계 법령에 따른다."]],
   ];
 }
-const PREAMBLE = `${BOSS.name}(이하 "사업주"라 한다)와 근로자(이하 "근로자"라 한다)는 다음과 같이 근로계약을 체결한다.`;
+const PREAMBLE = `${BOSS.rep}(이하 "사업주"라 한다)와 근로자(이하 "근로자"라 한다)는 다음과 같이 근로계약을 체결한다.`;
 
 // 주민번호 → 생년월일·나이·외국인 여부
 function rrnInfo(rrn, onDate){
