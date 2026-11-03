@@ -353,7 +353,9 @@ function calc() {
       if (S.e2Pct === '' || !(p >= 0)) problems.push('2차 얼리버드 할인율을 넣어 주세요.');
       else early = Math.floor(pr.list * (1 - p / 100) / 1000) * 1000;
     }
-    return { ...t, n: i + 1, tier, off: pr.off, list: pr.list, early, base: sz.base, name: typeName(sz.label) };
+    // 프리미엄은 기본 하단 상자가 두 배 (3→6, 5→10, 8→15, 11/3 홈페이지 기준)
+    const base = tier === '프리미엄' ? sz.base.replace(/상자 (\d+)개/, (m, n) => '상자 ' + ({ 3: 6, 5: 10, 8: 15 }[n] || n * 2) + '개') : sz.base;
+    return { ...t, n: i + 1, tier, off: pr.off, list: pr.list, early, base, name: typeName(sz.label) };
   });
   const listSum = trees.reduce((a, t) => a + t.list, 0);
   const earlySum = trees.reduce((a, t) => a + t.early, 0);

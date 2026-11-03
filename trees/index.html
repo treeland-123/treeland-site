@@ -1310,6 +1310,52 @@ button.sl-d:active{transform:scale(.94)}
 .hero-resume b{font-weight:700}
 .hero-resume svg{width:14px;height:14px;flex:none}
 .hero-resume:hover{border-color:#EBC97E}
+
+
+/* 구성 카드: 같은 다섯 줄로 좌우 비교 */
+.tier-spec{margin:2px 0 0;display:grid;gap:0;border-top:1px solid var(--line)}
+.tier-spec>div{display:grid;grid-template-columns:minmax(76px,.6fr) minmax(0,1fr);align-items:baseline;gap:10px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;line-height:1.45}
+.tier-spec dt{color:var(--muted);font-weight:500}
+.tier-spec dt small{display:block;font-size:10.5px;color:var(--muted);opacity:.8;line-height:1.2}
+.tier-spec dd{margin:0;font-weight:600;color:var(--ink)}
+.tier.pre .tier-spec dd{color:#7A5A1E;font-weight:700}
+.tier.pre .tier-spec>div{border-color:#E6D9BC}
+.tier.pre .tier-spec{border-top-color:#E6D9BC}
+.tier-th figure button{display:block;width:100%;padding:0;border:0;background:none;cursor:zoom-in}
+.tier-th figure button img{display:block}
+@media (max-width:640px){
+  .tier-spec>div{grid-template-columns:minmax(60px,.5fr) minmax(0,1fr);gap:6px;padding:6px 0;font-size:12.5px;letter-spacing:-.01em}
+}
+
+.tier-x{display:inline-block;margin-left:4px;padding:0 5px;border:1px solid #D9C597;border-radius:3px;font-style:normal;font-size:11px;font-weight:700;line-height:1.5;color:#8A6E3E;vertical-align:1px}
+
+/* 2026 첫 설치: 한 현장 두 트리 */
+.hero-case{margin:0 0 22px;padding:22px 22px 20px;border:1px solid #C9B489;box-shadow:inset 0 0 0 1px #C9B489;background:#FBF8F1}
+.hc-head{display:grid;gap:6px;max-width:640px;margin-bottom:16px}
+.hc-head h3{font-size:24px}
+.hc-head p:last-child{font-size:14.5px;color:var(--muted)}
+.hc-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:860px}
+.hc-item{margin:0;display:grid;gap:8px;min-width:0}
+.hc-ph{position:relative;display:block;width:100%;padding:0;border:0;background:var(--line);cursor:pointer;overflow:hidden;aspect-ratio:3/4}
+.hc-ph img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.hc-ph:hover img{transform:scale(1.03)}
+.hc-play{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 4px;border-radius:999px;background:rgba(244,241,234,.92);color:var(--ink);font-size:12px;font-weight:700;pointer-events:none}
+.hc-play svg{width:22px;height:22px}
+.hc-play em{font-style:normal}
+.hc-item figcaption{display:grid;gap:1px;font-size:14px}
+.hc-item figcaption b{font-family:var(--display);font-size:16px;font-weight:600}
+.hc-item figcaption span{color:var(--muted);font-size:13px}
+@media (max-width:640px){.hero-case{padding:16px 14px 14px;margin-inline:calc(var(--gutter)*-.5)}.hc-head h3{font-size:20px}.hc-head p:last-child{font-size:13px}.hc-pair{gap:8px}.hc-play{left:6px;bottom:6px;font-size:11px;padding:3px 8px 3px 3px}.hc-play svg{width:18px;height:18px}.hc-item figcaption b{font-size:14px}.hc-item figcaption span{font-size:12px}}
+/* 구성 카드 LED 별 작동 영상 썸네일 */
+.tier-spec dd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tier-vid{position:relative;flex:none;width:34px;height:34px;padding:0;border:1px solid #D9C597;border-radius:6px;overflow:hidden;background:#F1ECE3;cursor:pointer}
+.tier-vid img{display:block;width:100%;height:100%;object-fit:cover}
+.tier-vid i{position:absolute;right:3px;bottom:3px;width:0;height:0;border-left:6px solid #fff;border-top:4px solid transparent;border-bottom:4px solid transparent;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
+.vd-dlg.sq{max-width:min(92vw,480px)}
+.vd-dlg.tall{max-width:min(92vw,calc(86vh * 3 / 4))}
+.vd-dlg.tall video{aspect-ratio:3/4;object-fit:cover;background:transparent}
+.vd-dlg.sq{max-width:min(92vw,480px)}
+.vd-dlg.sq video{aspect-ratio:1/1;object-fit:cover;background:transparent}
 </style>
 <style>
 .sub-crumb{padding-top:14px;font-size:13px;color:var(--muted)}
@@ -1788,17 +1834,19 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
       study: ['img/study-600.webp', '인천 하늘스터디카페', '1.35m'], guro: ['img/guro-600.webp', '구로 유디치과', '1.95m'],
       petit: ['img/petit-600.webp', '닥터쁘띠의원 강남점', '2.3m'], salon: ['img/salon-600.webp', '합정 애채 미용실', '2.3m'], bath: ['img/bath-600.webp', '바스버거 판교점', '2.3m'],
       asan: ['img/asan.webp', '아산 솔그림 베이커리카페', '2.9m'], biz: ['img/yonsei-biz.webp', '연세대학교 경영관 로비', '2.9m'], arko: ['img/arko.webp', '아르코 예술극장 로비', '2.9m'],
-      gold: ['img/asan-gold.webp', '아산 솔그림 베이커리카페', '2.9m']
+      gold: ['img/asan-gold.webp', '아산 솔그림 베이커리카페', '2.9m'],
+      hmsnow: ['img/heimish-snow-600.webp', '뷰티 브랜드 본사 로비', '2.3m 스노우'], hmgreen: ['img/heimish-green-600.webp', '뷰티 브랜드 본사', '2.3m']
     };
     const SIZES = {
       '135': { box: 0, t: '1.35m', d: '81cm', img: 'img/size-135.webp', fit: '매장 입구, 카운터 옆, 작은 스터디카페처럼 자리가 넉넉하지 않은 곳', cases: ['study'], chip: 's135' },
       '195': { box: 3, t: '1.95m 슬림', d: '100cm', img: 'img/size-195.webp', fit: '병원 대기실이나 복도처럼 폭은 좁고 높이를 살리고 싶은 자리', cases: ['guro'], chip: 's195' },
-      '230': { box: 5, t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['petit', 'salon', 'bath'], chip: 's230', pop: true },
-      '230s': { box: 5, ltd: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 눈 쌓인 표현은 잎이 촘촘해야 자연스럽게 나옵니다. 그래서 스노우 트리는 일반 트리(PE 잎)와 달리, 잎이 가늘고 빽빽한 고밀도 PVC를 사용했습니다. 구성과 장식 색상은 2.3m와 같습니다.', cases: ['bath'], chip: 's230s' },
+      '230': { box: 5, t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['hmgreen', 'petit', 'salon'], chip: 's230', pop: true },
+      '230s': { box: 5, ltd: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 눈 쌓인 표현은 잎이 촘촘해야 자연스럽게 나옵니다. 그래서 스노우 트리는 일반 트리(PE 잎)와 달리, 잎이 가늘고 빽빽한 고밀도 PVC를 사용했습니다. 구성과 장식 색상은 2.3m와 같습니다.', cases: ['hmsnow', 'bath'], chip: 's230s' },
       '290': { box: 8, t: '2.9m', d: '155cm', img: 'img/size-290.webp', fit: '천장이 높은 로비, 대형 카페, 극장처럼 멀리서도 보여야 하는 곳', cases: ['asan', 'biz', 'arko'], chip: 's290' }
     };
     const COLORS = {
-      red: { t: '레드 & 골드', img: 'img/ornament-red-set.webp', d: '붉은 볼과 금빛 장식. 나무 가구나 벽돌 벽이 있는 공간에 잘 맞습니다.', cases: ['asan'], radio: 'cRed' },
+      red: { t: '레드 & 골드', img: 'img/ornament-red-set.webp', d: '붉은 볼과 금빛 장식. 나무 가구나 벽돌 벽이 있는 공간에 잘 맞습니다.', cases: ['hmsnow', 'asan'], radio: 'cRed' },
+      champ: { t: '화이트 & 샴페인', img: 'img/ornament-champagne-set.webp', d: '흰색과 옅은 샴페인 금빛. 흰 벽, 대리석, 모던한 공간에 은은하게 어울립니다.', cases: ['hmgreen'], radio: 'cChamp' },
       green: { t: '세이지 그린 & 골드', img: 'img/ornament-green-set.webp', d: '세이지 그린과 옅은 금빛. 아이보리 벽, 밝은 나무색 공간에 차분하게 어울립니다.', cases: ['gold'], radio: 'cGreen' },
       navy: { t: '네이비 & 골드', img: 'img/ornament-navy-set.webp', d: '짙은 남색과 금빛. 흰 벽이나 크림색 벽 앞에서 또렷하게 보입니다.', cases: ['guro'], radio: 'cNavy' }
     };
@@ -1982,7 +2030,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
   // ---------- motion ----------
   const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!calm && 'IntersectionObserver' in window) {
-    const sel = ['.ps-row .ps-it', '.ps-more', '.sg-open', '.ct-more', '.dt-tabs', '.ft-tabs', 'main section .sec-head > *', '.tiers .tier', '.tier-n', '.tl li', '.qcta', '.sheet-note', '.safe-note', '.pc-grid > *', '.trust .count', '.trust .wrap > div', '.case-filter', '.featured .ba', '#cases .grid > *', '.detail figure', '.light-grid .lcol', '.colors .color', '.why .wrap > *', '.sguide', '.sheet-title', '.sheet-row:not(.sheet-head)', '.steps li', '.faq details', '.ct-head', '.ct-col', '.ch'];
+    const sel = ['.hero-case', '.ps-row .ps-it', '.ps-more', '.sg-open', '.ct-more', '.dt-tabs', '.ft-tabs', 'main section .sec-head > *', '.tiers .tier', '.tier-n', '.tl li', '.qcta', '.sheet-note', '.safe-note', '.pc-grid > *', '.trust .count', '.trust .wrap > div', '.case-filter', '.featured .ba', '#cases .grid > *', '.detail figure', '.light-grid .lcol', '.colors .color', '.why .wrap > *', '.sguide', '.sheet-title', '.sheet-row:not(.sheet-head)', '.steps li', '.faq details', '.ct-head', '.ct-col', '.ch'];
     const els = [...document.querySelectorAll(sel.join(','))];
     const fold = innerHeight;
     const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -8% 0px' });
@@ -2429,8 +2477,8 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const sum = t => list.reduce((a, u) => a + unit(u.size, t), 0), sumL = t => list.reduce((a, u) => a + P[u.size][t][0], 0);
       const pr = t => early1() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
       const w = cards([
-        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성', img: 'std-tree', p: pr('std') },
-        { v: 'pre', b: '프리미엄', s: '벨벳 리본·솔방울·베리, 오너먼트 추가, LED 별', img: 'premium-soon', p: pr('pre'), tag: '2026', soon: '10월 30일 업데이트 예정', k: 'pre' },
+        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성 · 하단 상자 3·5·8개', img: 'std-tree', p: pr('std') },
+        { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-tree', p: pr('pre'), tag: '2026', k: 'pre' },
       ], v => { A.tierPer = null; answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'); }, { cls: 'two' });
       if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
         bubble('me', '트리마다 다르게 고를게요');
@@ -2489,12 +2537,14 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       ask('언제 설치하고 싶으세요?', w, '마감된 날짜는 고를 수 없어요. 일부 마감인 날은 가능한 시간으로 맞춰 드려요.');
     },
   };
-  const BOX_BASE = { s135: 0, s195: 3, s230: 5, s230s: 5, s290: 8 };
+  const BOX_BASE = { s135: 0, s195: 3, s230: 5, s230s: 5, s290: 8 };   // 스탠다드 기본 하단 상자
+  const BOX_PRE = { s135: 0, s195: 6, s230: 10, s230s: 10, s290: 15 };  // 프리미엄 기본 하단 상자 (11/3)
+  const boxOf = u => (tierOf(u) === 'pre' ? BOX_PRE : BOX_BASE)[u.size] || 0;
   function extraPicker() {
     const sel = EXTRAS.map(() => ({ on: false, pick: [], q: 0 }));
     const N = total();
     let boxes = 0;
-    const baseBoxes = (A.trees || []).reduce((a, t) => a + BOX_BASE[t.size] * t.n, 0);
+    const baseBoxes = units().reduce((a, u) => a + boxOf(u), 0);   // 구성별 기본 하단 상자 합계
     say('필요한 걸 모두 골라 주세요.', () => {
       dock.innerHTML = '';
       const w = document.createElement('div');
@@ -2543,7 +2593,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
           card.classList.toggle('on', st.on); hit.setAttribute('aria-pressed', String(st.on)); card.querySelectorAll('.qx-o').forEach(r => { r.hidden = !st.on; }); if (qrow) qrow.hidden = !st.on; label(); };
         g.appendChild(card);
       });
-      // 시그니처 상자 추가 (수량)
+      // 시그니처 상자 추가 (수량) — 스탠다드가 섞여 있을 때만
       const bc = document.createElement('div'); bc.className = 'qcard qx-c qx-box';
       bc.innerHTML = '<div class="qx-hit" aria-hidden="true"><img src="img/signature-box.webp" alt="" loading="lazy" style="object-fit:contain;background:#F1ECE3"><b>시그니처 상자 추가</b><span>개당 ' + won(BOX_EXTRA) + (baseBoxes ? ' · 기본 하단 상자 ' + baseBoxes + '개 포함' : '') + '</span></div>' +
         '<div class="qx-st"><button type="button" aria-label="시그니처 상자 한 개 빼기">−</button><output aria-live="polite">0</output><button type="button" aria-label="시그니처 상자 한 개 더하기">+</button></div>';
@@ -2775,7 +2825,7 @@ document.addEventListener('click',function(e){var a=e.target.closest('a[data-dt]
 (function(){var t=0;function chk(){t=0;var h=innerHeight;document.querySelectorAll('.rv:not(.in)').forEach(function(e){var r=e.getBoundingClientRect();if(r.top<h*.96&&r.bottom>0)e.classList.add('in');});}
 addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true});addEventListener('load',function(){setTimeout(chk,2600)});})();
 </script>
-<dialog class="vd-dlg" id="vdDlg" aria-label="시그니처 상자 제작 공정 영상"><button type="button" class="vd-x" aria-label="닫기">×</button><video controls muted loop playsinline preload="none"></video></dialog>
+<dialog class="vd-dlg" id="vdDlg" aria-label="영상 보기"><button type="button" class="vd-x" aria-label="닫기">×</button><video controls muted loop playsinline preload="none"></video></dialog>
 <script>
 /* 제작 공정 영상: 화면에 보일 때만 받아서 반복 재생, 누르면 크게 */
 (function(){
@@ -2784,7 +2834,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
   function fill(el){ if(el.querySelector('source')) return; [['img/factory-box.mp4','video/mp4'],['img/factory-box.webm','video/webm']].forEach(function(x){ var so=document.createElement('source'); so.src=x[0]; so.type=x[1]; el.appendChild(so); }); el.load(); }
   function load(){ fill(v); }
   if('IntersectionObserver' in window){ new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting&&e.target.offsetParent){ load(); var p=v.play(); if(p&&p.catch)p.catch(function(){}); } else { v.pause(); } }); },{rootMargin:'100px'}).observe(v); }
-  document.querySelector('.dt-v').addEventListener('click',function(){ fill(big); if(d.showModal)d.showModal(); var p=big.play(); if(p&&p.catch)p.catch(function(){}); });
+  document.querySelector('.dt-v').addEventListener('click',function(){ while(big.firstChild) big.removeChild(big.firstChild); big.removeAttribute('poster'); d.classList.remove('sq','tall'); fill(big); if(d.showModal)d.showModal(); var p=big.play(); if(p&&p.catch)p.catch(function(){}); });
   function close(){ big.pause(); d.close(); }
   d.querySelector('.vd-x').addEventListener('click',close);
   d.addEventListener('click',function(e){ if(e.target===d) close(); });
@@ -2796,7 +2846,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
 (function(){
   var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
   // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
-  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { pm: 1 }, '2026-11-07': { am: 1 }, '2026-11-20': { am: 1 } };
+  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-12': { pm: 1 }, '2026-11-20': { am: 1 } };   // 11/4 서버 값과 맞춤 (미리보기는 서버 연결이 막혀 이 값으로 보임)
   var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
   var closed = {}, at = '', live = false, subs = [];
   var pad = function(n){ return (n < 10 ? '0' : '') + n; };
@@ -2870,12 +2920,39 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
     dlg.addEventListener('click', function(e){ if (e.target === dlg) close(); });
     document.getElementById('slotsDlgQ').onclick = function(){ close(); if (window.openQuote) window.openQuote({}, 'slots'); };
   }
+  // treeland.kr/#slots 로 들어오면 예약 현황 팝업을 바로 엶 (카톡·인스타로 보내는 링크용)
+  function openSlots(via){ if (dlg && dlg.showModal) { if (!dlg.open) { dm = null; drawDlg(); dlg.showModal(); dlg.querySelector('.cc-in').scrollTop = 0; } } else if (box) box.scrollIntoView({ block: 'start' }); if (window.gtag) try { gtag('event', 'slots_view', { via: via }); } catch (x) {} }
+  if (dlg) dlg.addEventListener('close', function(){ if (location.hash === '#slots') history.replaceState(null, '', location.pathname + location.search); });
+  addEventListener('hashchange', function(){ if (location.hash === '#slots') openSlots('link'); });
+  if (location.hash === '#slots') setTimeout(function(){ openSlots('link'); }, document.documentElement.classList.contains('intro') ? 2300 : 0);
   document.addEventListener('click', function(e){
     var a = e.target.closest && e.target.closest('a[href="#slots"]'); if (!a) return;
     e.preventDefault();
     if (dlg && dlg.showModal) { dm = null; drawDlg(); dlg.showModal(); dlg.querySelector('.cc-in').scrollTop = 0; }
     else if (box) box.scrollIntoView({ block: 'start' });
     if (window.gtag) try { gtag('event', 'slots_view', { via: 'hero' }); } catch (x) {}
+  });
+})();
+</script>
+<script>
+/* 구성 카드: 두 카드의 같은 줄 높이를 맞춰 좌우로 바로 비교되게 */
+(function(){var cs=document.querySelectorAll('.tiers .tier .tier-spec');if(cs.length<2)return;
+function fit(){var rows=[].map.call(cs,function(c){return c.querySelectorAll(':scope>div')});var n=Math.min(rows[0].length,rows[1].length);
+ for(var i=0;i<n;i++){rows[0][i].style.minHeight='';rows[1][i].style.minHeight='';var h=Math.max(rows[0][i].offsetHeight,rows[1][i].offsetHeight);rows[0][i].style.minHeight=h+'px';rows[1][i].style.minHeight=h+'px'}}
+fit();addEventListener('resize',fit);addEventListener('load',fit);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit)})();
+</script>
+<script>
+/* 설치 영상·LED 별 영상: 누르면 같은 팝업에서 재생 (사이트 어디서든 data-vid 버튼) */
+(function(){
+  var d=document.getElementById('vdDlg'); if(!d) return; var big=d.querySelector('video');
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('[data-vid]'); if(!b) return;
+    while(big.firstChild) big.removeChild(big.firstChild);
+    var so=document.createElement('source'); so.src=b.dataset.vid; so.type='video/mp4'; big.appendChild(so);
+    if(b.dataset.poster) big.poster=b.dataset.poster; else big.removeAttribute('poster');
+    d.classList.toggle('sq',!!b.dataset.sq); d.classList.toggle('tall',!b.dataset.sq);
+    big.load(); if(d.showModal) d.showModal(); var p=big.play(); if(p&&p.catch)p.catch(function(){});
+    if(window.gtag) try{ gtag('event','video_play',{src:b.dataset.vid}); }catch(x){}
   });
 })();
 </script>
