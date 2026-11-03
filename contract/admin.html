@@ -195,6 +195,7 @@ async function load(){
   $("#list").innerHTML = `<p class="lead">불러오는 중…</p>`;
   try{
     const j = await api({action:"list", pin:pin()});
+    LIST = j;
     if(!j.ok && j.error === "pin"){
       pinState(false, "비밀번호가 틀렸습니다. 다시 입력해 주세요.");
       $("#list").innerHTML = `<p class="lead">비밀번호를 확인하면 목록이 나옵니다.</p>`; $("#listSum").hidden = true;
@@ -212,6 +213,7 @@ async function load(){
       return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
         <span class="m">설치 ${esc(fmtDT(it.install))} · ₩${won(it.price)} · 생성 ${esc(fmtCreated(it.created))}</span><span></span>
         <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
+        ${it.status === "서명완료" ? `<button type="button" class="ghost" data-pay="${esc(it.id)}">결제 안내 복사</button>` : ""}
         ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div>
         <div class="confirm" hidden></div></div>`;
     }).join("");
@@ -230,6 +232,7 @@ async function copy(text, btn){
 }
 $("#list").addEventListener("click", async e => {
   const c = e.target.closest("[data-copy]"); if(c) return copy(c.dataset.copy, c);
+  const pb = e.target.closest("[data-pay]"); if(pb){ const it = (LIST && LIST.items || []).find(x => x.id === pb.dataset.pay); if(it) return copy(payMsg(it), pb); return; }
   const s = e.target.closest("[data-stop]");
   if(s){
     if(s.dataset.armed !== "1"){ s.dataset.armed = "1"; s.textContent = "한 번 더 누르면 중지"; return; }
@@ -263,6 +266,19 @@ $("#list").addEventListener("click", async e => {
   }
 });
 
+// 설치 끝난 날 보내는 결제 안내: 부가세 포함 금액, 기한 = 설치일 + 3일. 계좌·결제 링크는 서버(Apps Script)에서 받음
+let LIST = null;
+function payMsg(it){
+  const n = Number(it.price) || 0, total = n + Math.round(n * 0.1);
+  const p = parts(it.install); let due = "";
+  if(p){ const d = new Date(p.y, p.m - 1, p.d + 3); due = `${d.getMonth() + 1}월 ${d.getDate()}일(${WD[d.getDay()]})까지`; }
+  const card = it.pay === "카드 결제";
+  return ["안녕하세요, 트리랜드입니다.", `${it.customer ? it.customer + " " : ""}트리 설치를 마쳐 결제 안내드립니다.`, "",
+    `결제 금액: ${won(total)}원 (부가세 포함)`,
+    card ? `결제 링크: ${(LIST && LIST.storeLink) || "(결제 링크)"}` : `입금 계좌: ${(LIST && LIST.bank) || "(계좌)"}`,
+    due ? `${card ? "결제" : "입금"} 기한: ${due}` : "",
+    "", card ? "링크에서 위 금액으로 결제해 주시면 됩니다." : "세금계산서나 현금영수증이 필요하시면 말씀해 주세요."].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+}
 function msg(url, c){
   return `안녕하세요, 트리랜드입니다.\n아래 링크에서 계약서 확인하신 후 서명 부탁드립니다.\n서명하시면 입력하신 이메일로 계약서가 발송됩니다.\n${url}\n\n설치: ${fmtLong(c.install)}\n회수: ${fmtLong(c.retrieve)}\n임대료: ${won(c.price)}원 (부가세 별도${c.ship > 0 ? `, 운임 ${won(c.ship)}원 포함` : ""})\n세부 구성은 보내드린 견적서와 같습니다.`;
 }
