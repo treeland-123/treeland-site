@@ -224,6 +224,42 @@ const SAMPLE = (() => {
   ];
 })();
 
+const SAMPLE_Q = [{no:"2026-031", cust:"달빛카페", total:748000, state:{cust:"달빛카페",
+  trees:[{size:"2.3m", place:"1층 입구"}], addons:[{name:"인형 오너먼트 6개 추가", sel:["곰돌이"], tree:1, qty:1, memo:""}, {name:"트리 스커트", sel:["아이보리"], tree:1, qty:1, memo:"바닥 원목이라 테이프 금지"}]}}];
+
+/* 견적서(트리랜드 견적 서버)의 추가 장식: 계약의 견적번호로 찾고, 번호가 없으면 상호+금액이 같은 견적 한 건 */
+const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";
+let quotes = [];
+try{ quotes = JSON.parse(localStorage.getItem("tl_sched_quotes") || "[]"); }catch(e){}
+async function loadQuotes(pin){
+  if(DEMO){ quotes = SAMPLE_Q; return; }
+  try{
+    const r = await fetch(QUOTE_ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({action:"list", pin})});
+    const j = await r.json();
+    if(j.ok){ quotes = j.quotes || []; try{ localStorage.setItem("tl_sched_quotes", JSON.stringify(quotes)); }catch(e){} }
+  }catch(e){}
+}
+function supplyOf(total){   // 견적 합계(부가세 포함) → 공급가액 (계약 임대료와 비교용)
+  const g = Math.round(total / 1.1);
+  for(const v of [g, g - 1, g + 1, g - 2, g + 2]) if(v + Math.round(v * 0.1) === total) return v;
+  return g;
+}
+const normName = n => String(n || "").replace(/^\s*(주식회사|유한회사|\(주\)|㈜)\s*/, "").replace(/\s*(주식회사|\(주\)|㈜)\s*$/, "").replace(/\s+/g, "");
+function quoteFor(it){
+  if(it.qno){ const q = quotes.find(q => String(q.no) === String(it.qno)); if(q) return q; }
+  const nm = normName(it.name); if(!nm) return null;
+  const c = quotes.filter(q => normName(q.cust || (q.state || {}).cust) === nm && supplyOf(Number(q.total) || 0) === Number(it.price));
+  return c.length === 1 ? c[0] : null;
+}
+function addonLines(q){
+  const st = q.state || {}, trees = st.trees || [];
+  return (st.addons || []).filter(a => String(a.name || "").trim()).map(a => {
+    const opt = [...(a.sel || []), a.memo].filter(Boolean).join(" · ");
+    const t = trees.length > 1 && a.tree ? trees[a.tree - 1] : null;
+    return a.name + (opt ? ` (${opt})` : "") + (+a.qty > 1 ? ` ×${a.qty}` : "") + (t ? ` · ${a.tree}번 트리${t.place ? " " + t.place : ""}` : "");
+  });
+}
+
 async function api(body){
   if(DEMO) return {ok:true, items:SAMPLE};
   const r = await fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify(body)});
@@ -237,7 +273,7 @@ async function load(){
   if(!pin){ showPin(); return; }
   $("#reload").disabled = true; $("#stamp").textContent = "· 불러오는 중";
   try{
-    const j = await api({action:"schedule", pin});
+    const [j] = await Promise.all([api({action:"schedule", pin}), loadQuotes(pin)]);
     if(!j.ok){
       if(j.error === "pin"){ showPin("비밀번호가 맞지 않습니다."); return; }
       if(j.error === "bad_action") throw new Error("저장 서버가 아직 예전 버전입니다. Apps Script를 새 버전으로 배포하면 보입니다.");
@@ -412,6 +448,9 @@ function openDetail(e){
     ["장소", esc(it.place)],
     ["트리", esc(it.size)],
     ["장식 색상", esc(it.color)],
+    ...(() => { const q = quoteFor(it); if(!q) return [];
+      const a = addonLines(q);
+      return [["추가 장식", a.length ? a.map(esc).join("\n") : `<span style="color:var(--sub)">없음</span>`]]; })(),
     it.note ? ["비고", esc(it.note)] : null,
     ["담당자", esc(it.contact || "서명 전")],
     ["연락처", it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전"],
