@@ -115,7 +115,7 @@ a{color:var(--ink)}
         </div>
         <div class="field"><label for="n-size">임대물 크기·수량</label><input type="text" id="n-size" placeholder="위에서 트리를 추가하면 채워집니다. 직접 써도 됩니다"></div>
         <div class="field"><label for="n-color">장식 색상</label><input type="text" id="n-color" placeholder="위에서 트리를 추가하면 채워집니다. 직접 써도 됩니다"></div>
-        <div class="field"><label for="n-extra-fixed">추가 장식·소품</label><input type="text" id="n-extra-fixed" value="견적서와 같습니다" readonly tabindex="-1" style="color:var(--sub);background:var(--soft)"></div>
+        <div class="field"><label for="n-addons">추가 장식·소품</label><textarea id="n-addons" rows="2" style="min-height:64px" placeholder="견적서를 불러오면 채워집니다. 없으면 비워 두세요 (계약서에 '없음'으로 표시)"></textarea></div>
         <div class="field"><label for="n-note">비고 (선택, 고객 화면과 계약서에 표시)</label><textarea id="n-note" rows="2" style="min-height:64px" placeholder="예: 영업 종료 후 설치, 주차는 건물 뒤편"></textarea></div>
         <div class="grid2">
           <div class="field"><label for="n-install">설치 예정 일시</label><input type="datetime-local" id="n-install" step="1800"></div>
@@ -284,7 +284,7 @@ $("#newForm").addEventListener("submit", async e => {
   const btn = $("#newBtn"); btn.disabled = true;
   try{
     const contract = { customer:v("#n-customer"), place:"", size:v("#n-size"), color:v("#n-color"), extra:v("#n-note"),
-      install:v("#n-install"), retrieve:v("#n-retrieve"), price, ship, qno:v("#n-qno") };
+      install:v("#n-install"), retrieve:v("#n-retrieve"), price, ship, qno:v("#n-qno"), addons: v("#n-addons") || "없음" };
     if(QUOTE){
       btn.textContent = "견적서 PDF 만드는 중…";
       const qp = await quotePdf(QUOTE.state || {});
@@ -297,7 +297,7 @@ $("#newForm").addEventListener("submit", async e => {
     if(!j.ok) throw new Error(j.error);
     delete contract.quotePdf;
     $("#r-msg").value = msg(j.url, contract); $("#openLink").href = j.url; $("#result").hidden = false;
-    e.target.reset(); $("#n-extra-fixed").value = "견적서와 같습니다";
+    e.target.reset();
     trees = []; renderTrees(); priceHint(); clearDraft(); $("#n-quote").value = ""; QUOTE = null; quoteNote();
     $("#result").scrollIntoView({behavior:"smooth", block:"center"});
     load();
@@ -400,7 +400,18 @@ function fillFromQuote(h){
   $("#n-price").value = won(supplyOf(Number(h.total) || 0));
   $("#n-ship").value = won(Number(String(st.ship ?? "").replace(/[^\d]/g, "")) || 0);
   $("#n-qno").value = h.no || "";
+  $("#n-addons").value = addonText(st);
   priceHint(); saveDraft();
+}
+// 견적서 추가 장식 → 계약서 문구 (금액 없이, 한 항목 한 줄)
+function addonText(st){
+  const ts = st.trees || [];
+  const treeLabel = n => { const t = ts[n - 1]; if(!t || ts.length < 2) return ""; return (t.place ? t.place : `${t.size}${t.size === ONE ? "" : " " + (t.tier || "")}`.trim()) + " 트리"; };
+  return (st.addons || []).filter(a => String(a.name || "").trim()).map(a => {
+    const opt = [...(a.sel || []), a.memo].map(x => String(x || "").trim()).filter(Boolean).join(" · ");
+    const qty = +a.qty || 1, tl = a.tree ? treeLabel(+a.tree) : "";
+    return `${a.name.trim()}${opt ? ` (${opt})` : ""}${qty > 1 ? ` ×${qty}` : ""}${tl ? ` · ${tl}` : ""}${a.free ? " · 서비스" : ""}`;
+  }).join("\n");
 }
 // 견적 서버(트리랜드 견적)의 발행 내역 — 어느 기기에서 만든 견적이든 불러옴. 서버가 안 되면 이 기기 내역만
 const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";
@@ -455,7 +466,7 @@ $("#n-retrieve").addEventListener("focus", e => {
   }
 });
 // 작성 중인 내용 임시 저장 (이 기기에만)
-const DRAFT_IDS = ["#n-customer","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno"];
+const DRAFT_IDS = ["#n-customer","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno","#n-addons"];
 function saveDraft(){ try{ localStorage.setItem("tl_draft2", JSON.stringify({ f: DRAFT_IDS.map(id => $(id).value), trees })); }catch(e){} }
 function clearDraft(){ try{ localStorage.removeItem("tl_draft2"); }catch(e){} }
 try{

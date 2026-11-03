@@ -38,7 +38,7 @@ h2{font-size:16px;margin:0;display:flex;gap:10px;align-items:baseline}
 h2 .n{font-size:12px;color:var(--sub);font-weight:500;font-variant-numeric:tabular-nums}
 dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 16px;font-size:14px}
 dt{color:var(--sub);white-space:nowrap}
-dd{margin:0;min-width:0;overflow-wrap:anywhere}
+dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
 .amount{font-weight:700}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:13px;color:var(--sub)}
@@ -227,7 +227,7 @@ const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f
 const SAMPLE = {
   id: "DEMO", place: "", size: "2.3m 프리미엄 트리 1대, 1.35m 트리 1대", color: "레드 & 골드 (2.3m 프리미엄), 네이비 & 골드 (1.35m)",
   extra: "", install: "2026-11-24T14:00", retrieve: "2027-01-12T10:00",
-  price: 920550, ship: 0, qno: "2026-003", customer: ""
+  price: 920550, ship: 0, qno: "2026-003", addons: "인형 오너먼트 6개 추가 (곰돌이) · 2.3m 프리미엄\n메탈 LED 상자 3종 세트", customer: ""
 };
 
 const $ = s => document.querySelector(s);
@@ -277,7 +277,7 @@ const TERMS = [
 let C = null;   // 계약 데이터 (트리랜드가 미리 입력)
 const shipText = v => v === "" || v == null ? "운임 포함" : Number(v) > 0 ? `운임 ${won(v)}원 포함` : "운임 없음";
 const contentRows = c => [
-  ["설치 장소", c.place], ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
+  ["설치 장소", c.place], ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", c.addons || "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
   ["설치 예정일", fmtDate(c.install)], ["회수 예정일", fmtDate(c.retrieve)],
   ["임대료", `금 ${hangulAmount(c.price)}원정 (₩${won(c.price)}) · 부가가치세 별도, ${shipText(c.ship)}`],
 ];
@@ -393,6 +393,7 @@ const PAPER_CSS = `#paper{width:794px;background:#fff;color:#000;font-family:"No
 #paper .subt{text-align:center;font-size:12px;margin:2px 0 18px}
 #paper table{width:100%;border-collapse:collapse;margin:6px 0 4px;font-size:12px}
 #paper th,#paper td{border:1px solid #000;padding:5px 8px;text-align:left;vertical-align:middle}
+#paper td{white-space:pre-line}
 #paper th{background:#f2f2f2;font-weight:700;text-align:center;white-space:nowrap}
 #paper h3{font-size:13px;margin:12px 0 3px}
 #paper p{margin:0 0 2px}
