@@ -198,6 +198,8 @@ button{font:inherit;cursor:pointer}
       <div class="field" id="multiBox" hidden><label for="multiPct">여러 그루 추가 할인 (4그루 이상은 직접 입력)</label>
         <div class="inline"><input id="multiPct" type="number" inputmode="numeric" min="0" max="50"> %</div></div>
       <p class="hint" id="multiHint"></p>
+      <div class="radios" style="margin-top:6px"><label><input type="checkbox" id="renew"> 재계약 할인 <span class="inline"><input id="renewPct" type="number" inputmode="numeric" min="0" max="50" placeholder="%" style="width:70px"> %</span></label></div>
+      <p class="hint">재계약 할인은 트리 금액(얼리버드·여러 그루 할인 뒤)에만 붙습니다. 추가 장식과 운임은 빠집니다.</p>
     </section>
 
     <section>
@@ -327,7 +329,7 @@ function freshState() {
   const y = new Date().getFullYear();
   return {
     no: NEXT_NO || `${y}-${String(seq + 1).padStart(3, '0')}`, autoNo: true, date: today(), cust: '', email: '',
-    trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', extraNotes: '',
+    trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', renew: false, renewPct: store.get('tl-quote-renew-pct', 5), extraNotes: '',
   };
 }
 function deadlineDate() {
@@ -363,7 +365,11 @@ function calc() {
   let pct = Math.round((P.multi[n] || 0) * 100);
   if (n >= 4) { if (S.multiPct === '') problems.push(`${n}그루 추가 할인율을 넣어 주세요.`); pct = +S.multiPct || 0; }
   const multiDisc = -Math.round(earlySum * pct / 100);
-  const treeSub = earlySum + multiDisc;
+  // 재계약 할인: 여러 그루 할인 뒤 트리 금액에만 (추가 장식·운임 제외). 할인율은 견적마다 수정 가능
+  let renewPct = 0;
+  if (S.renew) { renewPct = +S.renewPct; if (S.renewPct === '' || S.renewPct == null || !(renewPct >= 0)) { problems.push('재계약 할인율을 넣어 주세요.'); renewPct = 0; } }
+  const renewDisc = -Math.round((earlySum + multiDisc) * renewPct / 100);
+  const treeSub = earlySum + multiDisc + renewDisc;
   const addons = S.addons.map(a => {
     const ex = findExtra(a.name);
     const unit = ex ? ex.price : (+a.unit || 0);
@@ -383,7 +389,7 @@ function calc() {
     : used.length > 1 ? `1차 얼리버드 할인\n${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')}`
     : `1차 얼리버드 할인 (${trees[0].off})`;
   if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
-  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, earlyLabel, problems };
+  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, renewPct, renewDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, earlyLabel, problems };
 }
 
 /* ── 견적서 그리기 ── */
@@ -403,6 +409,7 @@ function renderPaper(R) {
     ['트리 정가 합계', fmt(R.listSum)],
     ...(S.phase !== 'none' ? [[R.earlyLabel, fmt(R.earlyDisc), 'grey']] : []),
     ...(R.pct ? [[`여러 그루 할인 (${R.trees.length}그루 ${R.pct}%)`, fmt(R.multiDisc), 'grey']] : []),
+    ...(R.renewPct ? [[`재계약 할인 (${R.renewPct}%)`, fmt(R.renewDisc), 'grey']] : []),
     ['트리 소계', fmt(R.treeSub), 'strong'],
     ...(R.addons.length ? [['추가 장식', fmt(R.addonSum)]] : []),
     [S.shipLabel ? `운임 (${S.shipLabel})` : '운임', R.ship ? fmt(R.ship) : '무료'],
@@ -520,7 +527,8 @@ function renderForm() {
   $('#region').innerHTML = P.regions.map(r => `<option ${r.name === S.region ? 'selected' : ''}>${esc(r.name)}</option>`).join('');
   $('#ship').value = S.ship; $('#shipLabel').value = S.shipLabel;
   document.querySelectorAll('input[name=phase]').forEach(r => r.checked = r.value === S.phase);
-  $('#e2Pct').value = S.e2Pct; $('#multiPct').value = S.multiPct; $('#extraNotes').value = S.extraNotes;
+  $('#e2Pct').value = S.e2Pct; $('#multiPct').value = S.multiPct;
+  $('#renew').checked = !!S.renew; $('#renewPct').value = S.renewPct ?? 5; $('#extraNotes').value = S.extraNotes;
   update();
 }
 function update() {
@@ -559,6 +567,8 @@ $('#form').addEventListener('input', e => {
   const map = { custEmail: 'email', cust: 'cust', qno: 'no', qdate: 'date', ship: 'ship', shipLabel: 'shipLabel', e2Pct: 'e2Pct', multiPct: 'multiPct', extraNotes: 'extraNotes' };
   if (map[el.id]) { S[map[el.id]] = el.value; return update(); }
   if (el.name === 'phase') { S.phase = el.value; return update(); }
+  if (el.id === 'renew') { S.renew = el.checked; if (S.renewPct === '' || S.renewPct == null) { S.renewPct = store.get('tl-quote-renew-pct', 5); $('#renewPct').value = S.renewPct; } return update(); }
+  if (el.id === 'renewPct') { S.renewPct = el.value; if (el.value !== '') { store.set('tl-quote-renew-pct', +el.value); if (!S.renew) { S.renew = true; $('#renew').checked = true; } } return update(); }
 });
 $('#form').addEventListener('change', e => {
   const el = e.target;
@@ -689,6 +699,7 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
   lines.push('', `트리 정가 ${fmt(R.listSum)}원`);
   if (S.phase !== 'none') lines.push(`${R.earlyLabel} ${fmt(R.earlyDisc)}원`);
   if (R.pct) lines.push(`여러 그루 할인 ${R.pct}% ${fmt(R.multiDisc)}원`);
+  if (R.renewPct) lines.push(`재계약 할인 ${R.renewPct}% ${fmt(R.renewDisc)}원`);
   if (R.addons.length) lines.push(`추가 장식 ${fmt(R.addonSum)}원`);
   lines.push(`운임 ${R.ship ? fmt(R.ship) + '원' : '무료'}`, `공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
   if (S.phase === 'e1' && P.deadline) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
