@@ -173,9 +173,9 @@ button{font:inherit;cursor:pointer}
     </section>
 
     <section>
-      <h2>추가 장식 <small>없으면 비워 두세요</small></h2>
+      <h2>추가 장식·소품 <small>없으면 비워 두세요</small></h2>
       <div id="addons" class="form" style="gap:10px"></div>
-      <button type="button" class="ghost" id="addAddon">+ 추가 장식</button>
+      <button type="button" class="ghost" id="addAddon">+ 추가 장식·소품</button>
     </section>
 
     <section>
@@ -310,6 +310,12 @@ async function loadPrices() {
   const extras = (lit(js, 'EXTRAS') || []).map(x => ({ name: x.name, price: x.price, opts: (x.opts || []).map(o => ({ k: o.k, v: o.v.map(v => v[0]) })) }));
   const box = +(/BOX_EXTRA *= *(\d+)/.exec(js) || [0, 5000])[1];
   extras.push({ name: '시그니처 상자 추가', price: box, opts: [], unitLabel: '개당' });
+  // 홈페이지 '추가 소품'(소품 대여 팝업) 10종: 가격은 견적마다 직접 입력. s에 숫자가 없으면 종류 선택지로 씀(예: 펭귄 · 북극곰)
+  const pi = js.indexOf('크리스마스 소품 대여'), pj = pi >= 0 ? js.indexOf('data-close', pi) : -1;
+  const pblock = pi >= 0 ? js.slice(pi, pj > pi ? pj : pi + 6000) : '';
+  let props = [...pblock.matchAll(/\{ t: '([^']+)'(?:, s: '([^']*)')?/g)].map(m => ({ name: m[1], sub: m[2] || '' }));
+  if (!props.length) props = ['2.7m LED 눈사람', '2.1m LED 가로등', '1.6m LED 회전 오너먼트', 'LED 눈사람 가족', 'LED 사슴 가족', 'LED 북극곰 가족', '61cm LED 모형', '65cm 모형 강아지', '76cm LED 리스', '120cm 대형 리본'].map(n => ({ name: n, sub: '' }));
+  props.forEach(x => extras.push({ name: x.name, price: null, prop: true, opts: x.sub && !/\d/.test(x.sub) ? [{ k: '종류', v: x.sub.split(/\s*·\s*/) }] : [] }));
   const multi = lit(js, 'MULTI') || { 2: 0.05, 3: 0.1 };
   const regions = lit(js, 'REGIONS') || [{ name: '서울', min: 0, max: 0 }];
   const dm = /1차 얼리버드 할인은 (\d+)월 (\d+)일까지/.exec(doc.body.textContent) || /1차 얼리버드 (\d+)월 (\d+)일 마감/.exec(doc.body.textContent);
@@ -372,7 +378,8 @@ function calc() {
   const treeSub = earlySum + multiDisc + renewDisc;
   const addons = S.addons.map(a => {
     const ex = findExtra(a.name);
-    const unit = ex ? ex.price : (+a.unit || 0);
+    const unit = ex && !ex.prop ? ex.price : (+a.unit || 0);
+    if (ex && ex.prop && !a.free && (a.unit === '' || a.unit == null || isNaN(+a.unit))) problems.push(`'${ex.name}' 단가를 넣어 주세요.`);
     if (!ex && !String(a.name || '').trim()) problems.push('직접 입력한 추가 장식의 이름을 넣어 주세요.');
     else if (!ex && (a.unit === '' || a.unit == null || isNaN(+a.unit))) problems.push(`'${a.name}' 단가를 넣어 주세요 (무료면 0).`);
     const opt = [...(a.sel || []), a.memo].filter(Boolean).join(' · ');
@@ -441,7 +448,7 @@ function renderPaper(R) {
     <h3>1. 트리 구성</h3>
     <table class="grid"><colgroup>${tCols.map(w => `<col style="width:${w}%">`).join('')}</colgroup>
       <thead><tr>${tHead.map(h => `<th>${h}</th>`).join('')}</tr></thead><tbody>${treeRows}</tbody></table>
-    <h3>2. 추가 장식</h3><table class="grid"><colgroup><col style="width:27%"><col style="width:20%"><col style="width:17%"><col style="width:7%"><col style="width:13%"><col style="width:16%"></colgroup>
+    <h3>2. 추가 장식·소품</h3><table class="grid"><colgroup><col style="width:27%"><col style="width:20%"><col style="width:17%"><col style="width:7%"><col style="width:13%"><col style="width:16%"></colgroup>
       <thead><tr><th>항목</th><th>옵션</th><th>적용 트리</th><th>수량</th><th>단가</th><th>금액</th></tr></thead><tbody id="addonBody">${addonRows}</tbody></table>
     <h3>3. 금액 정리</h3>
     <table class="sum"><colgroup><col style="width:50%"><col style="width:28%"><col style="width:22%"></colgroup>
@@ -507,16 +514,17 @@ function addonCard(a, i) {
   const ex = findExtra(a.name);
   const custom = !ex;
   return `<div class="card" data-addon="${i}">
-    <div class="card-hd"><span>추가 장식 ${i + 1}</span><button type="button" class="link" data-del-addon="${i}">삭제</button></div>
-    <div class="field"><label>항목</label><select data-a="pick">${P.extras.map(x => `<option ${ex && x.name === ex.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}<option value="__custom" ${custom ? 'selected' : ''}>직접 입력</option></select></div>
+    <div class="card-hd"><span>추가 장식·소품 ${i + 1}</span><button type="button" class="link" data-del-addon="${i}">삭제</button></div>
+    <div class="field"><label>항목</label><select data-a="pick">${[['추가 장식', P.extras.filter(x => !x.prop)], ['추가 소품 (가격 직접 입력)', P.extras.filter(x => x.prop)]].filter(g => g[1].length).map(([g, xs]) => `<optgroup label="${g}">${xs.map(x => `<option ${ex && x.name === ex.name ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</optgroup>`).join('')}<option value="__custom" ${custom ? 'selected' : ''}>직접 입력</option></select></div>
     ${custom ? `<div class="grid2"><div class="field"><label>이름</label><input data-a="name" value="${esc(a.name)}"></div><div class="field"><label>단가 (원)</label><input data-a="unit" type="number" inputmode="numeric" value="${esc(a.unit)}"></div></div>` : ''}
+    ${ex && ex.prop ? `<div class="field"><label>단가 (원)</label><input data-a="unit" type="number" inputmode="numeric" min="0" step="1000" value="${esc(a.unit ?? '')}" placeholder="가격 입력"></div>` : ''}
     ${ex && ex.opts.length ? `<div class="grid2">${ex.opts.map((o, oi) => `<div class="field"><label>${esc(o.k)}</label><select data-a="sel" data-oi="${oi}">${o.v.map(v => `<option ${(a.sel || [])[oi] === v ? 'selected' : ''}>${esc(v)}</option>`).join('')}</select></div>`).join('')}</div>` : ''}
     <div class="grid3">
       <div class="field"><label>적용 트리</label><select data-a="tree"><option value="">(미정)</option>${S.trees.map((t, ti) => `<option value="${ti + 1}" ${+a.tree === ti + 1 ? 'selected' : ''}>${ti + 1}번${t.place ? ' · ' + esc(t.place) : ''}</option>`).join('')}</select></div>
       <div class="field"><label>수량</label><input data-a="qty" type="number" inputmode="numeric" min="1" value="${esc(a.qty)}"></div>
       <div class="field"><label>메모</label><input data-a="memo" value="${esc(a.memo || '')}" placeholder="예: 금색 끈"></div>
     </div>
-    <div class="inline" style="justify-content:space-between;flex-wrap:wrap"><span class="price-line">${ex ? (ex.price ? `${ex.unitLabel || '단가'} ${fmt(ex.price)}원` : '무료') : ''}</span>
+    <div class="inline" style="justify-content:space-between;flex-wrap:wrap"><span class="price-line">${ex ? (ex.prop ? '홈페이지 추가 소품 · 가격 직접 입력' : ex.price ? `${ex.unitLabel || '단가'} ${fmt(ex.price)}원` : '무료') : ''}</span>
       <label style="display:flex;gap:6px;align-items:center;font-size:14px;cursor:pointer"><input type="checkbox" data-a="free" style="width:auto;margin:0" ${a.free ? 'checked' : ''}> 서비스 (무료 제공)</label></div></div>`;
 }
 function renderForm() {
@@ -577,7 +585,7 @@ $('#form').addEventListener('change', e => {
   if (ac && el.dataset.a === 'pick') {
     const a = S.addons[+ac.dataset.addon];
     if (el.value === '__custom') { a.name = ''; a.unit = ''; a.sel = []; }
-    else { a.name = el.value; const ex = P.extras.find(x => x.name === el.value); a.sel = ex.opts.map(o => o.v[0]); }
+    else { a.name = el.value; a.unit = ''; const ex = P.extras.find(x => x.name === el.value); a.sel = ex.opts.map(o => o.v[0]); }
     renderForm(); return;
   }
   if (el.id === 'region') {
