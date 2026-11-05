@@ -2846,7 +2846,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
 (function(){
   var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
   // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
-  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-12': { pm: 1 }, '2026-11-20': { am: 1 } };   // 11/4 서버 값과 맞춤(11/5 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
+  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-12': { pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
   var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
   var closed = {}, at = '', live = false, subs = [];
   var pad = function(n){ return (n < 10 ? '0' : '') + n; };
