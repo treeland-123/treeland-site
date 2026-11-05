@@ -398,7 +398,7 @@ function renderSites(sites,exps){
     const period=[s.date,s.pickup].filter(Boolean).map(md).join("–");
     return `<div class="site"><div class="site-head" data-site="${esc(s.id)}" tabindex="0"><span><b>${esc(s.name)}</b>${s.fromContract?`<span class="tag common">계약</span>`:""}${s.taxInvoice?`<span class="tag tax">계산서</span>`:""}<small>${esc([period,s.spec,s.pay].filter(Boolean).join(" · "))}</small></span>${se.length?`<span class="margin-pill ${m<0?"minus":""}">${rate}</span>`:""}</div>
       ${s.phone?`<span class="site-phone">${esc([s.contact,fmtPhone(s.phone)].filter(Boolean).join(" "))}</span>`:""}
-      <div class="site-nums"><span>매출 <span class="num">${won(s.gross)}</span> <small class="note">공급가 ${won(s.revenue)}</small></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
+      <div class="site-nums"><span>매출 <span class="num">${won(s.gross)}</span></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
       ${se.length&&s.gross?`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,cost/s.gross*100)}%"></i></div>`:""}
       <div class="site-acts">${se.length?`<button type="button" class="linkbtn" data-toggle="${esc(s.id)}">이 현장 지출 ${se.length}건 ${open?"접기":"보기"}</button>`:""}${s.pdf?`<a class="linkbtn" href="${esc(s.pdf)}" target="_blank" rel="noopener">계약서 PDF</a>`:""}</div>
       ${open&&se.length?`<div class="detail"><div class="list">${se.map(itemHtml).join("")}</div></div>`:""}
