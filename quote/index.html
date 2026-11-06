@@ -313,11 +313,11 @@ async function loadPrices() {
   const extras = (lit(js, 'EXTRAS') || []).map(x => ({ name: x.name, price: x.price, opts: (x.opts || []).map(o => ({ k: o.k, v: o.v.map(v => v[0]) })) }));
   const box = +(/BOX_EXTRA *= *(\d+)/.exec(js) || [0, 5000])[1];
   extras.push({ name: '시그니처 상자 추가', price: box, opts: [], unitLabel: '개당' });
-  // 홈페이지 '추가 소품'(소품 대여 팝업) 10종: 가격은 견적마다 직접 입력. s에 숫자가 없으면 종류 선택지로 씀(예: 펭귄 · 북극곰)
+  // 홈페이지 '추가 소품'(소품 대여 팝업) 11종: 가격은 견적마다 직접 입력. s에 숫자가 없으면 종류 선택지로 씀(예: 펭귄 · 북극곰)
   const pi = js.indexOf('크리스마스 소품 대여'), pj = pi >= 0 ? js.indexOf('data-close', pi) : -1;
   const pblock = pi >= 0 ? js.slice(pi, pj > pi ? pj : pi + 6000) : '';
   let props = [...pblock.matchAll(/\{ t: '([^']+)'(?:, s: '([^']*)')?/g)].map(m => ({ name: m[1], sub: m[2] || '' }));
-  if (!props.length) props = ['2.7m LED 눈사람', '2.1m LED 가로등', '1.6m LED 회전 오너먼트', 'LED 눈사람 가족', 'LED 사슴 가족', 'LED 북극곰 가족', '61cm LED 모형', '65cm 모형 강아지', '76cm LED 리스', '120cm 대형 리본'].map(n => ({ name: n, sub: '' }));
+  if (!props.length) props = ['2.7m LED 눈사람', '2.1m LED 산타 곰', '2.1m LED 가로등', '1.6m LED 회전 오너먼트', 'LED 눈사람 가족', 'LED 사슴 가족', 'LED 북극곰 가족', '61cm LED 모형', '65cm 모형 강아지', '76cm LED 리스', '120cm 대형 리본'].map(n => ({ name: n, sub: '' }));
   props.forEach(x => extras.push({ name: x.name, price: null, prop: true, opts: x.sub && !/\d/.test(x.sub) ? [{ k: '종류', v: x.sub.split(/\s*·\s*/) }] : [] }));
   const multi = lit(js, 'MULTI') || { 2: 0.05, 3: 0.1 };
   const regions = lit(js, 'REGIONS') || [{ name: '서울', min: 0, max: 0 }];

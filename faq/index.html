@@ -747,7 +747,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 .pc{margin:0;display:grid;gap:6px;align-content:start;min-width:0}
 .pc-wide{grid-column:1/-1}
 .pc-grid.c3{grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 8px}
-.pc-grid.c3 figcaption b{white-space:normal;word-break:keep-all}
+.pc-grid.c3 figcaption b,.pc-grid.wrapcap figcaption b{white-space:normal;word-break:keep-all}
 @media (max-width:640px){.pc-grid.c3 figcaption b{font-size:14px}}
 .pc-ph{position:relative;display:block;aspect-ratio:var(--r,1/1);overflow:hidden;background:#fff;border-radius:2px}
 .pc-ph .xc-track{position:absolute;inset:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
@@ -1825,10 +1825,11 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         '<p class="cc-d">트리와 함께 대여합니다. 가격은 상담하실 때 개별로 안내해 드립니다. 사진을 누르면 크게 볼 수 있습니다.</p>' +
         grp('대형 LED', [
           { t: '2.7m LED 눈사람', r: '3/4', imgs: [['img/prop-snowman-real.webp', '스키를 든 2.7m LED 눈사람을 건물 로비에 설치한 모습']] },
+          { t: '2.1m LED 산타 곰', r: '3/4', imgs: [['img/prop-santabear.webp', '산타 옷에 하늘색 목도리를 두르고 지팡이 사탕을 든 2.1m LED 곰']] },
           { t: '2.1m LED 가로등', r: '3/4', imgs: [['img/prop-lamp.webp', '빨간 리본을 단 2.1m LED 가로등']] },
           { t: '1.6m LED 회전 오너먼트', r: '3/4', imgs: [['img/prop-ornament.webp', '금색 LED 구 세 개를 쌓아 올린 1.6m 회전 오너먼트']] },
           { t: 'LED 눈사람 가족', s: '117cm · 89cm · 61cm · 56cm', r: '16/9', wide: 1, imgs: [['img/prop-snowfamily.webp', '모자와 체크 목도리를 한 LED 눈사람 네 개']] }
-        ], 'c3') +
+        ], 'wrapcap') +
         grp('동물', [
           { t: 'LED 사슴 가족', s: '184cm · 153cm · 107cm', imgs: [['img/prop-deer.webp', '빨간 리본을 단 골드 LED 사슴 세 마리']] },
           { t: 'LED 북극곰 가족', s: '북극곰 97cm · 아기곰 46cm', imgs: [['img/prop-bearfamily.webp', '큰 북극곰과 작은 북극곰 LED 모형']] },
@@ -2793,7 +2794,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
 (function(){
   var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
   // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
-  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-12': { pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
+  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-09': { am: 1, pm: 1 }, '2026-11-10': { am: 1, pm: 1 }, '2026-11-12': { am: 1, pm: 1 }, '2026-11-13': { am: 1, pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·9·10·12·13·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
   var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
   var closed = {}, at = '', live = false, subs = [];
   var pad = function(n){ return (n < 10 ? '0' : '') + n; };
