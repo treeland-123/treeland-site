@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>작업표</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<script>window.onerror=function(m,u,l,c){var p=document.createElement('pre');p.style.cssText='color:red;white-space:pre-wrap;position:fixed;top:0;left:0;right:0;z-index:99;background:#fff;font-size:14px';p.textContent=m+' @'+l+':'+c;(document.body||document.documentElement).appendChild(p)}</script>
+<style>
+:root{--bg:#FAFAF8;--ink:#1D1F1C;--mute:#6F756F;--rule:#E3E5E0;--tree:#CFE2C3;--tree2:#DDEBD3;--done:#ECEDE9;--hi:#FFD23F;--b8:#262624;--b7:#8B8A85;--ice:#2F7FD0;--snL:#1B8F6A;--snS:#5CC4A1;--trunk:#9A7B5B}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Pretendard Variable",Pretendard,-apple-system,sans-serif;font-feature-settings:"tnum"}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+.wrap{max-width:520px;margin:0 auto;padding-bottom:110px}
+
+header{display:grid;grid-template-columns:1fr 64px;gap:12px;align-items:start;padding:22px 18px 8px}
+h1{margin:0;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.03em}
+.spec{margin-top:6px;font-size:15px;color:var(--mute)}
+.spec b{color:var(--ink);font-weight:700}
+.thumb{width:64px;height:64px;border-radius:6px;overflow:hidden;background:var(--rule)}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.note{margin:4px 18px 0;font-size:14px;line-height:1.6;color:var(--mute)}
+.note strong{color:var(--ink)}
+.side{display:flex;align-items:center;gap:16px;margin:14px 18px 0;font-size:15px}
+.side span{color:var(--mute);font-size:13px}
+.side button{padding:6px 0;color:var(--mute);font-weight:600}
+.side button.on{color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--hi)}
+
+nav{position:sticky;top:0;z-index:8;display:flex;background:var(--bg);margin-top:16px;border-bottom:1px solid var(--rule);padding:0 10px}
+nav button{flex:1;padding:13px 0 11px;font-size:15px;font-weight:600;color:var(--mute)}
+nav button.on{color:var(--ink);font-weight:800;box-shadow:inset 0 -3px 0 var(--ink)}
+nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
+
+.ends{display:flex;justify-content:space-between;padding:14px 18px 2px 70px;font-size:12px;color:var(--mute)}
+.tree{display:grid;grid-template-columns:22px 30px 1fr;padding:6px 18px 0;row-gap:3px}
+.br{grid-column:1;border-left:3px solid var(--ink);margin:2px 0;display:flex;align-items:center;justify-content:flex-start}
+.br b{writing-mode:vertical-rl;font-size:12px;font-weight:700;margin-left:2px;letter-spacing:.05em}
+.br.fin{border-color:#C5C9C2;color:#A5AAA3}.br.fin b{text-decoration:line-through}
+.no{grid-column:2;position:relative;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-weight:800}
+.no.cur{color:var(--ink);background:var(--hi);border-radius:4px}
+.no.all{color:#B5B9B3}
+.field{grid-column:3;position:relative}
+.band{position:absolute;top:0;bottom:0;display:flex}
+.band button{flex:1;height:100%;background:var(--tree)}
+.band button+button{box-shadow:inset 1px 0 0 rgba(29,31,28,.12)}
+.band button.on{background:var(--done)}
+.band button.mute{background:var(--tree2)}
+.band button.on.mute{background:var(--done)}
+.band button:focus-visible{outline:3px solid var(--hi);outline-offset:-3px}
+.orn{position:absolute;pointer-events:none;z-index:2;display:block}
+.orn svg{display:block}
+.orn.d{opacity:.22}.orn.m{opacity:.4}
+.orn i{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#C8372F;color:#fff;font:800 9px/13px "Pretendard Variable",sans-serif;font-style:normal;text-align:center;border:1.5px solid #fff}
+.small .orn i{min-width:13px;height:13px;font-size:8px;line-height:10px;right:-4px;bottom:-3px}
+.cut{position:absolute;height:2px;background:var(--ink);z-index:3;pointer-events:none;top:50%;margin-top:-1px}
+.cap{grid-column:3;display:flex;justify-content:center}
+.trunk{grid-column:3;justify-self:center;width:26px;height:16px;background:var(--trunk);border-radius:0 0 3px 3px;margin-top:-3px}
+
+.notice{position:sticky;top:0;z-index:20;background:var(--hi);color:var(--ink);font-weight:700;padding:12px 18px;font-size:15px}.notice a{color:var(--ink);margin-left:8px}
+.reset{color:var(--mute);text-decoration:underline;font-size:13px}
+.hint{margin:18px 18px 0;font-size:13px;color:var(--mute);line-height:1.6}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);color:#fff;z-index:9;padding:12px 18px calc(12px + env(safe-area-inset-bottom))}
+.bar .in{max-width:484px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:15px;min-height:28px}
+.bar b{font-size:18px}
+.bar .sync{font-size:12px;opacity:.7}
+.bar label{background:var(--hi);color:var(--ink);font-weight:800;padding:9px 14px;border-radius:6px;font-size:15px;white-space:nowrap}
+.bar input{display:none}
+.photo{position:fixed;inset:0;background:#000;display:none;z-index:30;align-items:center;justify-content:center}
+.photo.open{display:flex}.photo img{max-width:100%;max-height:100%}
+</style>
+</head>
+<body>
+<div class="notice" id="notice" hidden></div>
+<div class="wrap">
+  <header>
+    <div><h1 id="name"></h1><div class="spec" id="spec"></div></div>
+    <button class="thumb" id="thumb" aria-label="현장 사진 크게 보기"><img id="timg" alt=""></button>
+  </header>
+  <p class="note" id="note"></p>
+  <div class="side" id="side"></div>
+  <nav id="nav"></nav>
+  <div class="ends" id="ends"></div>
+  <div class="tree" id="tree"></div>
+  <p class="hint" id="hint"></p>
+  <p class="hint"><button type="button" id="reset" class="reset">처음부터 다시 (이 폰의 줄 지우기)</button></p>
+</div>
+<div class="bar"><div class="in" id="bar"></div></div>
+<div class="photo" id="photo"><img id="pimg" alt="설치 위치 사진"></div>
+
+<script>
+"@@DATA@@";
+(()=>{
+const S=window.SITE,TOKEN=window.TOKEN||'demo',$=id=>document.getElementById(id);
+function ico(k,z){let g;
+ if(k==='B8')g='<circle r="15" fill="var(--b8)"/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">8</text>';
+ else if(k==='B7')g='<circle r="12.5" fill="var(--b7)"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">7</text>';
+ else if(k==='B6')g='<circle r="10" fill="#fff" stroke="var(--ink)" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="var(--ink)">6</text>';
+ else if(k==='I')g='<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="var(--ice)"/>';
+ else if(k==='SL')g='<polygon points="0,-15 15,0 0,15 -15,0" fill="var(--snL)"/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">대</text>';
+ else g='<polygon points="0,-11 11,0 0,11 -11,0" fill="var(--snS)"/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0C3B2C">소</text>';
+ return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}
+
+const LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
+const key='wo_'+TOKEN;let state={},side=LS.g('wo_side')||'B',view=-1,photos=S.donePhotos||0;
+try{state=JSON.parse(LS.g(key)||'{}')}catch(e){}
+const T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
+// align: 아래 단과 가지가 수직(같은 줄), 없으면 대각선(반 칸 엇갈림)
+const OFF=(()=>{const o=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=o[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);o.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}return o})();
+const done=i=>side==='L'?state[i+'L']:side==='R'?state[i+'R']:state[i+'L']&&state[i+'R'];
+const both=i=>state[i+'L']&&state[i+'R'];
+const cur=()=>{for(let i=0;i<T;i++)if(!done(i))return i;return -1};
+const secOf=i=>S.sections.findIndex(([,a,b])=>i+1>=a&&i+1<=b);
+const secDone=k=>{const[,a,b]=S.sections[k];for(let i=a-1;i<b;i++)if(!both(i))return false;return true};
+const wf=t=>1-.66*t/T; // 단 경계 t(0=맨 아래)의 트리 폭 비율
+
+function head(){
+ $('name').textContent=S.name;
+ $('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`;
+ $('note').innerHTML=`정면은 <strong>${S.front}</strong>. 정면 가지에 집게 먼저 꽂고 시작.<br>${S.note}`;
+ if(S.photo){$('timg').src=$('pimg').src=S.photo}else $('thumb').style.display='none';
+ $('ends').innerHTML=`<span>${S.start}</span><span>${S.end}</span>`;
+ $('hint').textContent='띠의 왼쪽 반, 오른쪽 반을 누르면 줄이 그어짐. 다시 누르면 취소. 줄은 이 폰에만 남음. 빨간 숫자는 같은 가지 안쪽에 그 크기 볼 하나 더.'+(S.sectionTemp?' 단계 구분은 임시.':'');
+}
+function sideBar(){
+ $('side').innerHTML='<span>내가 거는 쪽</span>'+[['L','왼쪽'],['R','오른쪽'],['B','둘 다']].map(([k,t])=>`<button data-k="${k}" class="${side===k?'on':''}">${t}</button>`).join('');
+ $('side').querySelectorAll('button').forEach(b=>b.onclick=()=>{side=b.dataset.k;LS.s('wo_side',side);render()});
+}
+function navBar(){
+ $('nav').innerHTML=`<button data-k="-1" class="${view<0?'on':''}">전체</button>`+S.sections.map(([nm],k)=>`<button data-k="${k}" class="${view===k?'on':''} ${secDone(k)?'fin':''}">${nm}</button>`).join('');
+ $('nav').querySelectorAll('button').forEach(b=>b.onclick=()=>{view=+b.dataset.k;render();toNav()});
+}
+function toNav(){const y=$('nav').getBoundingClientRect().top+scrollY;if(scrollY>y)scrollTo({top:y})}
+function tree(){
+ const small=view<0,H=small?32:58,Z=small?22:32;
+ const [a,b]=view<0?[1,T]:S.sections[view].slice(1);
+ const W=Math.min(innerWidth,520)-36-52,sc=view<0?1:Math.min(1/wf(a-1),1.6),cu=cur();
+ const el=$('tree');el.className='tree'+(small?' small':'');
+ let h='',row=1;
+ if(b===T){h+=`<div class="cap" style="grid-row:${row}"><svg width="${small?26:34}" height="${small?24:30}" viewBox="-12 -11 24 22" aria-hidden="true"><polygon points="0,-11 3,-3.5 11,-3.4 4.7,1.6 7,10 0,5 -7,10 -4.7,1.6 -11,-3.4 -3,-3.5" fill="var(--hi)" stroke="#C9A100" stroke-width="1"/></svg></div>`;row++}
+ const first=row;
+ // 단별 가로 위치. 수직 단은 아래 단 가지 위치를 그대로 씀
+ const X=[];for(let i=0;i<T;i++){const m=n[i],wm=(wf(i)+wf(i+1))/2*W*sc,slot=wm*.86/m;
+  X.push(Array.from({length:m},(_,j)=>{const p=j-(m-1)/2+OFF[i];if(S.tiers[i].align&&i>0){const q=Math.round(p+(n[i-1]-1)/2-OFF[i-1]);if(q>=0&&q<n[i-1])return X[i-1][q]}return p*slot}))}
+ for(let i=b-1;i>=a-1;i--,row++){
+  const it=S.tiers[i].items,m=it.length,L=!!state[i+'L'],R=!!state[i+'R'];
+  const wb=wf(i)*W*sc,wt=wf(i+1)*W*sc,wm=(wb+wt)/2,ins=(wb-wt)/2;
+  const ml=side==='R'?' mute':'',mr=side==='L'?' mute':'';
+  let o='';
+  it.forEach((tok,j)=>{const p=tok.split('/'),x=X[i][j],lf=x<=0,d=lf?L:R,mu=!d&&((lf&&side==='R')||(!lf&&side==='L'));
+   o+=`<span class="orn ${d?'d':mu?'m':''}" style="left:calc(50% + ${x-Z/2}px);top:${(H-Z)/2}px">${ico(p[0],Z)}${p[1]?`<i>${p[1].slice(1)}</i>`:''}</span>`});
+  const cut=(on,l)=>on?`<span class="cut" style="left:calc(50% + ${l?-wm/2+4:0}px);width:${wm/2-4}px"></span>`:'';
+  h+=`<div class="no ${i===cu?'cur':''} ${both(i)?'all':''}" style="grid-row:${row};font-size:${small?15:20}px">${i+1}</div>
+   <div class="field" id="t${i}" style="grid-row:${row};height:${H}px"><div class="band" style="left:calc(50% - ${wb/2}px);width:${wb}px;clip-path:polygon(${ins}px 0,${wb-ins}px 0,100% 100%,0 100%)">
+    <button class="${L?'on':''}${ml}" data-i="${i}" data-s="L" aria-label="${i+1}단 왼쪽 반"></button><button class="${R?'on':''}${mr}" data-i="${i}" data-s="R" aria-label="${i+1}단 오른쪽 반"></button></div>${o}${cut(L,1)}${cut(R,0)}</div>`}
+ if(view<0)S.sections.forEach(([nm,sa,sb],k)=>{h+=`<button class="br ${secDone(k)?'fin':''}" style="grid-row:${first+T-sb}/span ${sb-sa+1}" data-k="${k}" aria-label="${nm} 크게 보기"><b>${nm}</b></button>`});
+ if(a===1)h+=`<div class="trunk" style="grid-row:${row}"></div>`;
+ el.innerHTML=h;
+ el.querySelectorAll('.band button').forEach(x=>x.onclick=()=>toggle(+x.dataset.i,x.dataset.s));
+ el.querySelectorAll('.br').forEach(x=>x.onclick=()=>{view=+x.dataset.k;render();toNav()});
+}
+function bar(){
+ const cu=cur(),sd=side==='L'?'왼쪽 ':side==='R'?'오른쪽 ':'',sy='<span class="sync" id="sync"></span>';
+ let rest=0;for(let i=0;i<T;i++)if(!done(i))rest++;
+ if(rest){$('bar').innerHTML=`<span>${sd}<b>${cu+1}단</b> 걸 차례, ${rest}단 남음</span>${sy}`;return}
+ $('bar').innerHTML=`<span><b>${sd}끝</b>${photos?`, 사진 ${photos}장 올림`:''}</span>${sy}<label>완성 사진 올리기<input type="file" accept="image/*" capture="environment" id="up"></label>`;
+ $('up').onchange=e=>{const f=e.target.files[0];if(f)upload(f)};
+}
+function render(){sideBar();navBar();tree();bar()}
+function toggle(i,s){const k=i+s,before=cur();state[k]=state[k]?0:Date.now();save();
+ const c=cur();if(view>=0&&c>=0&&c!==before&&secOf(c)!==view&&secDone(view))view=secOf(c);
+ render();
+ if(c>=0&&c!==before){const e=$('t'+c);if(e)e.scrollIntoView({behavior:'smooth',block:'center'})}
+ push(i,s,state[k])}
+function save(){LS.s(key,JSON.stringify(state))}
+$('thumb').onclick=()=>$('photo').classList.add('open');$('photo').onclick=()=>$('photo').classList.remove('open');
+
+const G=window.google&&google.script&&google.script.run;
+const msg=t=>{const e=$('sync');if(e)e.textContent=t};
+function push(){}
+// 선 긋기는 이 폰에만 저장. 서버에는 지시서가 바뀌었는지만 1분마다 물어봄
+function notice(t,btn){$('notice').innerHTML=t+(btn?` <a href="${window.BASE}?s=${TOKEN}" target="_top">새로 보기</a>`:'');$('notice').hidden=false}
+if(G&&window.BASE)setInterval(()=>google.script.run.withSuccessHandler(v=>{if(v===-1)notice('닫힌 주소입니다.');else if(S.v&&v!==S.v)notice('지시서가 바뀌었습니다.',1)}).getVersion(TOKEN),60000);
+$('reset').onclick=()=>{if(Object.keys(state).some(k=>state[k])){state={};save();render();scrollTo({top:0})}};
+function upload(file){const img=new Image(),u=URL.createObjectURL(file);msg('사진 올리는 중');
+ img.onload=()=>{const k=Math.min(1,1800/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;
+  c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);const b64=c.toDataURL('image/jpeg',.85).split(',')[1];
+  if(!G){photos++;bar();return}
+  google.script.run.withSuccessHandler(r=>{photos=r;bar()}).withFailureHandler(()=>msg('사진 못 올림, 다시 눌러 주세요')).addDonePhoto(TOKEN,b64,'image/jpeg')};
+ img.src=u}
+async function wake(){try{if('wakeLock' in navigator)await navigator.wakeLock.request('screen')}catch(e){}}
+wake();document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake()});
+let rw=innerWidth;addEventListener('resize',()=>{if(innerWidth!==rw){rw=innerWidth;tree()}});
+head();render();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<title>작업지시서 관리</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 계약 관리와 같은 바탕. 목록 → 현장 화면(사진, 트리, 직원 주소, 완성 사진) */
+:root{--bg:#fafaf9;--paper:#fff;--ink:#1a1a19;--sub:#5f5f5b;--line:#dcdcd7;--soft:#f0f0ec;--act:#1a1a19;--act-ink:#fff;--err:#b3261e;--ok:#2e6b3a;--wait:#8a5a00;
+ --tree:#CFE2C3;--hi:#FFD23F;--b8:#262624;--b7:#8B8A85;--ice:#2F7FD0;--snL:#1B8F6A;--snS:#5CC4A1;--trunk:#9A7B5B;
+ --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;padding:0 max(16px,env(safe-area-inset-left)) 48px}
+button{font:inherit;cursor:pointer;color:inherit}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{padding-top:28px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:22px;margin:2px 0 0}
+nav{display:flex;gap:8px;flex-wrap:wrap}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:13px 16px;font-size:15px;font-weight:700}
+.primary[disabled]{opacity:.5;cursor:wait}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.row input{flex:1;min-width:0}
+.hint{font-size:13px;color:var(--sub);margin:0}
+.err{color:var(--err)}.ok{color:var(--ok)}
+
+/* 목록 */
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:62px 1fr auto;gap:12px;align-items:center;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:14px 2px}
+.item:first-child{border-top:0}
+.item:hover .nm{text-decoration:underline}
+.dt{font-weight:700;font-size:15px;line-height:1.25}.dt small{display:block;font-weight:400;color:var(--sub);font-size:12px}
+.nm{font-weight:700}.mt{font-size:13px;color:var(--sub)}
+.st{font-size:12px;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.st.done{color:var(--ok);border-color:var(--ok)}.st.out{color:var(--wait);border-color:var(--wait)}
+.empty{color:var(--sub);font-size:14px;margin:0}
+
+/* 현장 */
+.back{align-self:flex-start}
+.photo{width:100%;border-radius:8px;display:block;max-height:420px;object-fit:cover;background:var(--soft)}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0}.meta dt{color:var(--sub)}.meta dd{margin:0}
+.link{font-size:13px;word-break:break-all;background:var(--soft);border-radius:6px;padding:10px 12px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chips button{font-size:13.5px;border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px}
+.chips button.on{background:var(--act);color:var(--act-ink);border-color:var(--act)}
+.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.gal button{border:0;padding:0;background:var(--soft);border-radius:6px;overflow:hidden;aspect-ratio:1}
+.gal img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* 지시서 (직원 화면과 같은 트리) */
+#sheet{background:#fff;padding:18px 14px 14px;border-radius:8px}
+.sh-h{font-weight:700;font-size:18px}.sh-s{font-size:13px;color:var(--sub);margin-bottom:6px}
+.ends{display:flex;justify-content:space-between;font-size:12px;color:var(--sub);padding:0 0 4px 52px}
+.tree{display:grid;grid-template-columns:22px 30px 1fr;row-gap:3px}
+.br{grid-column:1;border-left:3px solid var(--ink);margin:2px 0;display:flex;align-items:center}
+.br b{writing-mode:vertical-rl;font-size:11px;font-weight:700;margin-left:2px}
+.no{grid-column:2;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-weight:700;font-size:14px}
+.field{grid-column:3;position:relative;height:30px}
+.band{position:absolute;top:0;bottom:0;background:var(--tree)}
+.band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(26,26,25,.14)}
+.orn{position:absolute;top:4px}.orn svg{display:block}
+.orn i{position:absolute;right:-4px;bottom:-3px;min-width:13px;height:13px;border-radius:7px;background:#C8372F;color:#fff;font:700 8px/11px var(--sans);font-style:normal;text-align:center;border:1px solid #fff}
+.cap{grid-column:3;display:flex;justify-content:center}
+.trunk{grid-column:3;justify-self:center;width:24px;height:14px;background:var(--trunk);margin-top:-3px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:10px}.legend span{display:flex;align-items:center;gap:4px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--act);color:var(--act-ink);padding:10px 16px;border-radius:8px;font-size:14px;z-index:50}
+.full{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:40;flex-direction:column;gap:12px}
+.full img{max-width:100%;max-height:82vh}.full .row{justify-content:center}.full .ghost{color:#fff;border-color:#888}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><div class="brand">TREELAND</div><h1>작업지시서</h1></div>
+    <nav><a class="ghost" href="/contract/admin.html">계약 관리</a><a class="ghost" href="/quote/">견적서</a><a class="ghost" href="/schedule/">설치·회수 일정</a></nav>
+  </header>
+
+  <section id="login">
+    <label for="pin" class="hint">관리자 비밀번호 (계약 관리와 같음)</label>
+    <div class="row"><input type="password" id="pin" autocomplete="current-password" enterkeyhint="go"><button type="button" class="ghost" id="go">확인</button></div>
+    <p class="hint" id="pinMsg" role="status"></p>
+  </section>
+
+  <section id="listBox" hidden>
+    <div class="row" style="justify-content:space-between"><b>설치 현장</b><span class="hint" id="count"></span></div>
+    <div class="list" id="list"></div>
+  </section>
+
+  <div id="detail" hidden style="display:flex;flex-direction:column;gap:18px"></div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="full" id="full" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
+<script>
+const ENDPOINT="https://script.google.com/macros/s/AKfycbwYyvWh7qSxEBaoq_1Lad97BZkDSvw7oras5QoPsA3P5pNu_YEj_2p96JTizyXfKYZY/exec";
+const $=s=>document.querySelector(s);
+const LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v)}catch(e){}}};
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const WD='일월화수목금토';
+let cur=null;
+
+async function api(body){
+  body.pin=$('#pin').value.trim();
+  const r=await fetch(ENDPOINT,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!j.ok&&j.error==='pin'){LS.s('tl_pin',null);showLogin('비밀번호가 맞지 않습니다.');throw new Error('pin')}
+  return j;
+}
+function toast(t){const e=$('#toast');e.textContent=t;e.hidden=false;clearTimeout(e._t);e._t=setTimeout(()=>e.hidden=true,2200)}
+function showLogin(m){$('#login').hidden=false;$('#listBox').hidden=true;$('#detail').hidden=true;$('#pinMsg').textContent=m||'';$('#pinMsg').className='hint'+(m?' err':'')}
+
+async function load(){
+  if(!$('#pin').value.trim())return showLogin('');
+  $('#pinMsg').textContent='불러오는 중';$('#pinMsg').className='hint';
+  let j;try{j=await api({action:'list'})}catch(e){if(e.message!=='pin')$('#pinMsg').textContent='연결이 안 됩니다. 잠시 뒤 다시 눌러 주세요.';return}
+  LS.s('tl_pin',$('#pin').value.trim());$('#login').hidden=true;
+  renderList(j.items);
+  const id=decodeURIComponent(location.hash.slice(1));if(id)open(id);
+}
+function dateCell(d){if(!d)return '<div class="dt">날짜<small>미정</small></div>';const x=new Date(d+'T12:00:00');return `<div class="dt">${x.getMonth()+1}/${x.getDate()}<small>${WD[x.getDay()]}요일</small></div>`}
+function stCls(s){return s==='설치 완료'?'done':s==='철거 예정'?'out':''}
+function renderList(items){
+  $('#listBox').hidden=false;$('#count').textContent=items.length?items.length+'곳':'';
+  $('#list').innerHTML=items.length?items.map(x=>`<button class="item" data-id="${esc(x.id)}">${dateCell(x.date)}
+    <div><div class="nm">${esc(x.name)}</div><div class="mt">${esc(x.model)}${x.angle?', '+esc(x.angle):''}${x.total?', '+x.total+'개':''}${x.open?', 직원 주소 열림':''}${x.done?', 완성 사진 '+x.done+'장':''}</div></div>
+    <span class="st ${stCls(x.status)}">${esc(x.status||'설치 전')}</span></button>`).join('')
+    :'<p class="empty">아직 등록된 현장이 없습니다. 채팅에서 지시서를 만들고 "등록해"라고 하면 여기에 나옵니다.</p>';
+  $('#list').querySelectorAll('.item').forEach(b=>b.onclick=()=>{location.hash=encodeURIComponent(b.dataset.id)});
+}
+addEventListener('hashchange',()=>{const id=decodeURIComponent(location.hash.slice(1));if(id)open(id);else{ $('#detail').hidden=true;$('#listBox').hidden=false;load()}});
+
+async function open(id){
+  $('#listBox').hidden=true;const d=$('#detail');d.hidden=false;d.innerHTML='<p class="hint">불러오는 중</p>';scrollTo({top:0});
+  const j=await api({action:'get',id});if(!j.ok){d.innerHTML='<p class="err">현장을 찾을 수 없습니다.</p>';return}
+  cur=j;renderDetail();
+}
+function renderDetail(){
+  const j=cur,S=j.site,d=$('#detail');
+  const url=j.code?ENDPOINT+'?s='+j.code:'';
+  d.innerHTML=`<button class="ghost back" id="back">목록</button>
+  <section>
+    ${j.photo?`<img class="photo" src="${j.photo}" alt="${esc(S.name)} 설치 위치">`:'<p class="hint">현장 사진 없음</p>'}
+    <div><h1 style="margin:0">${esc(S.name)}</h1></div>
+    <dl class="meta"><dt>설치일</dt><dd>${S.date||'미정'}</dd><dt>트리</dt><dd>${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개</dd><dt>정면</dt><dd>${esc(S.front)}</dd>${S.note?`<dt>메모</dt><dd>${esc(S.note)}</dd>`:''}</dl>
+    <div class="chips" id="stat">${['설치 전','설치 완료','철거 예정'].map(s=>`<button data-s="${s}" class="${(j.status||'설치 전')===s?'on':''}">${s}</button>`).join('')}</div>
+  </section>
+  <section>
+    <b>직원용 주소</b>
+    ${url?`<div class="link">${esc(url)}</div><p class="hint">${j.open?`${j.until}까지 열림. 선 긋기 기록은 직원 폰에만 남습니다.`:'닫힌 주소입니다. 다시 만들어 주세요.'}</p>
+      <div class="acts"><button class="primary" id="share">${navigator.share?'직원에게 보내기':'주소 복사'}</button><button class="ghost" id="relink">주소 다시 만들기</button><button class="ghost" id="unlink">주소 끄기</button></div>`
+     :`<p class="hint">주소를 만들면 설치일 3일 뒤까지 열립니다. 다시 만들면 예전 주소는 닫힙니다.</p><div class="acts"><button class="primary" id="link">직원용 주소 만들기</button></div>`}
+  </section>
+  <section>
+    <div class="row" style="justify-content:space-between"><b>지시서</b><button class="ghost" id="save">이미지로 저장</button></div>
+    <div id="sheet"></div>
+  </section>
+  <section>
+    <div class="row" style="justify-content:space-between"><b>완성 사진 ${j.done.length?j.done.length+'장':''}</b><label class="ghost">사진 올리기<input type="file" accept="image/*" multiple id="up" hidden></label></div>
+    ${j.done.length?`<div class="gal">${j.done.map(x=>`<button data-f="${x.file}">${x.thumb?`<img src="${x.thumb}" alt="">`:''}</button>`).join('')}</div>`:'<p class="hint">직원이 작업을 마치고 올린 사진이 여기에 모입니다.</p>'}
+  </section>`;
+  drawSheet(S);
+  $('#back').onclick=()=>{location.hash=''};
+  d.querySelectorAll('#stat button').forEach(b=>b.onclick=async()=>{await api({action:'status',id:j.id,status:b.dataset.s});cur.status=b.dataset.s;renderDetail();toast(b.dataset.s+'(으)로 바꿈')});
+  const L=$('#link'),R=$('#relink'),U=$('#unlink'),SH=$('#share');
+  if(L)L.onclick=async()=>{L.disabled=true;const r=await api({action:'link',id:j.id});Object.assign(cur,{code:r.code,until:r.until,open:true});renderDetail();toast('주소를 만들었습니다')};
+  if(R)R.onclick=async()=>{const r=await api({action:'relink',id:j.id});Object.assign(cur,{code:r.code,until:r.until,open:true});renderDetail();toast('새 주소로 바꿨습니다. 예전 주소는 닫힘')};
+  if(U)U.onclick=async()=>{await api({action:'unlink',id:j.id});Object.assign(cur,{code:'',open:false});renderDetail();toast('주소를 껐습니다')};
+  if(SH)SH.onclick=async()=>{const t=`${S.name} 작업표\n${url}`;if(navigator.share){try{await navigator.share({text:t})}catch(e){}}else{await navigator.clipboard.writeText(url);toast('주소를 복사했습니다')}};
+  $('#save').onclick=saveImage;
+  $('#up').onchange=e=>upload([...e.target.files]);
+  d.querySelectorAll('.gal button').forEach(b=>b.onclick=()=>full(b.dataset.f));
+}
+
+/* 트리 그리기: 직원 화면과 같은 규칙 (단 폭, 대각선/수직 엇갈림) */
+function ico(k,z){let g;
+ if(k==='B8')g='<circle r="15" fill="var(--b8)"/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">8</text>';
+ else if(k==='B7')g='<circle r="12.5" fill="var(--b7)"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">7</text>';
+ else if(k==='B6')g='<circle r="10" fill="#fff" stroke="#1a1a19" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="#1a1a19">6</text>';
+ else if(k==='I')g='<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="var(--ice)"/>';
+ else if(k==='SL')g='<polygon points="0,-15 15,0 0,15 -15,0" fill="var(--snL)"/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">대</text>';
+ else g='<polygon points="0,-11 11,0 0,11 -11,0" fill="var(--snS)"/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0C3B2C">소</text>';
+ return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}
+const NAME={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'};
+function drawSheet(S){
+  const box=$('#sheet'),T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
+  const OFF=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=OFF[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);OFF.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}
+  const W=Math.min(box.clientWidth||600,640)-28-52,wf=t=>1-.66*t/T,Z=22;
+  const X=[];for(let i=0;i<T;i++){const m=n[i],slot=(wf(i)+wf(i+1))/2*W*.86/m;X.push(Array.from({length:m},(_,j)=>{const p=j-(m-1)/2+OFF[i];if(S.tiers[i].align&&i>0){const q=Math.round(p+(n[i-1]-1)/2-OFF[i-1]);if(q>=0&&q<n[i-1])return X[i-1][q]}return p*slot}))}
+  let h=`<div class="cap" style="grid-row:1">${'<svg width="24" height="22" viewBox="-12 -11 24 22"><polygon points="0,-11 3,-3.5 11,-3.4 4.7,1.6 7,10 0,5 -7,10 -4.7,1.6 -11,-3.4 -3,-3.5" fill="#FFD23F" stroke="#C9A100"/></svg>'}</div>`,row=2;
+  const cnt={};
+  for(let i=T-1;i>=0;i--,row++){const wb=wf(i)*W,wt=wf(i+1)*W,ins=(wb-wt)/2;
+    h+=`<div class="no" style="grid-row:${row}">${i+1}</div><div class="field" style="grid-row:${row}"><div class="band" style="left:calc(50% - ${wb/2}px);width:${wb}px;clip-path:polygon(${ins}px 0,${wb-ins}px 0,100% 100%,0 100%)"></div>`;
+    S.tiers[i].items.forEach((tok,j)=>{const p=tok.split('/');p.forEach(k=>cnt[k]=(cnt[k]||0)+1);h+=`<span class="orn" style="left:calc(50% + ${X[i][j]-Z/2}px)">${ico(p[0],Z)}${p[1]?`<i>${p[1].slice(1)}</i>`:''}</span>`});
+    h+='</div>'}
+  (S.sections||[]).forEach(([nm,a,b])=>{h+=`<div class="br" style="grid-row:${2+T-b}/span ${b-a+1}"><b>${esc(nm)}</b></div>`});
+  h+=`<div class="trunk" style="grid-row:${row}"></div>`;
+  box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>
+   <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
+   <div class="legend">${['B8','B7','B6','I','SL','SS'].filter(k=>cnt[k]).map(k=>`<span>${ico(k,18)}${NAME[k]} ${cnt[k]}</span>`).join('')}</div>`;
+}
+async function saveImage(){
+  if(!window.html2canvas)return toast('잠시 뒤 다시 눌러 주세요');
+  const c=await html2canvas($('#sheet'),{scale:2.5,backgroundColor:'#ffffff',logging:false});
+  const a=document.createElement('a');a.download=cur.site.name.replace(/[\\/:*?"<>|]/g,'')+'_지시서.png';a.href=c.toDataURL('image/png');a.click();
+}
+async function full(file){
+  const f=$('#full');f.hidden=false;f.innerHTML='<p style="color:#fff">불러오는 중</p>';
+  const r=await api({action:'done',id:cur.id,file});if(!r.ok){f.hidden=true;return}
+  f.innerHTML=`<img src="${r.data}" alt=""><div class="row"><a class="ghost" download="${esc(r.name)}" href="${r.data}">원본 저장</a><button class="ghost" id="fx">닫기</button></div>`;
+  $('#fx').onclick=()=>f.hidden=true;
+}
+function shrink(file){return new Promise(res=>{const img=new Image(),u=URL.createObjectURL(file);img.onload=()=>{const k=Math.min(1,2000/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=img.width*k;c.height=img.height*k;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.88).split(',')[1])};img.src=u})}
+async function upload(files){for(const f of files){toast('사진 올리는 중');await api({action:'upload',id:cur.id,data:await shrink(f),mime:'image/jpeg'})}open(cur.id)}
+
+$('#go').onclick=load;$('#pin').onkeydown=e=>{if(e.key==='Enter')load()};
+const saved=LS.g('tl_pin');if(saved){$('#pin').value=saved;load()}else showLogin('');
+</script>
+</body>
+</html>
