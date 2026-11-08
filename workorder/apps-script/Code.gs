@@ -2,7 +2,7 @@
  * 작업표 서버
  * - 직원:  …/exec?s=직원코드  → 그 현장 작업표 (회사명 표기 없음)
  * - 관리:  treeland.kr/workorder 가 POST로 호출 (계약 관리와 같은 비밀번호)
- * - 등록:  비공개 저장소 workorder-data 의 GitHub Actions 가 POST(register)
+ * - 등록:  비공개 저장소 workorder-data 의 GitHub Actions 가 POST(register). 저장된 비밀 없이 Actions 임시 열쇠로 확인
  */
 const SHEET_NAME = '작업지시서';
 const PHOTO_FOLDER = '작업지시서 사진';
@@ -11,6 +11,8 @@ const HEAD = ['아이디', '현장명', '설치일', '데이터(JSON)', '사진�
 const C = { id: 0, name: 1, date: 2, data: 3, photo: 4, code: 5, status: 6, updated: 7, doneDir: 8, doneN: 9, until: 10 };
 const CONTRACT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const TZ = 'Asia/Seoul';
+const DATA_REPO = 'treeland-123/workorder-data';
+const EXEC = 'https://script.google.com/macros/s/AKfycbwYyvWh7qSxEBaoq_1Lad97BZkDSvw7oras5QoPsA3P5pNu_YEj_2p96JTizyXfKYZY/exec';
 
 function props_() { return PropertiesService.getScriptProperties(); }
 function ss_() {
@@ -52,7 +54,7 @@ function doGet(e) {
   site.donePhotos = Number(f.v[C.doneN]) || 0;
   if (f.v[C.photo]) { try { site.photo = b64_(DriveApp.getFileById(f.v[C.photo]).getBlob()); } catch (err) {} }
   const html = HtmlService.createHtmlOutputFromFile('Index').getContent()
-    .split('"@@DATA@@";').join('window.SITE=' + JSON.stringify(site) + ';window.TOKEN=' + JSON.stringify(p.s) + ';window.BASE=' + JSON.stringify(ScriptApp.getService().getUrl()) + ';');
+    .split('"@@DATA@@";').join('window.SITE=' + JSON.stringify(site) + ';window.TOKEN=' + JSON.stringify(p.s) + ';window.BASE=' + JSON.stringify(EXEC) + ';');
   return HtmlService.createHtmlOutput(html).setTitle('작업표').addMetaTag('viewport', 'width=device-width,initial-scale=1');
 }
 function getVersion(code) {
@@ -83,7 +85,7 @@ function doPost(e) {
   try { b = JSON.parse(e.postData.contents); } catch (err) { return json_({ ok: false, error: 'body' }); }
   try {
     if (b.action === 'register') {
-      if (!b.key || b.key !== props_().getProperty('REG_KEY')) return json_({ ok: false, error: 'key' });
+      if (!ghOk_(b.gh)) return json_({ ok: false, error: 'key' });
       return json_(register_(b));
     }
     if (!checkPin_(b.pin)) return json_({ ok: false, error: 'pin' });
@@ -99,6 +101,14 @@ function doPost(e) {
     }
     return json_({ ok: false, error: 'action' });
   } catch (err) { return json_({ ok: false, error: String(err && err.message || err) }); }
+}
+// 등록 요청 확인: Actions 임시 열쇠로 비공개 저장소가 열리면 진짜
+function ghOk_(tok) {
+  if (!tok) return false;
+  const r = UrlFetchApp.fetch('https://api.github.com/repos/' + DATA_REPO, { headers: { Authorization: 'Bearer ' + tok, 'User-Agent': 'workorder' }, muteHttpExceptions: true });
+  if (r.getResponseCode() !== 200) return false;
+  const j = JSON.parse(r.getContentText());
+  return j.full_name === DATA_REPO && j.private === true;
 }
 function checkPin_(pin) {
   if (!pin) return false;
@@ -164,7 +174,7 @@ function link_(id, renew) {
   const until = addDays_(base, 3);
   sh.getRange(f.row, C.code + 1).setValue(code);
   sh.getRange(f.row, C.until + 1).setValue(until);
-  return { ok: true, code: code, until: until, url: ScriptApp.getService().getUrl() + '?s=' + code };
+  return { ok: true, code: code, until: until, url: EXEC + '?s=' + code };
 }
 function setCell_(id, col, val) {
   const f = find_(C.id, id); if (!f) return { ok: false, error: 'id' };
@@ -179,11 +189,9 @@ function doneFull_(id, file) {
   return { ok: true, name: x.getName(), data: b64_(x.getBlob()) };
 }
 
-/* 한 번만 실행: 등록 열쇠 저장, 새 탭 생성, 외부 호출 권한 승인 */
+/* 한 번만 실행: 새 탭 생성, 외부 호출 권한 승인 */
 function setup2() {
-  const p = props_();
-  p.setProperty('REG_KEY', '@@REGKEY@@');
   sheet_(); folder_();
   UrlFetchApp.fetch('https://www.google.com', { muteHttpExceptions: true });
-  console.log('ok ' + ScriptApp.getService().getUrl());
+  console.log('ok ' + EXEC);
 }
