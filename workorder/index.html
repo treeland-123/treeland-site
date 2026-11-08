@@ -68,6 +68,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 .orn i{position:absolute;right:-4px;bottom:-3px;min-width:13px;height:13px;border-radius:7px;background:#C8372F;color:#fff;font:700 8px/11px var(--sans);font-style:normal;text-align:center;border:1px solid #fff}
 .cap{grid-column:3;display:flex;justify-content:center}
 .trunk{grid-column:3;justify-self:center;width:24px;height:14px;background:var(--trunk);margin-top:-3px}
+.plan{margin:6px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:10px}.legend span{display:flex;align-items:center;gap:4px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--act);color:var(--act-ink);padding:10px 16px;border-radius:8px;font-size:14px;z-index:50}
 .full{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:40;flex-direction:column;gap:12px}
@@ -201,7 +202,7 @@ function drawSheet(S){
     h+='</div>'}
   (S.sections||[]).forEach(([nm,a,b])=>{h+=`<div class="br" style="grid-row:${2+T-b}/span ${b-a+1}"><b>${esc(nm)}</b></div>`});
   h+=`<div class="trunk" style="grid-row:${row}"></div>`;
-  box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>
+  box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
    <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
    <div class="legend">${['B8','B7','B6','I','SL','SS'].filter(k=>cnt[k]).map(k=>`<span>${ico(k,18)}${NAME[k]} ${cnt[k]}</span>`).join('')}</div>`;
 }

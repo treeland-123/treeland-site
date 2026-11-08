@@ -22,6 +22,7 @@ h1{margin:0;font-size:30px;line-height:1.15;font-weight:800;letter-spacing:-.03e
 .thumb img{width:100%;height:100%;object-fit:cover;display:block}
 .note{margin:4px 18px 0;font-size:14px;line-height:1.6;color:var(--mute)}
 .note strong{color:var(--ink)}
+.plan{margin:14px 18px 0;padding:10px 12px;background:#fff;border:1px solid var(--rule);border-radius:8px}
 .side{display:flex;align-items:center;gap:16px;margin:14px 18px 0;font-size:15px}
 .side span{color:var(--mute);font-size:13px}
 .side button{padding:6px 0;color:var(--mute);font-weight:600}
@@ -78,6 +79,7 @@ nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
     <button class="thumb" id="thumb" aria-label="현장 사진 크게 보기"><img id="timg" alt=""></button>
   </header>
   <p class="note" id="note"></p>
+  <div class="plan" id="plan" hidden></div>
   <div class="side" id="side"></div>
   <nav id="nav"></nav>
   <div class="ends" id="ends"></div>
@@ -119,6 +121,7 @@ function head(){
  $('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`;
  $('note').innerHTML=`정면은 <strong>${S.front}</strong>. 정면 가지에 집게 먼저 꽂고 시작.<br>${S.note}`;
  if(S.photo){$('timg').src=$('pimg').src=S.photo}else $('thumb').style.display='none';
+ if(S.plan){$('plan').innerHTML=S.plan;$('plan').hidden=false}
  $('ends').innerHTML=`<span>${S.start}</span><span>${S.end}</span>`;
  $('hint').textContent='띠의 왼쪽 반, 오른쪽 반을 누르면 줄이 그어짐. 다시 누르면 취소. 줄은 이 화면에만 남고, 받은 주소를 새로 열면 처음부터. 빨간 숫자는 같은 가지 안쪽에 그 크기 볼 하나 더.'+(S.sectionTemp?' 단계 구분은 임시.':'');
 }
