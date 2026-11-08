@@ -112,7 +112,16 @@ label.check input{width:18px;height:18px;padding:0;accent-color:var(--pine)}
 .rev-row input{flex:1;min-width:0;font-family:var(--f-num)}
 .rev-row select{width:auto;flex:none}
 .site-phone{font-family:var(--f-num);font-size:12px;color:var(--muted);user-select:all}
-.site-acts{display:flex;gap:14px;flex-wrap:wrap}
+.site-acts{display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.pay{font-size:12px;border-radius:999px;padding:2px 9px;white-space:nowrap}
+.pay.done{background:var(--pine-soft);color:var(--good)}
+.pay.due{border:1px solid var(--bad);color:var(--bad)}
+.paybtn{background:none;border:1px solid var(--pine);color:var(--pine);border-radius:999px;padding:3px 11px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}
+.site-note{font-size:13px;color:var(--ink);background:var(--brass-soft);border-radius:6px;padding:6px 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+.list-tools{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px}
+.list-tools label{flex-direction:row;align-items:center;gap:6px;font-size:13px;color:var(--ink);cursor:pointer}
+.list-tools input{width:16px;height:16px;padding:0;accent-color:var(--pine)}
+.ledger em.unpaid{color:var(--bad)}
 .links{display:flex;gap:6px;flex-wrap:wrap}
 .links a{font-size:13px;color:var(--muted);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:4px 10px}
 .lock{font-size:13px;color:var(--muted);background:var(--pine-soft);border-radius:8px;padding:10px 12px}
@@ -156,7 +165,7 @@ details.card[open] summary{margin-bottom:6px}
   <div id="main" style="display:flex;flex-direction:column;gap:20px">
 
   <div class="ledger" aria-label="시즌 수지">
-    <div><span>매출 (부가세 포함)</span><b id="sumRev" class="num">0</b><em id="sumSites">현장 0곳</em></div>
+    <div><span>매출 (부가세 포함)</span><b id="sumRev" class="num">0</b><em id="sumSites">현장 0곳</em><em id="sumUnpaid"></em></div>
     <div><span>지출</span><b id="sumExp" class="num">0</b><em id="sumCount">0건</em></div>
     <div class="net" id="netBox"><span>남는 돈</span><b id="sumNet" class="num">0</b><em id="sumRate">마진 —</em></div>
   </div>
@@ -204,6 +213,7 @@ details.card[open] summary{margin-bottom:6px}
     <div class="card">
       <h2>설치 현장</h2>
       <p class="note" style="margin:4px 0 0">서명이 끝난 계약은 자동으로 들어옵니다. 현장을 누르면 정보를 봅니다.</p>
+      <div class="list-tools"><label><input type="checkbox" id="unpaidOnly"> 미결제만 보기</label><span class="note" id="unpaidSum"></span></div>
       <p class="note" id="contractNote" style="color:var(--bad)" hidden></p>
       <div id="siteList"><div class="empty">이 시즌에 등록된 현장이 없습니다. 설치가 확정되면 위에서 추가하세요.</div></div>
       <p class="note" id="commonNote"></p>
@@ -213,7 +223,7 @@ details.card[open] summary{margin-bottom:6px}
       <p class="note" style="margin:0 0 12px">계약서로 진행한 현장은 서명이 끝나면 자동으로 들어옵니다. 계약서 없이 진행한 현장만 여기서 추가하세요.</p>
       <form id="siteForm" autocomplete="off">
         <div class="full mode" id="siteMode" hidden>현장 수정 중</div>
-        <div class="full lock" id="contractLock" hidden>계약서에서 가져온 현장입니다. 설치 정보와 금액은 계약 관리에서 바꾸고, 여기서는 세금계산서와 메모만 저장합니다.</div>
+        <div class="full lock" id="contractLock" hidden>계약서에서 가져온 현장입니다. 설치 정보와 금액은 계약 관리에서 바꾸고, 여기서는 세금계산서, 결제 완료, 특이사항만 저장합니다.</div>
         <label class="full">업장명<input id="sName" placeholder="예: 성북구청 1층 로비" required></label>
         <label>설치일<input id="sDate" type="date"></label>
         <label>회수일<input id="sPickup" type="date"></label>
@@ -233,7 +243,9 @@ details.card[open] summary{margin-bottom:6px}
           <option value="">선택 안 함</option><option>계좌이체</option><option>카드</option><option>현금</option>
         </select></label>
         <label class="check"><input type="checkbox" id="sTax"> 세금계산서 발행</label>
-        <label class="full">메모<input id="sMemo" placeholder="재계약, 소개 등"></label>
+        <label class="check"><input type="checkbox" id="sPaid"> 결제 완료</label>
+        <label id="sPaidDateBox" hidden>결제일<input id="sPaidDate" type="date"></label>
+        <label class="full">특이사항<textarea id="sMemo" rows="2" placeholder="예: 협의 결제일 12/20, 기관 결재 후 지급"></textarea></label>
         <div class="full row-btns">
           <button type="button" class="btn ghost" id="siteDel" hidden>현장 삭제</button>
           <button type="button" class="btn ghost" id="siteCancel" hidden>취소</button>
@@ -326,7 +338,7 @@ function contractSites(){
     const id="c:"+c.id,x=S.extras[c.id]||{};
     return {id,contractId:c.id,fromContract:true,name:c.name||c.customer||c.place,date:kst(c.install),pickup:kst(c.retrieve),
       spec:[c.size,c.color].filter(Boolean).join(" · "),phone:c.tel||"",pay:c.pay||"",revenue:Number(c.price)||0,gross:Math.round((Number(c.price)||0)*1.1),
-      taxInvoice:!!x.taxInvoice,memo:x.memo||"",pdf:c.pdf||"",contact:c.contact||"",season:seasonOf(kst(c.install))};
+      taxInvoice:!!x.taxInvoice,memo:x.memo||"",paid:!!x.paid,paidDate:x.paidDate||"",pdf:c.pdf||"",contact:c.contact||"",season:seasonOf(kst(c.install))};
   });
 }
 const grossOf=s=>s.vat==="in"?(s.revenueInput||Math.round((s.revenue||0)*1.1)):Math.round((s.revenueInput||s.revenue||0)*1.1);
@@ -373,7 +385,11 @@ function render(){
   const rev=sites.reduce((a,s)=>a+(s.gross||0),0),exp=exps.reduce((a,e)=>a+(e.amount||0),0),net=rev-exp;
   $("sumRev").textContent=won(rev);$("sumExp").textContent=won(exp);$("sumNet").textContent=won(net);
   const nc=sites.filter(s=>s.fromContract).length;
-  $("sumSites").textContent=`현장 ${sites.length}곳`+(nc?` · 계약 ${nc}`:"");$("sumCount").textContent=`${exps.length}건`;
+  $("sumSites").textContent=`현장 ${sites.length}곳`+(nc?` · 계약 ${nc}`:"");
+  const unpaid=sites.filter(s=>!s.paid),unpaidAmt=unpaid.reduce((a,s)=>a+(s.gross||0),0);
+  $("sumUnpaid").textContent=unpaid.length?`미수금 ${unpaid.length}곳 · ${won(unpaidAmt)}`:(sites.length?"미수금 없음":"");
+  $("sumUnpaid").classList.toggle("unpaid",unpaid.length>0);
+  $("unpaidSum").textContent=unpaid.length?`미결제 ${unpaid.length}곳 · ${won(unpaidAmt)}원`:"";$("sumCount").textContent=`${exps.length}건`;
   $("sumRate").textContent=rev?`마진 ${(net/rev*100).toFixed(1)}%`:"마진 —";
   $("netBox").classList.toggle("minus",net<0);
   $("catChips").innerHTML=cats().map(c=>`<button type="button" class="chip" aria-pressed="${c===S.cat}" data-c="${esc(c)}">${esc(c)}</button>`).join("");
@@ -391,7 +407,8 @@ function itemHtml(e){
 function renderSites(sites,exps){
   $("contractNote").textContent=S.contractErr;$("contractNote").hidden=!S.contractErr;
   if(!sites.length){$("siteList").innerHTML=`<div class="empty">${S.ready?"이 시즌 현장이 없습니다. 계약서 서명이 끝나면 자동으로 들어옵니다.":"불러오는 중…"}</div>`}
-  else $("siteList").innerHTML=sites.map(s=>{
+  else if(S.unpaidOnly&&!sites.some(s=>!s.paid)){$("siteList").innerHTML=`<div class="empty">이 시즌 미결제 현장이 없습니다.</div>`}
+  else $("siteList").innerHTML=sites.filter(s=>!S.unpaidOnly||!s.paid).map(s=>{
     const se=exps.filter(e=>e.siteId===s.id),cost=se.reduce((a,e)=>a+e.amount,0),m=(s.gross||0)-cost;
     const rate=s.gross?(m/s.gross*100).toFixed(0)+"%":"매출 미입력";
     const open=S.openSite===s.id;
@@ -400,7 +417,8 @@ function renderSites(sites,exps){
       ${s.phone?`<span class="site-phone">${esc([s.contact,fmtPhone(s.phone)].filter(Boolean).join(" "))}</span>`:""}
       <div class="site-nums"><span>매출 <span class="num">${won(s.gross)}</span></span>${se.length?`<span>지출 <span class="num">${won(cost)}</span></span><span>남음 <span class="num">${won(m)}</span></span>`:""}</div>
       ${se.length&&s.gross?`<div class="bar" aria-hidden="true"><i style="width:${Math.min(100,cost/s.gross*100)}%"></i></div>`:""}
-      <div class="site-acts">${se.length?`<button type="button" class="linkbtn" data-toggle="${esc(s.id)}">이 현장 지출 ${se.length}건 ${open?"접기":"보기"}</button>`:""}${s.pdf?`<a class="linkbtn" href="${esc(s.pdf)}" target="_blank" rel="noopener">계약서 PDF</a>`:""}</div>
+      ${s.memo?`<div class="site-note">${esc(s.memo)}</div>`:""}
+      <div class="site-acts">${s.paid?`<span class="pay done">결제완료${s.paidDate?" "+md(s.paidDate):""}</span>`:`<span class="pay due">미결제</span><button type="button" class="paybtn" data-pay="${esc(s.id)}">결제 확인</button>`}${se.length?`<button type="button" class="linkbtn" data-toggle="${esc(s.id)}">이 현장 지출 ${se.length}건 ${open?"접기":"보기"}</button>`:""}${s.pdf?`<a class="linkbtn" href="${esc(s.pdf)}" target="_blank" rel="noopener">계약서 PDF</a>`:""}</div>
       ${open&&se.length?`<div class="detail"><div class="list">${se.map(itemHtml).join("")}</div></div>`:""}
     </div>`}).join("");
   const common=exps.filter(e=>!e.siteId).reduce((a,e)=>a+e.amount,0);
@@ -427,6 +445,7 @@ $("catChips").addEventListener("click",e=>{const b=e.target.closest(".chip");if(
 
 function bindOpen(el){el.addEventListener("click",e=>{
   if(e.target.closest("a"))return;
+  const pb=e.target.closest("[data-pay]");if(pb){markPaid(pb.dataset.pay,pb);return}
   const tg=e.target.closest("[data-toggle]");if(tg){S.openSite=S.openSite===tg.dataset.toggle?null:tg.dataset.toggle;render();return}
   const sh=e.target.closest("[data-site]");if(sh){editSite(sh.dataset.site);return}
   const it=e.target.closest(".item");if(it)editExp(it.dataset.id)});
@@ -475,6 +494,23 @@ function revHint(){const v=parseNum($("sRev").value),vat=$("sVat").value;
   $("revHint").textContent=!v?"":vat==="in"?`공급가 ${won(supply(v,vat))}원 · 부가세 ${won(v-supply(v,vat))}원 (수지는 부가세 포함 금액으로 계산)`:`부가세 포함 ${won(Math.round(v*1.1))}원 (수지는 이 금액으로 계산)`}
 $("sRev").addEventListener("input",revHint);$("sVat").addEventListener("change",revHint);
 
+try{S.unpaidOnly=localStorage.getItem("tl_unpaid")==="1";$("unpaidOnly").checked=S.unpaidOnly}catch(_){}
+$("unpaidOnly").addEventListener("change",e=>{S.unpaidOnly=e.target.checked;try{localStorage.setItem("tl_unpaid",S.unpaidOnly?"1":"0")}catch(_){}render()});
+$("sPaid").addEventListener("change",e=>{$("sPaidDateBox").hidden=!e.target.checked;if(e.target.checked&&!$("sPaidDate").value)$("sPaidDate").value=today()});
+// 결제 정보 저장: 계약 현장은 계약보충, 직접 추가 현장은 현장 줄 전체
+async function savePay(s,paid,paidDate,taxInvoice,memo,msg){
+  if(s.fromContract){
+    const d={id:s.contractId,taxInvoice,memo,paid,paidDate:paid?paidDate:""};
+    if(!await run(()=>ledger("saveExtra",d),msg))return false;
+    S.extras[s.contractId]={taxInvoice,memo,paid,paidDate:d.paidDate};return true}
+  const raw=S.sites.find(x=>x.id===s.id);if(!raw)return false;
+  const body={...raw,taxInvoice,memo,paid,paidDate:paid?paidDate:""};delete body.gross;
+  if(!await run(()=>ledger("saveSite",body),msg))return false;
+  S.sites=S.sites.map(x=>x.id===body.id?body:x);return true}
+async function markPaid(id,btn){const s=allSites().find(x=>x.id===id);if(!s)return;
+  btn.disabled=true;btn.textContent="저장 중…";
+  if(await savePay(s,true,today(),!!s.taxInvoice,s.memo||"",`${s.name} 결제 완료로 저장했습니다`))render();
+  else{btn.disabled=false;btn.textContent="결제 확인"}}
 function editSite(id){const s=allSites().find(x=>x.id===id);if(!s)return;S.editSite=id;
   const c=!!s.fromContract;
   $("siteFormTitle").textContent=c?"계약 현장":"현장 수정";
@@ -482,9 +518,10 @@ function editSite(id){const s=allSites().find(x=>x.id===id);if(!s)return;S.editS
   $("sName").value=s.name||"";$("sDate").value=s.date||"";$("sPickup").value=s.pickup||"";$("sSpec").value=s.spec||"";$("sPhone").value=fmtPhone(s.phone);
   const rin=c?s.gross:(s.revenueInput||s.revenue);$("sRev").value=rin?won(rin):"";$("sVat").value=(c||s.vat==="in")?"in":"ex";
   $("sPay").value=s.pay||"";$("sTax").checked=!!s.taxInvoice;$("sMemo").value=s.memo||"";revHint();
+  $("sPaid").checked=!!s.paid;$("sPaidDate").value=s.paidDate||"";$("sPaidDateBox").hidden=!s.paid;
   $("contractLock").hidden=!c;$("siteMode").hidden=c;$("siteCancel").hidden=false;$("siteDel").hidden=c;
   showTab("site");$("siteFormBox").open=true;$("siteFormBox").scrollIntoView({block:"start"});(c?$("sTax"):$("sName")).focus()}
-function resetSite(){S.editSite=null;$("siteForm").reset();revHint();$("siteFormTitle").textContent="현장 직접 추가";
+function resetSite(){S.editSite=null;$("siteForm").reset();revHint();$("sPaidDateBox").hidden=true;$("siteFormTitle").textContent="현장 직접 추가";
   ["sName","sDate","sPickup","sSpec","sPhone","sRev","sVat","sPay"].forEach(k=>$(k).disabled=false);
   $("contractLock").hidden=true;$("siteMode").hidden=true;$("siteFormBox").open=false;$("siteCancel").hidden=true;$("siteDel").hidden=true;$("siteDelConfirm").hidden=true}
 $("siteCancel").addEventListener("click",resetSite);
@@ -495,13 +532,13 @@ $("siteDelYes").addEventListener("click",async()=>{const id=S.editSite;
 $("siteForm").addEventListener("submit",async ev=>{ev.preventDefault();
   const cur=S.editSite&&allSites().find(x=>x.id===S.editSite);
   if(cur&&cur.fromContract){
-    const d={id:cur.contractId,taxInvoice:$("sTax").checked,memo:$("sMemo").value.trim()};
-    if(await run(()=>ledger("saveExtra",d),"저장했습니다")){S.extras[cur.contractId]={taxInvoice:d.taxInvoice,memo:d.memo};resetSite();render()}
+    const paid=$("sPaid").checked;
+    if(await savePay(cur,paid,$("sPaidDate").value||today(),$("sTax").checked,$("sMemo").value.trim(),"저장했습니다")){resetSite();render()}
     return}
   const name=$("sName").value.trim();if(!name){$("sName").focus();return}
   const rin=parseNum($("sRev").value),vat=$("sVat").value;
   const body={id:cur?cur.id:"",createdAt:cur?cur.createdAt:Date.now(),season:cur?cur.season:curSeason(),name,date:$("sDate").value,pickup:$("sPickup").value,spec:$("sSpec").value.trim(),
-    phone:fmtPhone($("sPhone").value),revenueInput:rin,vat,revenue:supply(rin,vat),pay:$("sPay").value,taxInvoice:$("sTax").checked,memo:$("sMemo").value.trim()};
+    phone:fmtPhone($("sPhone").value),revenueInput:rin,vat,revenue:supply(rin,vat),pay:$("sPay").value,taxInvoice:$("sTax").checked,memo:$("sMemo").value.trim(),paid:$("sPaid").checked,paidDate:$("sPaid").checked?($("sPaidDate").value||today()):""};
   let j;if(await run(async()=>{j=await ledger("saveSite",body)},cur?"현장을 수정했습니다":"현장을 추가했습니다")){
     body.id=j.id;S.sites=S.sites.filter(x=>x.id!==body.id).concat([body]);resetSite();render()}
 });
