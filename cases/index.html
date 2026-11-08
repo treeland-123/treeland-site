@@ -44,6 +44,8 @@ if(n)gtag('event',n,p);},true);
 <link rel="preload" as="image" href="img/logo-mark.png">
 <link rel="preload" as="image" href="img/arko-hero.webp" fetchpriority="high">
 <meta name="color-scheme" content="only light">
+<meta name="tl-e1-end" content="2026-11-08">
+<meta name="tl-e2-end" content="2026-11-22">
 <meta name="description" content="카페·매장, 병원, 학교·학원, 기관·공공시설, 사무실·가정에 설치한 트리랜드 크리스마스트리 사례입니다. 설치 전과 후를 비교해 보실 수 있습니다.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1346,6 +1348,16 @@ button.sl-d:active{transform:scale(.94)}
 .hc-item figcaption b{font-family:var(--display);font-size:16px;font-weight:600}
 .hc-item figcaption span{color:var(--muted);font-size:13px}
 @media (max-width:640px){.hero-case{padding:16px 14px 14px;margin-inline:calc(var(--gutter)*-.5)}.hc-head h3{font-size:20px}.hc-head p:last-child{font-size:13px}.hc-pair{gap:8px}.hc-play{left:6px;bottom:6px;font-size:11px;padding:3px 8px 3px 3px}.hc-play svg{width:18px;height:18px}.hc-item figcaption b{font-size:14px}.hc-item figcaption span{font-size:12px}}
+.hc-more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:860px;margin-top:18px;padding-top:18px;border-top:1px solid #E3D6B8}
+.hc-more .hc-item,.hc-more .hc-item figcaption{align-content:start}
+.hc-more .hc-item figcaption b{font-size:15px}
+.hc-more .oc{margin-top:3px}
+.hc-note{margin-top:2px;color:var(--berry);font-size:12px}
+.hc-prop{justify-self:start;margin-top:4px;padding:0;border:0;background:none;color:var(--berry);font:inherit;font-size:12.5px;font-weight:600;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.hero-case.only-more .hc-head h3,.hero-case.only-more .hc-head p:last-child{display:none}
+.hero-case.only-more .hc-head{margin-bottom:10px}
+.hero-case.only-more .hc-more{margin-top:0;padding-top:0;border-top:0}
+@media (max-width:640px){.hc-more{gap:6px;margin-top:14px;padding-top:14px}.hc-more .hc-play{padding:3px}.hc-more .hc-play em{display:none}.hc-more .hc-item figcaption b{font-size:13px}.hc-more .hc-item figcaption span{font-size:11px;line-height:1.35;word-break:keep-all}.hc-more .oc{font-size:10.5px;white-space:normal;flex-wrap:wrap;row-gap:1px}.hc-prop{font-size:11px}.hc-note{font-size:10.5px}}
 /* 구성 카드 LED 별 작동 영상 썸네일 */
 .tier-spec dd{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .tier-vid{position:relative;flex:none;width:34px;height:34px;padding:0;border:1px solid #D9C597;border-radius:6px;overflow:hidden;background:#F1ECE3;cursor:pointer}
@@ -1413,13 +1425,13 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
         <button type="button" data-f="public" aria-pressed="false">기관·공공</button>
         <button type="button" data-f="office" aria-pressed="false">사무실·가정</button>
       </div>
-      <article class="hero-case" data-cat="office" aria-labelledby="hcT">
+      <article class="hero-case" aria-labelledby="hcT">
         <div class="hc-head">
           <p class="eyebrow">2026 시즌</p>
           <h3 id="hcT">뷰티 브랜드 본사</h3>
           <p>공간 특성에 맞춰 로비는 화사하게, 사무 공간은 차분하게 연출했습니다.</p>
         </div>
-        <div class="hc-pair">
+        <div class="hc-pair" data-cat="office">
           <figure class="hc-item">
             <button type="button" class="hc-ph" data-vid="vid/heimish-snow.mp4" data-poster="vid/heimish-snow-poster.webp" aria-label="스노우 트리 설치 영상 보기"><img src="img/heimish-snow.webp" srcset="img/heimish-snow-600.webp 600w, img/heimish-snow.webp 1000w" sizes="(max-width:640px) 50vw, 420px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 로비에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>로비 · 2.3m 스노우 · 프리미엄</b><span>레드 &amp; 골드</span></figcaption>
@@ -1427,6 +1439,20 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
           <figure class="hc-item">
             <button type="button" class="hc-ph" data-vid="vid/heimish-green.mp4" data-poster="vid/heimish-green-poster.webp" aria-label="그린 트리 설치 영상 보기"><img src="img/heimish-green.webp" srcset="img/heimish-green-600.webp 600w, img/heimish-green.webp 1000w" sizes="(max-width:640px) 50vw, 420px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 사무 공간에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>사무 공간 · 2.3m · 프리미엄</b><span>화이트 &amp; 샴페인</span></figcaption>
+          </figure>
+        </div>
+        <div class="hc-more">
+          <figure class="hc-item" data-cat="shop">
+            <button type="button" class="hc-ph" data-vid="vid/lotteria.mp4" data-poster="vid/lotteria-poster.webp" aria-label="롯데리아 설치 영상 보기"><img src="img/lotteria.webp" srcset="img/lotteria-600.webp 600w, img/lotteria.webp 1000w" sizes="(max-width:640px) 33vw, 280px" width="1000" height="1333" loading="lazy" alt="롯데리아 매장 창가에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>롯데리아</b><span>2.3m · 스탠다드</span><em class="oc"><i style="background:#f1eee7"></i><i style="background:#d6c7a1"></i>화이트 &amp; 샴페인</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="clinic">
+            <button type="button" class="hc-ph" data-vid="vid/rehab.mp4" data-poster="vid/rehab-poster.webp" aria-label="재활의학과 설치 영상 보기"><img src="img/rehab.webp" srcset="img/rehab-600.webp 600w, img/rehab.webp 1000w" sizes="(max-width:640px) 33vw, 280px" width="1000" height="1333" loading="lazy" alt="재활의학과 입구에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>재활의학과</b><span>2.3m 스노우 · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="school">
+            <button type="button" class="hc-ph" data-vid="vid/school-ms.mp4" data-poster="vid/school-ms-poster.webp" aria-label="중학교 로비 설치 영상 보기"><img src="img/school-ms.webp" srcset="img/school-ms-600.webp 600w, img/school-ms.webp 1000w" sizes="(max-width:640px) 33vw, 280px" width="1000" height="1333" loading="lazy" alt="중학교 로비에 화려하게 꾸민 2.3m 트리, 레드 & 골드, 산타 옷을 입은 모형 강아지"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>중학교 로비</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em><small class="hc-note">요청에 맞춰 화려하게</small><button type="button" class="hc-prop" data-props-open>소품 · 모형 강아지</button></figcaption>
           </figure>
         </div>
       </article>
@@ -1492,8 +1518,8 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
     <img class="ct-mark" src="img/logo-mark-light.png" alt="" aria-hidden="true">
     <div class="wrap">
       <div class="ct-head">
-        <p class="ct-dday" id="dday">1차 얼리버드 할인 · 11월 8일까지</p>
-        <p class="ct-after" data-e2="설치는 11월부터 진행합니다. 2차 얼리버드 할인율은 상담하실 때 안내해 드립니다.">설치는 11월부터 진행합니다. 11월 9일부터는 할인율이 낮아집니다.</p>
+        <p class="ct-dday" id="dday">2차 얼리버드 할인 · <span class="e2d">11월 22일</span>까지</p>
+        <p class="ct-after" data-p0="설치는 11월부터 진행합니다.">설치는 11월부터 진행합니다. 2차 얼리버드 할인은 <span class="e2d">11월 22일</span>까지입니다.</p>
         <h2>사진을 보내주시면<br><mark class="on-dark">30분 안에</mark> 답장드립니다</h2>
         <p>카카오톡으로 설치할 공간 사진을 보내주세요. 크기와 색상, 운임까지 넣은 금액을 알려드립니다.</p>
       </div>
@@ -1512,7 +1538,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
           <h3>받으시는 것</h3>
           <ul class="ct-list ct-get">
             <li><b>맞는 크기와 장식 색상 제안</b><span>공간 폭과 동선, 벽과 가구 색을 보고 골라 드립니다.</span></li>
-            <li><b>운임까지 넣은 견적</b><span data-e2="정가 기준 금액입니다. 2차 얼리버드 할인은 상담하실 때 안내해 드립니다. 부가세 별도.">얼리버드 할인(스탠다드 10% · 프리미엄 15%)을 적용한 금액입니다. 부가세 별도.</span></li>
+            <li><b>운임까지 넣은 견적</b><span data-p0="정가 기준 금액입니다. 부가세 별도.">2차 얼리버드 할인(스탠다드 5% · 프리미엄 10%)을 적용한 금액입니다. 부가세 별도.</span></li>
             <li><b>견적서 · 세금계산서</b><span>기관·기업은 이메일로 견적서를 받아 결재에 사용하실 수 있습니다. 카드 결제도 가능합니다.</span></li>
           </ul>
         </div>
@@ -1549,7 +1575,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
 </footer>
 
 <div class="bar" id="bar">
-  <p class="bar-promo"><b>1차 얼리버드 최대 15% 할인</b>11월 8일 마감</p>
+  <p class="bar-promo"><b>2차 얼리버드 최대 10% 할인</b><span class="e2d">11월 22일</span> 마감</p>
   <p class="bar-est" hidden><span>예상 합계 · 부가세 별도</span><b class="num" id="barTotal"></b></p>
   <button type="button" class="btn btn-sm bar-quote" id="barBtn" data-quote="bar">1분 견적 내기</button>
 </div>
@@ -1924,10 +1950,10 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
       body.querySelector('[data-close]').addEventListener('click', () => dlg.close());
     });
     function openSize(key, from) {
-      const z = SIZES[key], pr = priceOf(z.chip);
+      const z = SIZES[key], pr = priceOf(z.chip), PH = window.TL_PH || 0;
       show('<p class="cc-k">크기 · 하단 지름 ' + z.d + '</p><p class="ic-title">' + esc(z.t) + (z.pop ? '<small>인기</small>' : '') + (z.ltd ? '<small class="ltd">한정 수량</small>' : '') + '</p>' +
         '<img class="ic-img tall" src="' + z.img + '" alt="' + esc(z.t) + ' 설치 예">' +
-        '<p class="ic-meta"><span>' + (z.box ? '하단 상자 ' + z.box + '개' : '하단 상자 미포함') + '</span>' + (pr && z.chip === 's135' ? '<span>단일 구성 <b style="color:var(--berry)">' + won(pr.pre[window.TL_AFTER1 ? 0 : 1]) + '</b>' + (window.TL_AFTER1 ? '' : ' <s>' + won(pr.pre[0]) + '</s>') + '</span><span>' + (window.TL_AFTER1 ? '정가 · 2차 할인은 상담 시 안내' : '1차 얼리버드가') + '</span>' : pr ? (window.TL_AFTER1 ? '<span>스탠다드 <b>' + won(pr.std[0]) + '</b></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[0]) + '</b></span><span>정가 · 2차 할인은 상담 시 안내</span>' : '<span>스탠다드 <b>' + won(pr.std[1]) + '</b> <s>' + won(pr.std[0]) + '</s></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[1]) + '</b> <s>' + won(pr.pre[0]) + '</s></span><span>1차 얼리버드가</span>') : '') + '</p>' +
+        '<p class="ic-meta"><span>' + (z.box ? '하단 상자 ' + z.box + '개' : '하단 상자 미포함') + '</span>' + (pr && z.chip === 's135' ? '<span>단일 구성 <b style="color:var(--berry)">' + won(pr.pre[PH]) + '</b>' + (PH ? ' <s>' + won(pr.pre[0]) + '</s>' : '') + '</span><span>' + (PH ? '2차 얼리버드가' : '정가') + '</span>' : pr ? (PH ? '<span>스탠다드 <b>' + won(pr.std[PH]) + '</b> <s>' + won(pr.std[0]) + '</s></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[PH]) + '</b> <s>' + won(pr.pre[0]) + '</s></span><span>2차 얼리버드가</span>' : '<span>스탠다드 <b>' + won(pr.std[0]) + '</b></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[0]) + '</b></span><span>정가</span>') : '') + '</p>' +
         '<p class="cc-d">' + esc(z.fit) + '</p>' + caseRow(z.cases) +
         '<div class="cc-b"><button type="button" class="cc-main" data-go>이 크기로 견적 내기</button></div>', from);
       body.querySelector('[data-go]').addEventListener('click', () => goEstimate(pre => pick(z.chip, pre)));
@@ -2095,6 +2121,8 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
     const all = curF === 'all';
     document.querySelectorAll('#cases [data-cat]').forEach(el => { el.hidden = !all && el.dataset.cat !== curF; });
     feat.classList.toggle('is-empty', ![...feat.children].some(el => !el.hidden));
+    const hcase = document.querySelector('#cases .hero-case');   // 2026 칸: 현장별 분류, 보일 카드가 없으면 칸째 숨김
+    if (hcase) { const pair = hcase.querySelector('.hc-pair'); hcase.hidden = !hcase.querySelector('[data-cat]:not([hidden])'); hcase.classList.toggle('only-more', !!pair && pair.hidden); }
     grid.classList.toggle('is-filtered', !all);
     smallCases.forEach((el, i) => el.classList.toggle('is-extra', i >= 6));
     if (applyCases.ran) document.querySelectorAll('#cases [data-cat]:not([hidden]), #cases .case-cta').forEach(el => { el.classList.add('in'); el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); });
@@ -2142,17 +2170,19 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
     }, { threshold: [0, 0.6] }).observe(tag);
   })();
 
-  // days left until the 1st pre-order deadline (2026-11-08, end of day KST)
+  // 2차 얼리버드 마감까지 남은 날 (마감일은 <meta name="tl-e2-end">)
+  const em = ((document.querySelector('meta[name="tl-e2-end"]') || {}).content || '2026-11-22').split('-');
   const k = new Date(Date.now() + 9 * 3600000);
-  const left = Math.round((Date.UTC(2026, 10, 8) - Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate())) / 86400000);
+  const left = Math.round((Date.UTC(+em[0], em[1] - 1, +em[2]) - Date.UTC(k.getUTCFullYear(), k.getUTCMonth(), k.getUTCDate())) / 86400000);
+  const ed = (+em[1]) + '월 ' + (+em[2]) + '일';
   const dd = $('#dday'), barTxt = document.querySelector('.bar-promo');
   if (left >= 0) {
     const d = left === 0 ? '오늘 마감' : 'D-' + left;
-    dd.textContent = '1차 얼리버드 할인 ' + d + ' · 11월 8일까지';
-    if (barTxt) barTxt.innerHTML = '<b>1차 얼리버드 최대 15% 할인</b>' + d + ' · 11월 8일 마감';
+    dd.textContent = '2차 얼리버드 할인 ' + d + ' · ' + ed + '까지';
+    if (barTxt) barTxt.innerHTML = '<b>2차 얼리버드 최대 10% 할인</b>' + d + ' · ' + ed + ' 마감';
   } else {
-    dd.textContent = '1차 얼리버드 마감 · 2차 얼리버드는 상담 시 안내';
-    if (barTxt) barTxt.innerHTML = '<b>2차 얼리버드 진행 중</b>할인율은 상담 시 안내';
+    dd.textContent = '2026 시즌 예약 진행 중';
+    if (barTxt) barTxt.innerHTML = '<b>2026 시즌 예약 진행 중</b>설치 일정은 상담 시 안내';
   }
 })();
 </script>
@@ -2308,13 +2338,20 @@ function c(){d.close()}document.getElementById('pvClose').addEventListener('clic
 d.addEventListener('click',function(e){if(e.target===d)c()});})();
 </script>
 <script>
-/* 11월 9일(KST)부터 1차 얼리버드 표기를 정가·2차 안내로 자동 전환 */
+/* 2차 얼리버드. 마감일은 <meta name="tl-e2-end"> 한 곳만 바꾸면 날짜 문구·카운트다운·채팅 견적·정가 전환이 같이 바뀜 */
 (function(){
-  if (Date.now() + 9 * 3600000 < Date.UTC(2026, 10, 9)) return;
-  window.TL_AFTER1 = true; document.documentElement.classList.add('after1');
-  document.querySelectorAll('[data-e2]').forEach(function(e){ e.innerHTML = e.getAttribute('data-e2'); });
+  var m = document.querySelector('meta[name="tl-e2-end"]'), v = ((m && m.content) || '2026-11-22').split('-');
+  var end = Date.UTC(+v[0], v[1] - 1, +v[2]);   // 그날 끝까지 (KST)
+  window.TL_E2_END = end;
+  document.querySelectorAll('.e2d').forEach(function(e){ e.textContent = (+v[1]) + '월 ' + (+v[2]) + '일'; });
+  document.querySelectorAll('.e2s').forEach(function(e){ e.textContent = (+v[1]) + '.' + (+v[2]); });
+  window.TL_PH = Date.now() + 9 * 3600000 < end + 86400000 ? 2 : 0;
+  if (window.TL_PH) return;
+  /* 2차 마감 뒤: 정가 표기 */
+  document.documentElement.classList.add('after2');
+  document.querySelectorAll('[data-p0]').forEach(function(e){ e.innerHTML = e.getAttribute('data-p0'); });
   document.querySelectorAll('.sheet2 .tp').forEach(function(c){ var b = c.querySelector('b'), x = c.querySelector('s'); if (b && x) { b.textContent = x.textContent; x.remove(); } });
-  var tl = document.querySelectorAll('.tl li'); if (tl.length > 1) { tl[0].classList.remove('on'); tl[1].classList.add('on'); }
+  var tl = document.querySelectorAll('.tl li'); if (tl.length > 2) { tl[1].classList.remove('on'); tl[2].classList.add('on'); }
 })();
 </script>
 <dialog class="qd" id="quoteDlg" aria-labelledby="qdT">
@@ -2333,13 +2370,13 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
 <script>
 /* 1분 견적: 채팅처럼 한 단계씩 묻고, 마지막에 견적 복사 + 카카오톡 연결 */
 (() => {
-  // 확정 가격 (2026-10-28 대표님 가격표). [정가, 1차 얼리버드가]
+  // 확정 가격 (2026-10-28 대표님 가격표). [정가, 1차 얼리버드가, 2차 얼리버드가(11/9 확정: 스탠다드 -5%, 프리미엄 -10%, 천 원 단위 내림)]
   const P = {
-    s135: { std: [340000, 289000], pre: [340000, 289000] },   // 1.35m는 단일 구성(프리미엄 장식, LED 별·상자 제외)
-    s195: { std: [525000, 470000], pre: [650000, 550000] },
-    s230: { std: [645000, 580000], pre: [800000, 680000] },
-    s230s: { std: [725000, 652000], pre: [900000, 765000] },
-    s290: { std: [1450000, 1300000], pre: [1650000, 1400000] },
+    s135: { std: [340000, 289000, 306000], pre: [340000, 289000, 306000] },   // 1.35m는 단일 구성(프리미엄 장식, LED 별·상자 제외)
+    s195: { std: [525000, 470000, 498000], pre: [650000, 550000, 585000] },
+    s230: { std: [645000, 580000, 612000], pre: [800000, 680000, 720000] },
+    s230s: { std: [725000, 652000, 688000], pre: [900000, 765000, 810000] },
+    s290: { std: [1450000, 1300000, 1377000], pre: [1650000, 1400000, 1485000] },
   };
   window.TL_PRICES = P;
   const EARLY1_END = Date.UTC(2026, 10, 8);          // 1차 얼리버드 11월 8일까지 (KST 기준 그날 끝까지)
@@ -2378,7 +2415,9 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const track = (n, p) => { try { if (window.gtag) gtag('event', n, p || {}); } catch (e) {} };
   const sizeOf = id => SIZES.find(x => x.id === id);
-  const early1 = () => Date.now() + 9 * 3600000 < EARLY1_END + 86400000;
+  // 지금 적용되는 가격 칸: 1 = 1차 얼리버드, 2 = 2차 얼리버드, 0 = 정가
+  const phase = () => { const t = Date.now() + 9 * 3600000; return t < EARLY1_END + 86400000 ? 1 : t < (window.TL_E2_END || Date.UTC(2026, 10, 22)) + 86400000 ? 2 : 0; };
+  const e2day = () => { const d = new Date(window.TL_E2_END || Date.UTC(2026, 10, 22)); return (d.getUTCMonth() + 1) + '월 ' + d.getUTCDate() + '일'; };
 
   let A = {}, hist = [], qIdx = {}, qid = '', opener = null, via = '';
   // A.trees = [{ size, n }] 크기별 수량. 트리 한 그루씩 풀면 units()
@@ -2429,8 +2468,8 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     if (opts.extra) { const c = chips(opts.extra.map(e => e[1]), t => on(opts.extra.find(e => e[1] === t)[0])); c.style.marginTop = '10px'; w.appendChild(c); }
     return w;
   }
-  const pct = (sz, tier) => { const [l, e] = P[sz][tier]; return Math.round((1 - e / l) * 100); };
-  const unit = (sz, tier) => { const p = P[sz][tier]; return early1() ? p[1] : p[0]; };
+  const pct = (sz, tier) => { const p = P[sz][tier], ph = phase(); return ph ? Math.round((1 - p[ph] / p[0]) * 100) : 0; };
+  const unit = (sz, tier) => P[sz][tier][phase()];
   const multiRate = n => n === 2 ? MULTI[2] : n === 3 ? MULTI[3] : 0;   // 4그루 이상은 별도 견적
   const treesLabel = () => A.trees.map(t => sizeOf(t.size).name + (t.n > 1 ? ' ×' + t.n : '')).join(', ');
 
@@ -2498,10 +2537,10 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       A.recFrom = v; answer('ceil', rec, v, () => bubble('bot', '그럼 <b>' + sizeOf(rec).name + '</b> 한 그루 기준으로 계산해 볼게요. 상담 때 공간 사진을 보고 다시 맞춰 드려요.'));
     })),
     tier: () => {
-      const list = choosable(), lbl = early1() ? '1차 얼리버드가' : '정가';
+      const list = choosable(), lbl = ['정가', '1차 얼리버드가', '2차 얼리버드가'][phase()];
       const szs = [...new Set(list.map(u => u.size))];
       const sum = t => list.reduce((a, u) => a + unit(u.size, t), 0), sumL = t => list.reduce((a, u) => a + P[u.size][t][0], 0);
-      const pr = t => early1() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
+      const pr = t => phase() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
       const w = cards([
         { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성 · 하단 상자 3·5·8개', img: 'std-tree', p: pr('std') },
         { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-tree', p: pr('pre'), tag: '2026', k: 'pre' },
@@ -2661,7 +2700,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   }
   // ---------- 결과 ----------
   function calc() {
-    const us = units(), n = us.length, e1 = early1();
+    const us = units(), n = us.length, ph = phase();
     const list = us.reduce((a, u) => a + P[u.size][tierOf(u)][0], 0);
     const sum = us.reduce((a, u) => a + unit(u.size, tierOf(u)), 0);
     const m = multiRate(n);
@@ -2674,13 +2713,13 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     const groups = [...gm.values()];
     const tiers = [...new Set(us.map(tierOf))], sizes = [...new Set(us.map(u => u.size))];
     const dpct = sizes.length === 1 && tiers.length === 1 ? pct(sizes[0], tiers[0]) : null;
-    return { n, list, sum, e1, m, tree, ex, reg, groups, dpct, min: tree + ex + reg.min, max: tree + ex + reg.max };
+    return { n, list, sum, ph, m, tree, ex, reg, groups, dpct, min: tree + ex + reg.min, max: tree + ex + reg.max };
   }
   function makeId() { const d = new Date(Date.now() + 9 * 3600000), c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; let r = ''; for (let i = 0; i < 3; i++) r += c[Math.floor(Math.random() * c.length)]; return 'TL-' + String(d.getUTCMonth() + 1).padStart(2, '0') + String(d.getUTCDate()).padStart(2, '0') + '-' + r; }
   const tierName = (t, sz) => sz === 's135' ? '단일 구성' : (t === 'pre' ? '프리미엄' : '스탠다드');
   const colorName = c => c === '추천' ? '색상 추천 요청' : c;
   const groupLine = g => sizeOf(g.size).name + ' ' + tierName(g.tier, g.size) + ' · ' + colorName(g.color) + (g.n > 1 ? ' ×' + g.n : '');
-  const discLabel = c => (c.e1 ? '1차 얼리버드 ' + (c.dpct != null ? c.dpct + '%' : '할인') : '정가') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '');
+  const discLabel = c => (c.ph ? c.ph + '차 얼리버드 ' + (c.dpct != null ? c.dpct + '%' : '할인') : '정가') + (c.m ? ' + ' + c.n + '그루 ' + Math.round(c.m * 100) + '%' : '');
   function quoteText(c, v) {
     const range = c.min === c.max ? won(c.min) : won(c.min) + ' ~ ' + won(c.max);
     const L = ['상호', '담당자', '연락처', '설치 주소'], who = (v || []).map((x, i) => x ? L[i] + ': ' + x : '').filter(Boolean);
@@ -2690,6 +2729,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       '추가 장식: ' + ((A.extra || []).map(x => x.name).join(', ') || '없음'),
       '설치 지역: ' + A.region, (A.whenDate ? '희망 설치일: ' : '희망 시기: ') + A.when,
       '예상 합계: ' + range + ' (' + discLabel(c) + ', 부가세 별도)' + (c.n >= 4 ? ' · 4그루 이상 추가 할인은 별도 견적 요청' : ''),
+      c.ph === 2 ? '2차 얼리버드가는 ' + e2day() + '까지 계약 시 적용됩니다.' : null,
       '', '공간 사진을 함께 보내드립니다.']).filter(x => x !== null).join('\n');
   }
   function copyNow(text) {
@@ -2728,11 +2768,11 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       d.innerHTML = '<h4>' + head + '</h4><dl>' +
         (c.groups.length > 1 ? c.groups.map((g, i) => '<div class="qg"><dt>' + NUM[i] + ' ' + sizeOf(g.size).name + ' ' + tierName(g.tier, g.size) + '</dt><dd>' + colorName(g.color) + (g.n > 1 ? ' ×' + g.n : '') + '</dd></div>').join('') : '<div><dt>색상</dt><dd>' + colorName(g0.color) + '</dd></div>') +
         '<div><dt>트리 ' + c.n + '그루 정가</dt><dd>' + won(c.list) + '</dd></div>' +
-        '<div><dt>' + discLabel(c) + '</dt><dd>' + won(c.tree) + '</dd></div>' +
+        (c.ph || c.m ? '<div><dt>' + discLabel(c) + '</dt><dd>' + won(c.tree) + '</dd></div>' : '') +
         '<div><dt>추가 장식</dt><dd>' + (c.ex ? won(c.ex) : '없음') + '</dd></div>' +
         '<div><dt>운임 (' + A.region + ')</dt><dd>' + (c.reg.max ? won(c.reg.min) + ' ~ ' + won(c.reg.max) : '무료') + '</dd></div>' +
         '<div><dt>' + (A.whenDate ? '희망 설치일' : '희망 시기') + '</dt><dd>' + A.when + '</dd></div></dl>' +
-        '<p class="qincl">설치·철거 포함 · 기간 추가금 없음</p><div class="qtot"><span>예상 합계</span><b>' + range + '</b><small>부가세 별도 · 최종 금액은 상담 후 확정' + (c.e1 ? '' : ' · 2차 얼리버드 할인은 상담 시 안내') + (c.n >= 4 ? ' · 4그루 이상 추가 할인은 상담 시 따로 견적을 드려요' : '') + '</small></div>' +
+        '<p class="qincl">설치·철거 포함 · 기간 추가금 없음</p><div class="qtot"><span>예상 합계</span><b>' + range + '</b><small>부가세 별도 · 최종 금액은 상담 후 확정' + (c.ph === 2 ? ' · 2차 얼리버드가는 ' + e2day() + '까지 계약 시 적용' : '') + (c.n >= 4 ? ' · 4그루 이상 추가 할인은 상담 시 따로 견적을 드려요' : '') + '</small></div>' +
         '<div class="qinfo"><p class="qinfo-t">견적에 함께 보낼 정보 <small>선택</small></p>' +
         '<input id="qiOrg" type="text" autocomplete="organization" placeholder="상호 / 기관명 (예: ○○카페, ○○병원)" aria-label="상호 또는 기관명">' +
         '<input id="qiName" type="text" autocomplete="name" placeholder="담당자명" aria-label="담당자명">' +

@@ -192,7 +192,7 @@ button{font:inherit;cursor:pointer}
       <h2>할인</h2>
       <div class="radios" id="phase">
         <label><input type="radio" name="phase" value="e1"> <span id="e1Label">1차 얼리버드</span></label>
-        <label><input type="radio" name="phase" value="e2"> 2차 얼리버드 <span class="inline"><input id="e2Pct" type="number" inputmode="numeric" min="0" max="50" placeholder="%"> %</span></label>
+        <label><input type="radio" name="phase" value="e2"> <span id="e2Label">2차 얼리버드</span> <span class="inline"><input id="e2Pct" type="number" inputmode="numeric" min="0" max="50" placeholder="자동" title="비워 두면 홈페이지 2차 가격(스탠다드 5%·프리미엄 10%)으로 계산. 숫자를 넣으면 그 할인율로 계산"> %</span></label>
         <label><input type="radio" name="phase" value="none"> 할인 없음 (정가)</label>
       </div>
       <div class="field" id="multiBox" hidden><label for="multiPct">여러 그루 추가 할인 (4그루 이상은 직접 입력)</label>
@@ -275,7 +275,7 @@ function korean(n) {
 }
 
 /* ── 홈페이지 가격표 읽기 ── */
-let P = null;   // { sizes:[{label, base, tiers:{스탠다드:{list,early,off}, ...}}], extras, colors, regions, multi, box, deadline }
+let P = null;   // { sizes:[{label, base, tiers:{스탠다드:{list,early,off,early2,off2}, ...}}], extras, colors, regions, multi, box, deadline, deadline2 }
 function literal(src, name) {
   const m = new RegExp('const ' + name + ' *= *').exec(src); if (!m) return null;
   let i = m.index + m[0].length, d = 0;
@@ -300,9 +300,10 @@ async function loadPrices() {
       const k = tp.querySelector('.tp-k').textContent.trim();
       const tier = k.includes('단일') ? '단일 구성' : k;
       const off = tp.querySelector('.tp-off').textContent.trim();
-      const early = won(/([\d,]+)원/.exec(tp.querySelector('b.num').textContent.replace(off, ''))[1]);
+      const shown = won(/([\d,]+)원/.exec(tp.querySelector('b.num').textContent.replace(off, ''))[1]);
       const list = won(tp.querySelector('s.num').textContent);
-      tiers[tier] = { list, early, off };
+      // 11/9부터 홈페이지 가격표는 2차 얼리버드가를 보여주고, 1차 값은 data-p1·data-o1에 남겨 둠
+      tiers[tier] = tp.dataset.p1 ? { list, early: +tp.dataset.p1, off: tp.dataset.o1, early2: shown, off2: off } : { list, early: shown, off, early2: null, off2: '' };
     });
     return { label, base: row.querySelector('.sz-box').textContent.trim(), tiers };
   });
@@ -321,9 +322,11 @@ async function loadPrices() {
   props.forEach(x => extras.push({ name: x.name, price: null, prop: true, opts: x.sub && !/\d/.test(x.sub) ? [{ k: '종류', v: x.sub.split(/\s*·\s*/) }] : [] }));
   const multi = lit(js, 'MULTI') || { 2: 0.05, 3: 0.1 };
   const regions = lit(js, 'REGIONS') || [{ name: '서울', min: 0, max: 0 }];
+  // 얼리버드 마감일: 홈페이지 <meta name="tl-e1-end">, <meta name="tl-e2-end"> (2차 연장 시 홈페이지 그 한 줄만 바꾸면 여기도 따라옴)
+  const md = n => { const v = (doc.querySelector('meta[name="' + n + '"]') || {}).content; const m = /\d{4}-(\d{2})-(\d{2})/.exec(v || ''); return m ? { m: +m[1], d: +m[2] } : null; };
   const dm = /1차 얼리버드 할인은 (\d+)월 (\d+)일까지/.exec(doc.body.textContent) || /1차 얼리버드 (\d+)월 (\d+)일 마감/.exec(doc.body.textContent);
   if (!sizes.length) throw new Error('가격표를 찾지 못했습니다');
-  return { sizes, extras, colors, regions, multi, box, deadline: dm ? { m: +dm[1], d: +dm[2] } : null, at: new Date() };
+  return { sizes, extras, colors, regions, multi, box, deadline: md('tl-e1-end') || (dm ? { m: +dm[1], d: +dm[2] } : null), deadline2: md('tl-e2-end'), at: new Date() };
 }
 
 /* ── 상태 ── */
@@ -341,12 +344,15 @@ function freshState() {
     trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', renew: false, renewPct: store.get('tl-quote-renew-pct', 5), target: '', extraNotes: '',
   };
 }
-function deadlineDate() {
-  if (!P || !P.deadline) return null;
-  const y = new Date().getFullYear();
-  return new Date(y, P.deadline.m - 1, P.deadline.d, 23, 59, 59);
+function deadlineDate(k) {
+  const d = P && P[k || 'deadline']; if (!d) return null;
+  return new Date(new Date().getFullYear(), d.m - 1, d.d, 23, 59, 59);
 }
-function autoPhase() { const dl = deadlineDate(); return !dl || new Date() <= dl ? 'e1' : 'e2'; }
+function autoPhase() {
+  const d1 = deadlineDate(), d2 = deadlineDate('deadline2'), now = new Date();
+  if (!d1 || now <= d1) return 'e1';
+  return !d2 || now <= d2 ? 'e2' : 'none';
+}
 
 /* ── 계산 ── */
 const sizeOf = label => P.sizes.find(s => s.label === label) || P.sizes[0];
@@ -360,13 +366,15 @@ function calc() {
     let early = pr.list;
     if (S.phase === 'e1') early = pr.early;
     else if (S.phase === 'e2') {
+      // 할인율 칸을 비우면 홈페이지 2차 가격(스탠다드 5%·프리미엄 10%), 숫자를 넣으면 그 할인율
       const p = +S.e2Pct;
-      if (S.e2Pct === '' || !(p >= 0)) problems.push('2차 얼리버드 할인율을 넣어 주세요.');
+      if (S.e2Pct === '' || S.e2Pct == null) { if (pr.early2) early = pr.early2; else problems.push('2차 얼리버드 할인율을 넣어 주세요.'); }
+      else if (!(p >= 0)) problems.push('2차 얼리버드 할인율을 확인해 주세요.');
       else early = Math.floor(pr.list * (1 - p / 100) / 1000) * 1000;
     }
     // 프리미엄은 기본 하단 상자가 두 배 (3→6, 5→10, 8→15, 11/3 홈페이지 기준)
     const base = tier === '프리미엄' ? sz.base.replace(/상자 (\d+)개/, (m, n) => '상자 ' + ({ 3: 6, 5: 10, 8: 15 }[n] || n * 2) + '개') : sz.base;
-    return { ...t, n: i + 1, tier, off: pr.off, list: pr.list, early, base, name: typeName(sz.label) };
+    return { ...t, n: i + 1, tier, off: pr.off, off2: pr.off2, list: pr.list, early, base, name: typeName(sz.label) };
   });
   const listSum = trees.reduce((a, t) => a + t.list, 0);
   const earlySum = trees.reduce((a, t) => a + t.early, 0);
@@ -407,7 +415,10 @@ function calc() {
   }
   const vat = Math.round(supply * 0.1);
   const used = [...new Set(trees.filter(t => t.tier !== '단일 구성').map(t => t.tier))];
-  const earlyLabel = S.phase === 'e2' ? `2차 얼리버드 할인 (${S.e2Pct || 0}%)`
+  const e2Own = S.e2Pct !== '' && S.e2Pct != null;
+  const earlyLabel = S.phase === 'e2' ? (e2Own ? `2차 얼리버드 할인 (${S.e2Pct}%)`
+      : used.length > 1 ? `2차 얼리버드 할인\n${used.map(u => u + ' ' + trees.find(t => t.tier === u).off2).join(' · ')}`
+      : `2차 얼리버드 할인 (${trees[0].off2})`)
     : used.length > 1 ? `1차 얼리버드 할인\n${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')}`
     : `1차 얼리버드 할인 (${trees[0].off})`;
   if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
@@ -440,9 +451,10 @@ function renderPaper(R) {
     ['부가가치세 (10%)', '₩' + fmt(R.vat)],
     ['합계금액', '₩' + fmt(R.total), 'total'],
   ];
-  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '';
+  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
   const notes = `<div class="h">&lt;비고&gt;</div>
     ${S.phase === 'e1' && dl ? `<div class="v1">본 견적은 ${dl}까지 계약 시 유효합니다.</div><div class="v2">1차 얼리버드 할인 적용가이며, 이후 계약 시 2차 할인율로 다시 견적드립니다.</div>` : ''}
+    ${S.phase === 'e2' && dl2 ? `<div class="v1">본 견적은 ${dl2}까지 계약 시 유효합니다.</div><div class="v2">2차 얼리버드 할인 적용가이며, 이후 계약 시 다시 견적드립니다.</div>` : ''}
     <ul><li>트리 대여비는 설치·철거·회수비 포함입니다.</li><li>2월 초 회수까지 기간별 추가 요금 없음</li>
     <li>결제는 설치 완료 후 3일 이내 전액입니다.</li><li>모든 트리에 KC 인증 전기안정기 설치</li><li>설치 자리 가까이 콘센트가 필요합니다.</li>
     ${S.extraNotes.split('\n').map(s => s.trim()).filter(Boolean).map(s => `<li>${esc(s)}</li>`).join('')}</ul>
@@ -520,7 +532,7 @@ function treeCard(t, i) {
     </div>
     <div class="field"><span class="lbl">구성</span>${single ? `<div class="seg"><button type="button" aria-pressed="true" disabled>${esc(names[0])}</button></div>`
       : `<div class="seg" role="group">${names.map(nm => `<button type="button" data-tier="${esc(nm)}" aria-pressed="${nm === tier}">${esc(nm)}</button>`).join('')}</div>`}
-      <span class="price-line">정가 ${fmt(pr.list)}원 · 1차 ${fmt(pr.early)}원 (${pr.off}) · ${esc(sz.base)}</span></div>
+      <span class="price-line">정가 ${fmt(pr.list)}원 · 1차 ${fmt(pr.early)}원 (${pr.off})${pr.early2 ? ` · 2차 ${fmt(pr.early2)}원 (${pr.off2})` : ''} · ${esc(sz.base)}</span></div>
     <div class="grid2">
       <div class="field"><label>설치 위치 (선택)</label><input data-k="place" value="${esc(t.place)}" placeholder="예: 탕비실"></div>
       <div class="field"><label>위치 메모 (선택)</label><input data-k="note" value="${esc(t.note)}" placeholder="예: 콘센트 옆 벽 앞"></div>
@@ -730,6 +742,7 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
   if (R.adjDisc) lines.push(`협의 할인 ${fmt(R.adjDisc)}원`);
   lines.push( `공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
   if (S.phase === 'e1' && P.deadline) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
+  if (S.phase === 'e2' && P.deadline2) lines.push('', `${P.deadline2.m}월 ${P.deadline2.d}일까지 계약 시 2차 얼리버드 가격으로 진행됩니다.`);
   await navigator.clipboard.writeText(lines.join('\n')); msg('카톡 요약을 복사했습니다.');
 });
 
@@ -809,9 +822,10 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
 (async () => {
   try { P = await loadPrices(); }
   catch (err) { $('#status').textContent = '홈페이지 가격표를 불러오지 못했습니다. 새로고침해 주세요. (' + err.message + ')'; $('#status').className = 'status err'; return; }
-  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '';
-  $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
+  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
+  $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl2 ? ` · 2차 얼리버드 ${dl2} 마감` : dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
   $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}까지)` : ''}`;
+  $('#e2Label').textContent = `2차 얼리버드${dl2 ? ` (${dl2}까지)` : ''}`;
   if (EMBED) {
     window.tlQuotePdf = async st => {
       S = JSON.parse(JSON.stringify(st)); renderForm();
