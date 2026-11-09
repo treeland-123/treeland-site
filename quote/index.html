@@ -213,6 +213,7 @@ button{font:inherit;cursor:pointer}
     <section>
       <div class="total-box"><span>합계 (부가세 포함)</span><b id="totalOut">0원</b></div>
       <p class="hint err" id="problems" hidden></p>
+      <p class="hint" id="warns" hidden style="color:#9a5b00"></p>
       <p class="hint err" id="overflow" hidden></p>
       <div class="actions">
         <button type="button" class="primary" id="pdfBtn">PDF 저장</button>
@@ -348,6 +349,7 @@ function deadlineDate(k) {
   const d = P && P[k || 'deadline']; if (!d) return null;
   return new Date(new Date().getFullYear(), d.m - 1, d.d, 23, 59, 59);
 }
+function e1Over() { const d1 = deadlineDate(); return !!d1 && new Date() > d1; }
 function autoPhase() {
   const d1 = deadlineDate(), d2 = deadlineDate('deadline2'), now = new Date();
   if (!d1 || now <= d1) return 'e1';
@@ -358,7 +360,7 @@ function autoPhase() {
 const sizeOf = label => P.sizes.find(s => s.label === label) || P.sizes[0];
 const typeName = label => /스노우|슬림/.test(label) ? `${label} 트리` : `${label} 그린 트리`;
 function calc() {
-  const problems = [];
+  const problems = [], warns = [];
   const trees = S.trees.map((t, i) => {
     const sz = sizeOf(t.size), names = Object.keys(sz.tiers);
     const tier = names.length === 1 ? names[0] : (sz.tiers[t.tier] ? t.tier : names[names.length - 1]);
@@ -421,8 +423,9 @@ function calc() {
       : `2차 얼리버드 할인 (${trees[0].off2})`)
     : used.length > 1 ? `1차 얼리버드 할인\n${used.map(u => u + ' ' + trees.find(t => t.tier === u).off).join(' · ')}`
     : `1차 얼리버드 할인 (${trees[0].off})`;
+  if (S.phase === 'e1' && e1Over()) warns.push(`1차 얼리버드는 ${P.deadline.m}월 ${P.deadline.d}일에 마감됐습니다. 예외로 1차 가격을 드리는 경우만 그대로 두세요.`);
   if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
-  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, renewPct, renewDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, supply0, adjDisc, target, targetGap, earlyLabel, problems };
+  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, renewPct, renewDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, supply0, adjDisc, target, targetGap, earlyLabel, problems, warns };
 }
 
 /* ── 견적서 그리기 ── */
@@ -453,7 +456,7 @@ function renderPaper(R) {
   ];
   const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
   const notes = `<div class="h">&lt;비고&gt;</div>
-    ${S.phase === 'e1' && dl ? `<div class="v1">본 견적은 ${dl}까지 계약 시 유효합니다.</div><div class="v2">1차 얼리버드 할인 적용가이며, 이후 계약 시 2차 할인율로 다시 견적드립니다.</div>` : ''}
+    ${S.phase === 'e1' && dl && !e1Over() ? `<div class="v1">본 견적은 ${dl}까지 계약 시 유효합니다.</div><div class="v2">1차 얼리버드 할인 적용가이며, 이후 계약 시 2차 할인율로 다시 견적드립니다.</div>` : ''}
     ${S.phase === 'e2' && dl2 ? `<div class="v1">본 견적은 ${dl2}까지 계약 시 유효합니다.</div><div class="v2">2차 얼리버드 할인 적용가이며, 이후 계약 시 다시 견적드립니다.</div>` : ''}
     <ul><li>트리 대여비는 설치·철거·회수비 포함입니다.</li><li>2월 초 회수까지 기간별 추가 요금 없음</li>
     <li>결제는 설치 완료 후 3일 이내 전액입니다.</li><li>모든 트리에 KC 인증 전기안정기 설치</li><li>설치 자리 가까이 콘센트가 필요합니다.</li>
@@ -576,6 +579,7 @@ function update() {
   $('#multiHint').textContent = S.trees.length >= 4 ? '' : S.trees.length >= 2 ? `${S.trees.length}그루 추가 할인 ${R.pct}% 자동 적용` : '';
   $('#totalOut').textContent = fmt(R.total) + '원';
   $('#problems').hidden = !R.problems.length; $('#problems').textContent = R.problems.join(' ');
+  $('#warns').hidden = !R.warns.length; $('#warns').textContent = R.warns.join(' ');
   ['#pdfBtn', '#pngBtn', '#copyBtn'].forEach(s => $(s).disabled = !!R.problems.length);
   renderPaper(R);
   const ov = $('#overflow');
@@ -741,7 +745,7 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
   lines.push(`운임 ${R.ship ? fmt(R.ship) + '원' : '무료'}`);
   if (R.adjDisc) lines.push(`협의 할인 ${fmt(R.adjDisc)}원`);
   lines.push( `공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
-  if (S.phase === 'e1' && P.deadline) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
+  if (S.phase === 'e1' && P.deadline && !e1Over()) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
   if (S.phase === 'e2' && P.deadline2) lines.push('', `${P.deadline2.m}월 ${P.deadline2.d}일까지 계약 시 2차 얼리버드 가격으로 진행됩니다.`);
   await navigator.clipboard.writeText(lines.join('\n')); msg('카톡 요약을 복사했습니다.');
 });
@@ -824,7 +828,7 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   catch (err) { $('#status').textContent = '홈페이지 가격표를 불러오지 못했습니다. 새로고침해 주세요. (' + err.message + ')'; $('#status').className = 'status err'; return; }
   const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
   $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl2 ? ` · 2차 얼리버드 ${dl2} 마감` : dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
-  $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}까지)` : ''}`;
+  $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}${e1Over() ? ' 마감' : '까지'})` : ''}`;
   $('#e2Label').textContent = `2차 얼리버드${dl2 ? ` (${dl2}까지)` : ''}`;
   if (EMBED) {
     window.tlQuotePdf = async st => {
@@ -839,6 +843,7 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   }
   const draft = store.get('tl-quote-draft', null);
   S = draft && draft.trees ? draft : freshState();
+  if (S.phase === 'e1' && e1Over() && !HIST.some(h => h.no === S.no)) S.phase = autoPhase();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
   $('#form').removeAttribute('aria-busy');
   stampState(); renderHist(); renderForm(); sync();
