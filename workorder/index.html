@@ -61,7 +61,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 .br{grid-column:1;border-left:3px solid var(--ink);margin:2px 0;display:flex;align-items:center}
 .br b{writing-mode:vertical-rl;font-size:11px;font-weight:700;margin-left:2px}
 .no{grid-column:2;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-weight:700;font-size:14px}
-.field{grid-column:3;position:relative;height:30px}
+.field{grid-column:3;position:relative;height:36px}
 .band{position:absolute;top:0;bottom:0;background:var(--tree)}
 .band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(26,26,25,.14)}
 .orn{position:absolute;top:4px}.orn svg{display:block}
@@ -69,10 +69,11 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 .cap{grid-column:3;display:flex;justify-content:center}
 .trunk{grid-column:3;justify-self:center;width:24px;height:14px;background:var(--trunk);margin-top:-3px}
 .plan{margin:6px 0 12px;padding-bottom:10px;border-bottom:1px solid var(--line)}
-.legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:13px;margin-top:10px}.legend span{display:flex;align-items:center;gap:4px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;margin-top:10px}.legend span{display:flex;align-items:center;gap:4px}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--act);color:var(--act-ink);padding:10px 16px;border-radius:8px;font-size:14px;z-index:50}
 .full{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:40;flex-direction:column;gap:12px}
 .full img{max-width:100%;max-height:82vh}.full .row{justify-content:center}.full .ghost{color:#fff;border-color:#888}
+.ob{position:relative;display:flex;align-items:center;justify-content:center}.ob img{display:block;object-fit:contain}.ob .sz{position:absolute;right:-3px;bottom:-3px;background:#fff;color:#1D1F1C;font:800 8px/1 sans-serif;border-radius:6px;padding:1px 2px;border:1px solid #1D1F1C}
 </style>
 </head>
 <body>
@@ -180,7 +181,10 @@ function renderDetail(){
 }
 
 /* 트리 그리기: 직원 화면과 같은 규칙 (단 폭, 대각선/수직 엇갈림) */
-function ico(tok,z){const [k,c]=String(tok).split('-');let g;
+function ico(tok,z){const IC=(window.SITE&&window.SITE.icons)||window._ICONS||{};
+ if(IC[tok]){const k=tok.split('-')[0];let w=z,h=z;if(k==='B7'){w=h=z*.86}else if(k==='B6'){w=h=z*.72}else if(k==='I'){w=z*.46;h=z*1.3}else if(k==='SS'){w=h=z*.82}else if(k==='SL'){w=h=z*1.04}
+  return `<span class="ob" style="width:${z}px;height:${z}px"><img src="${IC[tok]}" width="${Math.round(w)}" height="${Math.round(h)}" alt="">${k[0]==='B'?`<b class="sz">${k[1]}</b>`:''}</span>`}
+ {const [k,c]=String(tok).split('-');let g;
  const F={N:'#1E2A4A',G:'#C9A24B',W:'#FFFFFF',B:'#5A8FCB'},T={N:'#fff',G:'#2B2205',W:'#1D1F1C',B:'#fff'};
  const f=c?F[c]:null,tc=c?T[c]:'#fff',st=c==='W'?' stroke="#1D1F1C" stroke-width="1.6"':'';
  if(k==='B8')g=`<circle r="15" fill="${f||'#262624'}"${st}/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="${tc}">8</text>`;
@@ -189,14 +193,15 @@ function ico(tok,z){const [k,c]=String(tok).split('-');let g;
  else if(k==='I')g=`<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="${f||'#2F7FD0'}"${st}/>`;
  else if(k==='SL')g=`<polygon points="0,-15 15,0 0,15 -15,0" fill="${f||'#1B8F6A'}"${st}/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="${c?tc:'#fff'}">대</text>`;
  else g=`<polygon points="0,-11 11,0 0,11 -11,0" fill="${f||'#5CC4A1'}"${c==='W'?' stroke="#1D1F1C" stroke-width="1.4"':''}/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="${c?tc:'#0C3B2C'}">소</text>`;
- return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}
+ return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}}
 const NAME={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'};
 const CN={N:'네이비',G:'골드',W:'화이트',B:'블루'};
-const ORD=k=>{const [t,c]=k.split('-');return ['B8','B7','B6','I','SL','SS'].indexOf(t)*10+('NGWB'.indexOf(c||'N'))};
+const ORD=k=>{const [t,c]=k.split('-');return ['B8','B7','B6','I','SL','SS'].indexOf(t)*100+Math.max(0,'NGWB'.indexOf(c||'N'))};
 function drawSheet(S){
+  window._ICONS=S.icons||{};
   const box=$('#sheet'),T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
   const OFF=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=OFF[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);OFF.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}
-  const W=Math.min(box.clientWidth||600,640)-28-52,wf=t=>1-.66*t/T,Z=22;
+  const W=Math.min(box.clientWidth||600,640)-28-52,wf=t=>1-.66*t/T,Z=28;
   const X=[];for(let i=0;i<T;i++){const m=n[i],slot=(wf(i)+wf(i+1))/2*W*.86/m;X.push(Array.from({length:m},(_,j)=>{const p=j-(m-1)/2+OFF[i];if(S.tiers[i].align&&i>0){const q=Math.round(p+(n[i-1]-1)/2-OFF[i-1]);if(q>=0&&q<n[i-1])return X[i-1][q]}return p*slot}))}
   let h=`<div class="cap" style="grid-row:1">${'<svg width="24" height="22" viewBox="-12 -11 24 22"><polygon points="0,-11 3,-3.5 11,-3.4 4.7,1.6 7,10 0,5 -7,10 -4.7,1.6 -11,-3.4 -3,-3.5" fill="#FFD23F" stroke="#C9A100"/></svg>'}</div>`,row=2;
   const cnt={};
@@ -208,7 +213,7 @@ function drawSheet(S){
   h+=`<div class="trunk" style="grid-row:${row}"></div>`;
   box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
    <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
-   <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${NAME[k.split('-')[0]]}${k.includes('-')?' '+CN[k.split('-')[1]]:''} ${cnt[k]}</span>`).join('')}</div>`;
+   <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${(S.inames&&S.inames[k])?NAME[k.split('-')[0]]+' '+S.inames[k]:NAME[k.split('-')[0]]+(k.includes('-')?' '+(CN[k.split('-')[1]]||''):'')} ${cnt[k]}</span>`).join('')}</div>`;
 }
 async function saveImage(){
   if(!window.html2canvas)return toast('잠시 뒤 다시 눌러 주세요');

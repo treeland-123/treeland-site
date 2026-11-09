@@ -52,6 +52,7 @@ function doGet(e) {
   const site = JSON.parse(f.v[C.data]);
   site.v = new Date(f.v[C.updated]).getTime();
   site.donePhotos = Number(f.v[C.doneN]) || 0;
+  withPalette_(site);
   if (f.v[C.photo]) { try { site.photo = b64_(DriveApp.getFileById(f.v[C.photo]).getBlob()); } catch (err) {} }
   const html = HtmlService.createHtmlOutputFromFile('Index').getContent()
     .split('"@@DATA@@";').join('window.SITE=' + JSON.stringify(site) + ';window.TOKEN=' + JSON.stringify(p.s) + ';window.BASE=' + JSON.stringify(EXEC) + ';');
@@ -123,9 +124,22 @@ function checkPin_(pin) {
   } catch (err) {}
   return false;
 }
+// 오너먼트 세트 사진(아이콘)은 드라이브 파일 하나에 보관 → 직원·관리 화면에 붙여 보냄
+function palFile_(key) { const it = folder_().getFilesByName('세트_' + key + '.json'); return it.hasNext() ? it.next() : null; }
+function savePalette_(p) {
+  if (!p || !p.key) return;
+  const f = palFile_(p.key), s = JSON.stringify(p);
+  if (f) f.setContent(s); else folder_().createFile('세트_' + p.key + '.json', s, 'application/json');
+}
+function withPalette_(site) {
+  if (!site.palette) return site;
+  try { const p = JSON.parse(palFile_(site.palette).getBlob().getDataAsString()); site.icons = p.icons; site.inames = p.names; } catch (err) {}
+  return site;
+}
 function register_(b) {
   const site = b.site || {}, id = String(b.id || ''), sh = sheet_(), now = new Date();
   if (!id || !site.name) return { ok: false, error: 'id/name' };
+  savePalette_(b.palette);
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   try {
     let f = find_(C.id, id), photoId = f ? f.v[C.photo] : '';
@@ -149,7 +163,7 @@ function list_() {
 }
 function get_(id) {
   const f = find_(C.id, id); if (!f) return { ok: false, error: 'id' };
-  const site = JSON.parse(f.v[C.data]);
+  const site = withPalette_(JSON.parse(f.v[C.data]));
   let photo = '';
   if (f.v[C.photo]) { try { photo = b64_(DriveApp.getFileById(f.v[C.photo]).getBlob()); } catch (err) {} }
   const done = [];

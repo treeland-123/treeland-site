@@ -70,6 +70,7 @@ nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
 .bar input{display:none}
 .photo{position:fixed;inset:0;background:#000;display:none;z-index:30;align-items:center;justify-content:center}
 .photo.open{display:flex}.photo img{max-width:100%;max-height:100%}
+.ob{position:relative;display:flex;align-items:center;justify-content:center}.ob img{display:block;object-fit:contain}.ob .sz{position:absolute;right:-3px;bottom:-3px;background:#fff;color:#1D1F1C;font:800 8px/1 sans-serif;border-radius:6px;padding:1px 2px;border:1px solid #1D1F1C}
 </style>
 </head>
 <body>
@@ -96,7 +97,10 @@ nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
 "@@DATA@@";
 (()=>{
 const S=window.SITE,TOKEN=window.TOKEN||'demo',$=id=>document.getElementById(id);
-function ico(tok,z){const [k,c]=String(tok).split('-');let g;
+function ico(tok,z){const IC=(window.SITE&&window.SITE.icons)||window._ICONS||{};
+ if(IC[tok]){const k=tok.split('-')[0];let w=z,h=z;if(k==='B7'){w=h=z*.86}else if(k==='B6'){w=h=z*.72}else if(k==='I'){w=z*.46;h=z*1.3}else if(k==='SS'){w=h=z*.82}else if(k==='SL'){w=h=z*1.04}
+  return `<span class="ob" style="width:${z}px;height:${z}px"><img src="${IC[tok]}" width="${Math.round(w)}" height="${Math.round(h)}" alt="">${k[0]==='B'?`<b class="sz">${k[1]}</b>`:''}</span>`}
+ {const [k,c]=String(tok).split('-');let g;
  const F={N:'#1E2A4A',G:'#C9A24B',W:'#FFFFFF',B:'#5A8FCB'},T={N:'#fff',G:'#2B2205',W:'#1D1F1C',B:'#fff'};
  const f=c?F[c]:null,tc=c?T[c]:'#fff',st=c==='W'?' stroke="#1D1F1C" stroke-width="1.6"':'';
  if(k==='B8')g=`<circle r="15" fill="${f||'#262624'}"${st}/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="${tc}">8</text>`;
@@ -105,7 +109,7 @@ function ico(tok,z){const [k,c]=String(tok).split('-');let g;
  else if(k==='I')g=`<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="${f||'#2F7FD0'}"${st}/>`;
  else if(k==='SL')g=`<polygon points="0,-15 15,0 0,15 -15,0" fill="${f||'#1B8F6A'}"${st}/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="${c?tc:'#fff'}">대</text>`;
  else g=`<polygon points="0,-11 11,0 0,11 -11,0" fill="${f||'#5CC4A1'}"${c==='W'?' stroke="#1D1F1C" stroke-width="1.4"':''}/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="${c?tc:'#0C3B2C'}">소</text>`;
- return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}
+ return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}}
 
 const LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const key='wo_'+TOKEN;let state={},side=LS.g('wo_side')||'B',view=-1,photos=S.donePhotos||0;
@@ -127,7 +131,7 @@ function head(){
  if(S.photo){$('timg').src=$('pimg').src=S.photo}else $('thumb').style.display='none';
  if(S.plan){$('plan').innerHTML=S.plan;$('plan').hidden=false}
  const hasC=S.tiers.some(t=>t.items.some(x=>x.includes('-')));
- if(hasC){$('cols').innerHTML=[['N','네이비 (블랙 포함)'],['G','골드 (샴페인 포함)'],['W','화이트'],['B','블루 줄무늬']].filter(([c])=>S.tiers.some(t=>t.items.some(x=>x.endsWith('-'+c)))).map(([c,t])=>`<span>${ico('B8-'+c,20)}${t}</span>`).join('');$('cols').hidden=false}
+ if(hasC&&!S.icons){$('cols').innerHTML=[['N','네이비 (블랙 포함)'],['G','골드 (샴페인 포함)'],['W','화이트'],['B','블루 줄무늬']].filter(([c])=>S.tiers.some(t=>t.items.some(x=>x.endsWith('-'+c)))).map(([c,t])=>`<span>${ico('B8-'+c,20)}${t}</span>`).join('');$('cols').hidden=false}
  $('ends').innerHTML=`<span>${S.start}</span><span>${S.end}</span>`;
  $('hint').textContent='띠의 왼쪽 반, 오른쪽 반을 누르면 줄이 그어짐. 다시 누르면 취소. 줄은 이 화면에만 남고, 받은 주소를 새로 열면 처음부터. 빨간 숫자는 같은 가지 안쪽에 그 크기 볼 하나 더.'+(S.sectionTemp?' 단계 구분은 임시.':'');
 }
@@ -141,7 +145,7 @@ function navBar(){
 }
 function toNav(){const y=$('nav').getBoundingClientRect().top+scrollY;if(scrollY>y)scrollTo({top:y})}
 function tree(){
- const small=view<0,H=small?32:58,Z=small?22:32;
+ const small=view<0,H=small?34:58,Z=small?26:34;
  const [a,b]=view<0?[1,T]:S.sections[view].slice(1);
  const W=Math.min(innerWidth,520)-36-52,sc=view<0?1:Math.min(1/wf(a-1),1.6),cu=cur();
  const el=$('tree');el.className='tree'+(small?' small':'');
