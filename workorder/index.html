@@ -180,15 +180,19 @@ function renderDetail(){
 }
 
 /* 트리 그리기: 직원 화면과 같은 규칙 (단 폭, 대각선/수직 엇갈림) */
-function ico(k,z){let g;
- if(k==='B8')g='<circle r="15" fill="var(--b8)"/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="#fff">8</text>';
- else if(k==='B7')g='<circle r="12.5" fill="var(--b7)"/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">7</text>';
- else if(k==='B6')g='<circle r="10" fill="#fff" stroke="#1a1a19" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="#1a1a19">6</text>';
- else if(k==='I')g='<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="var(--ice)"/>';
- else if(k==='SL')g='<polygon points="0,-15 15,0 0,15 -15,0" fill="var(--snL)"/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="#fff">대</text>';
- else g='<polygon points="0,-11 11,0 0,11 -11,0" fill="var(--snS)"/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0C3B2C">소</text>';
+function ico(tok,z){const [k,c]=String(tok).split('-');let g;
+ const F={N:'#1E2A4A',G:'#C9A24B',W:'#FFFFFF',B:'#5A8FCB'},T={N:'#fff',G:'#2B2205',W:'#1D1F1C',B:'#fff'};
+ const f=c?F[c]:null,tc=c?T[c]:'#fff',st=c==='W'?' stroke="#1D1F1C" stroke-width="1.6"':'';
+ if(k==='B8')g=`<circle r="15" fill="${f||'#262624'}"${st}/><text y="5.5" text-anchor="middle" font-size="15" font-weight="800" fill="${tc}">8</text>`;
+ else if(k==='B7')g=`<circle r="12.5" fill="${f||'#8B8A85'}"${st}/><text y="5" text-anchor="middle" font-size="13" font-weight="800" fill="${tc}">7</text>`;
+ else if(k==='B6')g=f?`<circle r="10" fill="${f}"${st}/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="${tc}">6</text>`:'<circle r="10" fill="#fff" stroke="#1D1F1C" stroke-width="2"/><text y="4.5" text-anchor="middle" font-size="12" font-weight="800" fill="#1D1F1C">6</text>';
+ else if(k==='I')g=`<rect x="-4.5" y="-15" width="9" height="30" rx="3.5" fill="${f||'#2F7FD0'}"${st}/>`;
+ else if(k==='SL')g=`<polygon points="0,-15 15,0 0,15 -15,0" fill="${f||'#1B8F6A'}"${st}/><text y="4.5" text-anchor="middle" font-size="11" font-weight="800" fill="${c?tc:'#fff'}">대</text>`;
+ else g=`<polygon points="0,-11 11,0 0,11 -11,0" fill="${f||'#5CC4A1'}"${c==='W'?' stroke="#1D1F1C" stroke-width="1.4"':''}/><text y="4" text-anchor="middle" font-size="9.5" font-weight="800" fill="${c?tc:'#0C3B2C'}">소</text>`;
  return `<svg width="${z}" height="${z}" viewBox="-17 -17 34 34" aria-hidden="true">${g}</svg>`}
 const NAME={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'};
+const CN={N:'네이비',G:'골드',W:'화이트',B:'블루'};
+const ORD=k=>{const [t,c]=k.split('-');return ['B8','B7','B6','I','SL','SS'].indexOf(t)*10+('NGWB'.indexOf(c||'N'))};
 function drawSheet(S){
   const box=$('#sheet'),T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
   const OFF=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=OFF[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);OFF.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}
@@ -198,13 +202,13 @@ function drawSheet(S){
   const cnt={};
   for(let i=T-1;i>=0;i--,row++){const wb=wf(i)*W,wt=wf(i+1)*W,ins=(wb-wt)/2;
     h+=`<div class="no" style="grid-row:${row}">${i+1}</div><div class="field" style="grid-row:${row}"><div class="band" style="left:calc(50% - ${wb/2}px);width:${wb}px;clip-path:polygon(${ins}px 0,${wb-ins}px 0,100% 100%,0 100%)"></div>`;
-    S.tiers[i].items.forEach((tok,j)=>{const p=tok.split('/');p.forEach(k=>cnt[k]=(cnt[k]||0)+1);h+=`<span class="orn" style="left:calc(50% + ${X[i][j]-Z/2}px)">${ico(p[0],Z)}${p[1]?`<i>${p[1].slice(1)}</i>`:''}</span>`});
+    S.tiers[i].items.forEach((tok,j)=>{const p=tok.split('/');p.forEach(k=>cnt[k]=(cnt[k]||0)+1);h+=`<span class="orn" style="left:calc(50% + ${X[i][j]-Z/2}px)">${ico(p[0],Z)}${p[1]?`<i>${p[1].split('-')[0].slice(1)}</i>`:''}</span>`});
     h+='</div>'}
   (S.sections||[]).forEach(([nm,a,b])=>{h+=`<div class="br" style="grid-row:${2+T-b}/span ${b-a+1}"><b>${esc(nm)}</b></div>`});
   h+=`<div class="trunk" style="grid-row:${row}"></div>`;
   box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
    <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
-   <div class="legend">${['B8','B7','B6','I','SL','SS'].filter(k=>cnt[k]).map(k=>`<span>${ico(k,18)}${NAME[k]} ${cnt[k]}</span>`).join('')}</div>`;
+   <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${NAME[k.split('-')[0]]}${k.includes('-')?' '+CN[k.split('-')[1]]:''} ${cnt[k]}</span>`).join('')}</div>`;
 }
 async function saveImage(){
   if(!window.html2canvas)return toast('잠시 뒤 다시 눌러 주세요');
