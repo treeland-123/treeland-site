@@ -49,6 +49,8 @@ input:focus-visible,select:focus-visible,button:focus-visible,textarea:focus-vis
 input[type=number]{font-variant-numeric:tabular-nums}
 .hint{font-size:12.5px;color:var(--sub);margin:0}
 .hint.err{color:var(--err)}
+.editbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:10px 12px;margin:0 0 14px;border:1px solid #e2c98f;background:#fdf6e6;border-radius:8px;font-size:13px;color:#5a4410}
+.editbar b{font-weight:700}.editbar button{flex:none}
 button{font:inherit;cursor:pointer}
 .primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:12px;font-size:15px;font-weight:700}
 .primary[disabled],.ghost[disabled]{opacity:.45;cursor:not-allowed}
@@ -156,6 +158,7 @@ button{font:inherit;cursor:pointer}
   </header>
 
   <div class="form" id="form" aria-busy="true">
+    <div class="editbar" id="editBar" hidden><span id="editTxt"></span><button type="button" class="ghost" id="editBtn"></button></div>
     <section>
       <h2>받는 곳</h2>
       <div class="field"><label for="cust">상호 (귀하 앞)</label><input id="cust" placeholder="예: 주식회사 원엔드" autocomplete="off"></div>
@@ -587,6 +590,7 @@ function update() {
   ov.textContent = S.trees.length >= 10 ? `${S.trees.length}그루는 이 양식(한 장)으로 맞지 않습니다. 견적서 구성을 따로 짜야 합니다.`
     : '내용이 한 장을 넘어 아래가 잘립니다. 비고 추가 줄을 줄이거나 장식을 합쳐 주세요.';
   store.set('tl-quote-draft', S);
+  editBar();
   return R;
 }
 
@@ -646,7 +650,25 @@ $('#form').addEventListener('click', e => {
 });
 $('#addTree').onclick = () => { const last = S.trees[S.trees.length - 1]; S.trees.push({ ...blankTree(), size: last.size, tier: last.tier }); renderForm(); };
 $('#addAddon').onclick = () => { const ex = P.extras[0]; S.addons.push({ name: ex.name, sel: ex.opts.map(o => o.v[0]), tree: S.trees.length === 1 ? 1 : '', qty: 1, memo: '' }); renderForm(); };
-$('#newBtn').onclick = () => { if (S.cust && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; S = freshState(); renderForm(); $('#cust').focus(); };
+// 지금 화면의 견적이 이미 발행(저장·발송)된 번호인지 → 고치면 그 견적이 바뀜
+const issued = () => HIST.find(h => h.no === S.no);
+let RESUME = null;   // 페이지를 열 때 지난번 발행 견적이 떠 있었으면 새 견적으로 시작하고, 여기에 보관
+function editBar() {
+  const bar = $('#editBar'), h = issued();
+  if (RESUME && !S.cust && !h) {
+    $('#editTxt').innerHTML = `지난번 견적(<b>${esc(RESUME.cust || '상호 없음')}</b>)은 발행 내역에 저장되어 있어 새 견적으로 열었습니다.`;
+    $('#editBtn').textContent = '지난 견적 이어서 고치기'; $('#editBtn').dataset.act = 'resume'; bar.hidden = false;
+  } else if (h) {
+    $('#editTxt').innerHTML = `이미 발행한 견적입니다 (<b>${esc(h.cust)} · No. ${esc(h.no)}</b>). 여기서 고쳐 저장하면 이 견적이 바뀝니다.`;
+    $('#editBtn').textContent = '새 견적 쓰기'; $('#editBtn').dataset.act = 'new'; bar.hidden = false;
+  } else bar.hidden = true;
+}
+function startNew() { S = freshState(); renderForm(); $('#cust').focus(); }
+$('#newBtn').onclick = () => { if (S.cust && !issued() && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; startNew(); };
+$('#editBtn').onclick = () => {
+  if ($('#editBtn').dataset.act === 'resume') { S = RESUME; RESUME = null; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
+  else { RESUME = null; startNew(); scrollTo({ top: 0, behavior: 'smooth' }); }
+};
 
 /* ── 저장 ── */
 const fileBase = () => `트리랜드_견적서_${(S.cust || '고객').replace(/[\\/:*?"<>|\s]+/g, '')}`;   // 견적 번호는 내부용이라 파일 이름에 넣지 않음
@@ -691,7 +713,7 @@ async function sync() {
     if (err.code === 'pin') { try { localStorage.removeItem('tl_pin'); } catch {} $('#pinBox').hidden = false; syncState('비밀번호가 틀렸습니다', true); }
     else syncState('서버 연결 안 됨 — 이 기기에 임시 저장', true);
   }
-  renderHist(); mailReady();
+  renderHist(); mailReady(); if (S) editBar();
 }
 $('#pinGo').onclick = () => { const v = $('#pin').value.trim(); if (!v) return; try { localStorage.setItem('tl_pin', v); } catch {} syncState('확인 중…'); sync(); };
 $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinGo').click(); });
@@ -710,7 +732,7 @@ function saveHistory(R, extra) {
   if (m && +m[2] > store.get('tl-quote-seq', 2)) store.set('tl-quote-seq', +m[2]);
   if (ONLINE && !extra) api('save', { quote: asQuote(h) }).catch(() => { h.pending = true; keepLocal(); });
   else if (!ONLINE && QUOTE_ENDPOINT) h.pending = true;
-  keepLocal(); renderHist();
+  keepLocal(); renderHist(); editBar();
 }
 async function run(btn, fn) {
   const R = calc(); if (R.problems.length) return;
@@ -764,7 +786,7 @@ $('#hist').addEventListener('click', e => {
   if (b.dataset.open) { S = JSON.parse(JSON.stringify(list[+b.dataset.open].state)); S.autoNo = false; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
   if (b.dataset.copyq) { const st = JSON.parse(JSON.stringify(list[+b.dataset.copyq].state)); const f = freshState(); S = { ...st, no: f.no, autoNo: true, date: f.date, cust: '', email: '', phase: f.phase }; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); $('#cust').focus(); }
   if (b.dataset.delq && confirm('이 견적을 내역에서 지울까요? (모든 기기에서 지워집니다)')) {
-    const [h] = list.splice(+b.dataset.delq, 1); keepLocal(); renderHist();
+    const [h] = list.splice(+b.dataset.delq, 1); keepLocal(); renderHist(); editBar();
     if (ONLINE) api('delete', { no: h.no }).catch(() => msg('서버에서 지우지 못했습니다. 새로고침 후 다시 지워 주세요.', false));
   }
 });
@@ -843,7 +865,8 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   }
   const draft = store.get('tl-quote-draft', null);
   S = draft && draft.trees ? draft : freshState();
-  if (S.phase === 'e1' && e1Over() && !HIST.some(h => h.no === S.no)) S.phase = autoPhase();
+  if (HIST.some(h => h.no === S.no)) { RESUME = S; S = freshState(); }
+  else if (S.phase === 'e1' && e1Over()) S.phase = autoPhase();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
   $('#form').removeAttribute('aria-busy');
   stampState(); renderHist(); renderForm(); sync();
