@@ -10,7 +10,7 @@
 <style>
 /* 계약 관리와 같은 바탕. 목록 → 현장 화면(사진, 트리, 직원 주소, 완성 사진) */
 :root{--bg:#fafaf9;--paper:#fff;--ink:#1a1a19;--sub:#5f5f5b;--line:#dcdcd7;--soft:#f0f0ec;--act:#1a1a19;--act-ink:#fff;--err:#b3261e;--ok:#2e6b3a;--wait:#8a5a00;
- --tree:#CFE2C3;--hi:#FFD23F;--b8:#262624;--b7:#8B8A85;--ice:#2F7FD0;--snL:#1B8F6A;--snS:#5CC4A1;--trunk:#9A7B5B;
+ --tree:#4F7D55;--hi:#FFD23F;--b8:#262624;--b7:#8B8A85;--ice:#2F7FD0;--snL:#1B8F6A;--snS:#5CC4A1;--trunk:#9A7B5B;
  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif}
 *{box-sizing:border-box}[hidden]{display:none!important}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;padding:0 max(16px,env(safe-area-inset-left)) 48px}
@@ -63,7 +63,7 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 .no{grid-column:2;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-weight:700;font-size:14px}
 .field{grid-column:3;position:relative;height:36px}
 .band{position:absolute;top:0;bottom:0;background:var(--tree)}
-.band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(26,26,25,.14)}
+.band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.28)}
 .orn{position:absolute;top:4px}.orn svg{display:block}
 .orn i{position:absolute;right:-4px;bottom:-3px;min-width:13px;height:13px;border-radius:7px;background:#C8372F;color:#fff;font:700 8px/11px var(--sans);font-style:normal;text-align:center;border:1px solid #fff}
 .cap{grid-column:3;display:flex;justify-content:center}
