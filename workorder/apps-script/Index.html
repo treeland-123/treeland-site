@@ -46,16 +46,14 @@ nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
 .band{position:absolute;top:0;bottom:0;display:flex}
 .band button{flex:1;height:100%;background:var(--tree)}
 .band button+button{box-shadow:inset 1px 0 0 rgba(255,255,255,.28)}
-.band button.on{background:var(--done)}
 .band button.mute{background:var(--tree2)}
-.band button.on.mute{background:var(--done)}
 .band button:focus-visible{outline:3px solid var(--hi);outline-offset:-3px}
 .orn{position:absolute;pointer-events:none;z-index:2;display:block}
 .orn svg{display:block}
-.orn.d{opacity:.22}.orn.m{opacity:.4}
+.orn.m{opacity:.4}
 .orn i{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#C8372F;color:#fff;font:800 9px/13px "Pretendard Variable",sans-serif;font-style:normal;text-align:center;border:1.5px solid #fff}
 .small .orn i{min-width:13px;height:13px;font-size:8px;line-height:10px;right:-4px;bottom:-3px}
-.cut{position:absolute;height:2px;background:var(--ink);z-index:3;pointer-events:none;top:50%;margin-top:-1px}
+.cut{position:absolute;height:4px;border-radius:2px;background:var(--hi);z-index:3;pointer-events:none;bottom:3px;box-shadow:0 0 0 1px rgba(29,31,28,.35)}
 .cap{grid-column:3;display:flex;justify-content:center}
 .trunk{grid-column:3;justify-self:center;width:26px;height:16px;background:var(--trunk);border-radius:0 0 3px 3px;margin-top:-3px}
 
