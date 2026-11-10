@@ -65,6 +65,8 @@ input,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid
 .band{position:absolute;top:0;bottom:0;background:var(--tree)}
 .band::after{content:"";position:absolute;left:50%;top:0;bottom:0;border-left:1px solid rgba(255,255,255,.28)}
 .orn{position:absolute;top:4px}.orn svg{display:block}
+.orn.x>span,.orn.x>svg{filter:grayscale(1);opacity:.3}.orn .xx{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;color:#1D1F1C;font-weight:900;line-height:1}
+.orn i.x{background:#8E8E88}
 .orn i{position:absolute;right:-4px;bottom:-3px;min-width:13px;height:13px;border-radius:7px;background:#C8372F;color:#fff;font:700 8px/11px var(--sans);font-style:normal;text-align:center;border:1px solid #fff}
 .cap{grid-column:3;display:flex;justify-content:center}
 .trunk{grid-column:3;justify-self:center;width:24px;height:14px;background:var(--trunk);margin-top:-3px}
@@ -204,16 +206,16 @@ function drawSheet(S){
   const W=Math.min(box.clientWidth||600,640)-28-52,wf=t=>1-.66*t/T,Z=28;
   const X=[];for(let i=0;i<T;i++){const m=n[i],slot=(wf(i)+wf(i+1))/2*W*.86/m;X.push(Array.from({length:m},(_,j)=>{const p=j-(m-1)/2+OFF[i];if(S.tiers[i].align&&i>0){const q=Math.round(p+(n[i-1]-1)/2-OFF[i-1]);if(q>=0&&q<n[i-1])return X[i-1][q]}return p*slot}))}
   let h=`<div class="cap" style="grid-row:1">${'<svg width="24" height="22" viewBox="-12 -11 24 22"><polygon points="0,-11 3,-3.5 11,-3.4 4.7,1.6 7,10 0,5 -7,10 -4.7,1.6 -11,-3.4 -3,-3.5" fill="#FFD23F" stroke="#C9A100"/></svg>'}</div>`,row=2;
-  const cnt={};
+  const cnt={};let pend=0;
   for(let i=T-1;i>=0;i--,row++){const wb=wf(i)*W,wt=wf(i+1)*W,ins=(wb-wt)/2;
     h+=`<div class="no" style="grid-row:${row}">${i+1}</div><div class="field" style="grid-row:${row}"><div class="band" style="left:calc(50% - ${wb/2}px);width:${wb}px;clip-path:polygon(${ins}px 0,${wb-ins}px 0,100% 100%,0 100%)"></div>`;
-    S.tiers[i].items.forEach((tok,j)=>{const p=tok.split('/');p.forEach(k=>cnt[k]=(cnt[k]||0)+1);h+=`<span class="orn" style="left:calc(50% + ${X[i][j]-Z/2}px)">${ico(p[0],Z)}${p[1]?`<i>${p[1].split('-')[0].slice(1)}</i>`:''}</span>`});
+    S.tiers[i].items.forEach((tok,j)=>{const p=tok.split('/'),x0=p[0][0]==='x',k0=x0?p[0].slice(1):p[0],x1=p[1]&&p[1][0]==='x',k1=p[1]?(x1?p[1].slice(1):p[1]):'';p.forEach(k=>{if(k[0]==='x')pend++;else cnt[k]=(cnt[k]||0)+1});h+=`<span class="orn${x0?' x':''}" style="left:calc(50% + ${X[i][j]-Z/2}px)">${ico(k0,Z)}${x0?`<b class="xx" style="font-size:${Math.round(Z*.6)}px;opacity:.75">×</b>`:''}${k1?`<i${x1?' class="x"':''}>${k1.split('-')[0].slice(1)}</i>`:''}</span>`});
     h+='</div>'}
   (S.sections||[]).forEach(([nm,a,b])=>{h+=`<div class="br" style="grid-row:${2+T-b}/span ${b-a+1}"><b>${esc(nm)}</b></div>`});
   h+=`<div class="trunk" style="grid-row:${row}"></div>`;
   box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
    <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
-   <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${(S.inames&&S.inames[k])?NAME[k.split('-')[0]]+' '+S.inames[k]:NAME[k.split('-')[0]]+(k.includes('-')?' '+(CN[k.split('-')[1]]||''):'')} ${cnt[k]}</span>`).join('')}</div>`;
+   <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${(S.inames&&S.inames[k])?NAME[k.split('-')[0]]+' '+S.inames[k]:NAME[k.split('-')[0]]+(k.includes('-')?' '+(CN[k.split('-')[1]]||''):'')} ${cnt[k]}</span>`).join('')}${pend?`<span><b class="xx0">×</b> 보류 ${pend}개 (지금은 안 걸기)</span>`:''}</div>`;
 }
 async function saveImage(){
   if(!window.html2canvas)return toast('잠시 뒤 다시 눌러 주세요');

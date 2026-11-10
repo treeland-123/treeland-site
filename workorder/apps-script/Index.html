@@ -52,6 +52,8 @@ nav button.fin{text-decoration:line-through;text-decoration-thickness:2px}
 .orn{position:absolute;pointer-events:none;z-index:2;display:block}
 .orn svg{display:block}
 .orn.d{opacity:.82}.orn.m{opacity:.4}
+.orn.x>span,.orn.x>svg{filter:grayscale(1);opacity:.3}.orn .xx{position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;color:#1D1F1C;font-weight:900;line-height:1}
+.orn i.x{background:#8E8E88}
 .orn i{position:absolute;right:-5px;bottom:-4px;min-width:16px;height:16px;border-radius:8px;background:#C8372F;color:#fff;font:800 9px/13px "Pretendard Variable",sans-serif;font-style:normal;text-align:center;border:1.5px solid #fff}
 .small .orn i{min-width:13px;height:13px;font-size:8px;line-height:10px;right:-4px;bottom:-3px}
 .cut{position:absolute;height:3px;border-radius:2px;background:#111;z-index:3;pointer-events:none;top:50%;margin-top:-1.5px;box-shadow:0 0 0 1px rgba(255,255,255,.45)}
@@ -118,21 +120,22 @@ const T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
 const OFF=(()=>{const o=[.25];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=o[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);o.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}return o})();
 const done=i=>side==='L'?state[i+'L']:side==='R'?state[i+'R']:state[i+'L']&&state[i+'R'];
 const both=i=>state[i+'L']&&state[i+'R'];
-const cur=()=>{for(let i=0;i<T;i++)if(!done(i))return i;return -1};
+const live=i=>S.tiers[i].items.some(x=>x.split('/').some(k=>k[0]!=='x'));
+const cur=()=>{for(let i=0;i<T;i++)if(live(i)&&!done(i))return i;return -1};
 const secOf=i=>S.sections.findIndex(([,a,b])=>i+1>=a&&i+1<=b);
-const secDone=k=>{const[,a,b]=S.sections[k];for(let i=a-1;i<b;i++)if(!both(i))return false;return true};
+const secDone=k=>{const[,a,b]=S.sections[k];let n=0;for(let i=a-1;i<b;i++)if(live(i)){n++;if(!both(i))return false}return n>0};
 const wf=t=>1-.66*t/T; // 단 경계 t(0=맨 아래)의 트리 폭 비율
 
 function head(){
  $('name').textContent=S.name;
- $('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`;
+ {const pd=S.tiers.reduce((a,t)=>a+t.items.reduce((b,x)=>b+x.split('/').filter(k=>k[0]==='x').length,0),0);$('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`+(pd?` (이번 ${S.total-pd}개, 보류 ${pd}개)`:'')}
  $('note').innerHTML=`정면은 <strong>${S.front}</strong>. 정면 가지에 집게 먼저 꽂고 시작.<br>${S.note}`;
  if(S.photo){$('timg').src=$('pimg').src=S.photo}else $('thumb').style.display='none';
  if(S.plan){$('plan').innerHTML=S.plan;$('plan').hidden=false}
  const hasC=S.tiers.some(t=>t.items.some(x=>x.includes('-')));
  if(hasC&&!S.icons){$('cols').innerHTML=[['N','네이비 (블랙 포함)'],['G','골드 (샴페인 포함)'],['W','화이트'],['B','블루 줄무늬']].filter(([c])=>S.tiers.some(t=>t.items.some(x=>x.endsWith('-'+c)))).map(([c,t])=>`<span>${ico('B8-'+c,20)}${t}</span>`).join('');$('cols').hidden=false}
  $('ends').innerHTML=`<span>${S.start}</span><span>${S.end}</span>`;
- $('hint').textContent='띠의 왼쪽 반, 오른쪽 반을 누르면 줄이 그어짐. 다시 누르면 취소. 줄은 이 화면에만 남고, 받은 주소를 새로 열면 처음부터. 빨간 숫자는 같은 가지 안쪽에 그 크기 볼 하나 더.'+(S.sectionTemp?' 단계 구분은 임시.':'');
+ $('hint').textContent='띠의 왼쪽 반, 오른쪽 반을 누르면 줄이 그어짐. 다시 누르면 취소. 줄은 이 화면에만 남고, 받은 주소를 새로 열면 처음부터. 빨간 숫자는 같은 가지 안쪽에 그 크기 볼 하나 더.'+(S.sectionTemp?' 단계 구분은 임시.':'')+(S.tiers.some(t=>t.items.some(x=>/(^|\/)x/.test(x)))?' 회색 ×와 회색 숫자는 보류: 지금은 걸지 않음.':'');
 }
 function sideBar(){
  $('side').innerHTML='<span>내가 거는 쪽</span>'+[['L','왼쪽'],['R','오른쪽'],['B','둘 다']].map(([k,t])=>`<button data-k="${k}" class="${side===k?'on':''}">${t}</button>`).join('');
@@ -160,7 +163,8 @@ function tree(){
   const ml=side==='R'?' mute':'',mr=side==='L'?' mute':'';
   let o='';
   it.forEach((tok,j)=>{const p=tok.split('/'),x=X[i][j],lf=x<=0,d=lf?L:R,mu=!d&&((lf&&side==='R')||(!lf&&side==='L'));
-   o+=`<span class="orn ${d?'d':mu?'m':''}" style="left:calc(50% + ${x-Z/2}px);top:${(H-Z)/2}px">${ico(p[0],Z)}${p[1]?`<i>${p[1].split('-')[0].slice(1)}</i>`:''}</span>`});
+   const x0=p[0][0]==='x',k0=x0?p[0].slice(1):p[0],x1=p[1]&&p[1][0]==='x',k1=p[1]?(x1?p[1].slice(1):p[1]):'';
+   o+=`<span class="orn ${d?'d':mu?'m':''}${x0?' x':''}" style="left:calc(50% + ${x-Z/2}px);top:${(H-Z)/2}px">${ico(k0,Z)}${x0?`<b class="xx" style="font-size:${Math.round(Z*.6)}px;opacity:.75">×</b>`:''}${k1?`<i${x1?' class="x"':''}>${k1.split('-')[0].slice(1)}</i>`:''}</span>`});
   const cut=(on,l)=>on?`<span class="cut" style="left:calc(50% + ${l?-wm/2+4:0}px);width:${wm/2-4}px"></span>`:'';
   h+=`<div class="no ${i===cu?'cur':''} ${both(i)?'all':''}" style="grid-row:${row};font-size:${small?15:20}px">${i+1}</div>
    <div class="field" id="t${i}" style="grid-row:${row};height:${H}px"><div class="band" style="left:calc(50% - ${wb/2}px);width:${wb}px;clip-path:polygon(${ins}px 0,${wb-ins}px 0,100% 100%,0 100%)">
@@ -173,7 +177,7 @@ function tree(){
 }
 function bar(){
  const cu=cur(),sd=side==='L'?'왼쪽 ':side==='R'?'오른쪽 ':'',sy='<span class="sync" id="sync"></span>';
- let rest=0;for(let i=0;i<T;i++)if(!done(i))rest++;
+ let rest=0;for(let i=0;i<T;i++)if(live(i)&&!done(i))rest++;
  if(rest){$('bar').innerHTML=`<span>${sd}<b>${cu+1}단</b> 걸 차례, ${rest}단 남음</span>${sy}`;return}
  $('bar').innerHTML=`<span><b>${sd}끝</b>${photos?`, 사진 ${photos}장 올림`:''}</span>${sy}<label>완성 사진 올리기<input type="file" accept="image/*" capture="environment" id="up"></label>`;
  $('up').onchange=e=>{const f=e.target.files[0];if(f)upload(f)};
