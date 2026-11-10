@@ -295,7 +295,7 @@ $("#newForm").addEventListener("submit", async e => {
   if(v("#n-ship") === "") return err("운임을 입력해 주세요. 서울이면 0입니다.");
   const ship = Number(v("#n-ship").replace(/[^\d]/g, ""));
   if(ship >= price) return err("운임이 임대료보다 클 수 없습니다. 임대료는 운임을 포함한 공급가액입니다.");
-  if(QUOTE && price !== supplyOf(Number(QUOTE.total) || 0)) return err(`임대료가 불러온 견적서의 공급가액(${won(supplyOf(Number(QUOTE.total) || 0))}원)과 다릅니다. 금액을 바꿀 거면 견적서를 고쳐 다시 저장한 뒤 불러오세요. 견적서 없이 만들려면 위에서 견적서 선택을 해제하세요.`);
+  if(QUOTE && price !== supplyOfQ(QUOTE)) return err(`임대료가 불러온 견적서의 공급가액(${won(supplyOfQ(QUOTE))}원)과 다릅니다. 금액을 바꿀 거면 견적서를 고쳐 다시 저장한 뒤 불러오세요. 견적서 없이 만들려면 위에서 견적서 선택을 해제하세요.`);
   $("#newErr").hidden = true;
   const btn = $("#newBtn"); btn.disabled = true;
   try{
@@ -379,6 +379,8 @@ $("#trees").addEventListener("input", e => {
 
 // 견적서에서 불러오기: /quote/ 가 이 기기에 저장한 발행 내역(tl-quote-hist)
 function quoteHist(){ try{ return JSON.parse(localStorage.getItem("tl-quote-hist") || "[]") || []; }catch(e){ return []; } }
+// 부가세 빼고 발행한 견적(state.noVat)은 합계 = 공급가액
+const supplyOfQ = h => (h && h.state && h.state.noVat) ? (Number(h.total) || 0) : supplyOf(Number(h && h.total) || 0);
 function supplyOf(total){   // 합계(부가세 포함) → 공급가액. 견적서는 부가세 = round(공급가액×0.1)
   const g = Math.round(total / 1.1);
   for(const s of [g, g - 1, g + 1, g - 2, g + 2]) if(s + Math.round(s * 0.1) === total) return s;
@@ -413,7 +415,7 @@ function fillFromQuote(h){
     if(same) same.qty++; else rows.push(t);
   });
   trees = rows; renderTrees();
-  $("#n-price").value = won(supplyOf(Number(h.total) || 0));
+  $("#n-price").value = won(supplyOfQ(h));
   $("#n-ship").value = won(Number(String(st.ship ?? "").replace(/[^\d]/g, "")) || 0);
   $("#n-qno").value = h.no || "";
   $("#n-addons").value = addonText(st);
