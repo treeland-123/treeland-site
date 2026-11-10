@@ -115,7 +115,7 @@ const key='wo_'+TOKEN;let state={},side=LS.g('wo_side')||'B',view=-1,photos=S.do
 try{state=JSON.parse(LS.g(key)||'{}')}catch(e){}
 const T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
 // align: 아래 단과 가지가 수직(같은 줄), 없으면 대각선(반 칸 엇갈림)
-const OFF=(()=>{const o=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=o[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);o.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}return o})();
+const OFF=(()=>{const o=[.25];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=o[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);o.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}return o})();
 const done=i=>side==='L'?state[i+'L']:side==='R'?state[i+'R']:state[i+'L']&&state[i+'R'];
 const both=i=>state[i+'L']&&state[i+'R'];
 const cur=()=>{for(let i=0;i<T;i++)if(!done(i))return i;return -1};

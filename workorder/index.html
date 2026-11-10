@@ -200,7 +200,7 @@ const ORD=k=>{const [t,c]=k.split('-');return ['B8','B7','B6','I','SL','SS'].ind
 function drawSheet(S){
   window._ICONS=S.icons||{};
   const box=$('#sheet'),T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
-  const OFF=[0];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=OFF[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);OFF.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}
+  const OFF=[.25];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=OFF[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);OFF.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}
   const W=Math.min(box.clientWidth||600,640)-28-52,wf=t=>1-.66*t/T,Z=28;
   const X=[];for(let i=0;i<T;i++){const m=n[i],slot=(wf(i)+wf(i+1))/2*W*.86/m;X.push(Array.from({length:m},(_,j)=>{const p=j-(m-1)/2+OFF[i];if(S.tiers[i].align&&i>0){const q=Math.round(p+(n[i-1]-1)/2-OFF[i-1]);if(q>=0&&q<n[i-1])return X[i-1][q]}return p*slot}))}
   let h=`<div class="cap" style="grid-row:1">${'<svg width="24" height="22" viewBox="-12 -11 24 22"><polygon points="0,-11 3,-3.5 11,-3.4 4.7,1.6 7,10 0,5 -7,10 -4.7,1.6 -11,-3.4 -3,-3.5" fill="#FFD23F" stroke="#C9A100"/></svg>'}</div>`,row=2;
