@@ -155,7 +155,7 @@ async function load(){
       if(j.error === "pin"){ try{ localStorage.removeItem("tl_pin"); }catch(e){} $("#pinBox").hidden = false; $("#pinMsg").textContent = "비밀번호가 틀렸습니다. 다시 넣어 주세요."; $("#pinMsg").style.color = "var(--err)"; return; }
       throw new Error(j.error);
     }
-    CTX = j; $("#pinBox").hidden = true;
+    CTX = j; $("#pinBox").hidden = true; renderCustomers(); renderLog();   // 견적 목록은 느려서 뒤에 한 번 더 채움
   }catch(e){ $("#log").innerHTML = `<p class="error">서버에 연결하지 못했습니다. 새로고침해 주세요. (${esc(e.message)})</p>`; return; }
   try{ const q = await post(QUOTE_ENDPOINT, { action:"list", pin:pin() }); QUOTES = q.quotes || []; }catch(e){ QUOTES = []; }
   renderCustomers(); renderLog();
