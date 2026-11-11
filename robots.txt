@@ -11,4 +11,5 @@ Disallow: /stats/
 Disallow: /staff/
 Disallow: /p/
 Disallow: /proposals/
+Disallow: /mail/
 Sitemap: https://treeland.kr/sitemap.xml

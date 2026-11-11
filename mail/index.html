@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="icon" href="/favicon.ico">
+<title>트리랜드 메일 보내기</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 관리용 메일 보내기: 하단 서명·로고는 서버(계약 Apps Script sendMail)가 붙임 */
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#5f5f5b; --line:#dcdcd7; --soft:#f0f0ec;
+  --act:#1a1a19; --act-ink:#ffffff; --err:#b3261e; --ok:#2e6b3a;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#3a3a37; --soft:#262624;
+  --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-bottom:48px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header{padding-top:28px;display:flex;flex-direction:column;gap:4px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.top nav{display:flex;gap:8px;flex-wrap:wrap}
+.brand{font-size:12px;letter-spacing:.18em;font-weight:700;color:var(--sub)}
+h1{font-size:22px;margin:0}
+.lead{margin:0;color:var(--sub);font-size:14px}
+section{background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:20px 18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+h2{font-size:16px;margin:0}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label,.lbl{font-size:13px;color:var(--sub)}
+input,textarea,select{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
+textarea{resize:vertical;min-height:300px;font-size:14px;line-height:1.7}
+input:focus-visible,button:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.hint{font-size:12.5px;color:var(--sub);margin:0}
+button{font:inherit;cursor:pointer}
+.primary{background:var(--act);color:var(--act-ink);border:0;border-radius:8px;padding:13px;font-size:15px;font-weight:700}
+.primary[disabled]{opacity:.5;cursor:wait}
+.ghost{background:none;border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:6px 12px;font-size:13px;text-decoration:none;display:inline-flex;align-items:center}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row input{flex:1;min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-size:13.5px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px}
+.chips button[aria-pressed="true"]{background:var(--act);color:var(--act-ink);border-color:var(--act)}
+.ck{display:flex;gap:8px;align-items:center;font-size:14px}
+.ck input{width:auto;margin:0}
+.files{display:flex;flex-direction:column;gap:6px}
+.files .f{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13.5px;border:1px solid var(--line);border-radius:6px;padding:6px 10px;background:var(--bg)}
+.files .f span{min-width:0;overflow-wrap:anywhere}
+.files .f button{background:none;border:0;color:var(--sub);text-decoration:underline;font-size:12.5px}
+.error{color:var(--err);font-size:14px;margin:0}
+.okmsg{color:var(--ok);font-size:14px;margin:0}
+.btns{display:grid;grid-template-columns:1fr 2fr;gap:8px}
+.btns .ghost{justify-content:center;font-size:15px;padding:12px}
+.log{display:flex;flex-direction:column}
+.log .it{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 0;border-top:1px solid var(--line);font-size:14px;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;color:var(--ink);width:100%}
+.log .it:first-child{border-top:0}
+.log .it b{font-weight:500;min-width:0;overflow-wrap:anywhere}
+.log .m{color:var(--sub);font-size:12.5px;grid-column:1/-1;min-width:0;overflow-wrap:anywhere}
+dialog{border:0;border-radius:10px;padding:0;width:min(680px,100% - 24px);max-height:90vh;background:var(--paper);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog .hd{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--line);font-size:14px}
+dialog .meta{padding:10px 16px;font-size:13px;color:var(--sub);border-bottom:1px solid var(--line)}
+dialog iframe{width:100%;height:65vh;border:0;background:#fff;display:block}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="top"><div class="brand">TREELAND</div>
+      <nav><a class="ghost" href="/contract/admin.html">계약 관리</a><a class="ghost" href="/quote/">견적서</a><a class="ghost" href="/schedule/">설치·회수 일정</a></nav></div>
+    <h1>메일 보내기</h1>
+    <p class="lead">보내는 사람은 트리랜드 &lt;info@treeland.kr&gt;이고, 본문 아래에 로고와 회사 서명이 자동으로 붙습니다.</p>
+  </header>
+
+  <section id="pinBox" hidden>
+    <div class="field"><label for="pin">관리자 비밀번호 (계약 관리와 같음)</label>
+      <div class="row"><input type="password" id="pin" autocomplete="current-password" enterkeyhint="go"><button type="button" class="ghost" id="pinGo">확인</button></div></div>
+    <p class="hint" id="pinMsg">한 번 넣으면 이 기기에서는 다음부터 자동으로 입력됩니다.</p>
+  </section>
+
+  <section aria-labelledby="h-new">
+    <h2 id="h-new">새 메일</h2>
+    <div class="field"><label for="cust">고객 선택 (선택)</label>
+      <select id="cust"><option value="">고객을 고르면 이메일·상호·일정·금액이 채워집니다</option></select></div>
+    <div class="field"><span class="lbl">문구</span>
+      <div class="chips" id="tpls" role="group" aria-label="문구 고르기"></div></div>
+    <div class="field"><label for="to">받는 사람 (여러 명이면 쉼표)</label><input type="text" id="to" inputmode="email" autocomplete="off" list="emails"></div>
+    <div class="field"><label for="cc">참조 CC (선택)</label><input type="text" id="cc" inputmode="email" autocomplete="off" list="emails"></div>
+    <datalist id="emails"></datalist>
+    <div class="field"><label for="subj">제목</label><input type="text" id="subj" autocomplete="off"></div>
+    <div class="field"><label for="body">본문</label><textarea id="body"></textarea>
+      <p class="hint">[ ]로 표시된 칸은 고객을 고르면 채워집니다. 비어 있으면 보내기 전에 알려 드립니다.</p></div>
+    <div class="field"><span class="lbl">첨부</span>
+      <div class="row"><label class="ghost" for="file" style="cursor:pointer">파일 선택</label><input type="file" id="file" multiple hidden><span class="hint" id="fileSum">사진·PDF 등 합계 20MB까지</span></div>
+      <div class="files" id="files"></div>
+      <label class="ck" id="attSignedW" hidden><input type="checkbox" id="attSigned"> 서명본 계약서 (드라이브)</label>
+      <label class="ck" id="attQuoteW" hidden><input type="checkbox" id="attQuote"> 견적서 PDF (드라이브)</label>
+    </div>
+    <label class="ck"><input type="checkbox" id="copySelf" checked> info@treeland.kr로 사본 받기</label>
+    <p class="error" id="err" role="alert" hidden></p>
+    <p class="okmsg" id="ok" role="status" hidden></p>
+    <div class="btns"><button type="button" class="ghost" id="previewBtn">미리보기</button><button type="button" class="primary" id="sendBtn">보내기</button></div>
+  </section>
+
+  <section aria-labelledby="h-log">
+    <h2 id="h-log">보낸 내역 <span class="hint" style="font-weight:400">· 누르면 내용을 다시 불러옵니다</span></h2>
+    <div class="log" id="log"><p class="hint">불러오는 중…</p></div>
+  </section>
+</div>
+
+<dialog id="pv" aria-label="메일 미리보기">
+  <div class="hd"><b>미리보기</b><button type="button" class="ghost" id="pvClose">닫기</button></div>
+  <div class="meta" id="pvMeta"></div>
+  <iframe id="pvFrame" title="메일 본문 미리보기"></iframe>
+</dialog>
+
+<script>
+const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";   // 계약 서버 (mailCtx·sendMail)
+const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";   // 견적 서버 (고객 목록 보충)
+const MAX_BYTES = 20 * 1024 * 1024;
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n || 0).toLocaleString("ko-KR");
+const WD = ["일","월","화","수","목","금","토"];
+const pin = () => { try{ return localStorage.getItem("tl_pin") || ""; }catch(e){ return ""; } };
+function parts(v){
+  v = String(v ?? "");
+  if(/Z$/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T"); }
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:T(\d{2}):(\d{2}))?/); if(!m) return null;
+  return { y:+m[1], m:+m[2], d:+m[3], hh:m[4], mm:m[5], wd: WD[new Date(+m[1], +m[2]-1, +m[3]).getDay()] };
+}
+const fmtLong = v => { const p = parts(v); if(!p) return ""; return `${p.m}월 ${p.d}일(${p.wd})` + (p.hh && !(p.hh==="00"&&p.mm==="00") ? ` ${p.hh}:${p.mm}` : ""); };
+function dueText(v){ const p = parts(v); if(!p) return ""; const d = new Date(p.y, p.m - 1, p.d + 3); return `${d.getMonth()+1}월 ${d.getDate()}일(${WD[d.getDay()]})`; }
+const supplyOf = t => { const g = Math.round(t / 1.1); for(const s of [g, g-1, g+1, g-2, g+2]) if(s + Math.round(s * 0.1) === t) return s; return g; };
+
+async function post(url, body){
+  const r = await fetch(url, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+/* ── 고객 목록: 계약(서명완료·서명대기) + 계약 없는 견적 ── */
+let CTX = { items:[], log:[], bank:"", storeLink:"" }, QUOTES = [], CUR = null;
+async function load(){
+  if(!pin()){ $("#pinBox").hidden = false; $("#log").innerHTML = `<p class="hint">비밀번호를 넣으면 보낸 내역이 나옵니다.</p>`; return; }
+  try{
+    const j = await post(ENDPOINT, { action:"mailCtx", pin:pin() });
+    if(!j.ok){
+      if(j.error === "pin"){ try{ localStorage.removeItem("tl_pin"); }catch(e){} $("#pinBox").hidden = false; $("#pinMsg").textContent = "비밀번호가 틀렸습니다. 다시 넣어 주세요."; $("#pinMsg").style.color = "var(--err)"; return; }
+      throw new Error(j.error);
+    }
+    CTX = j; $("#pinBox").hidden = true;
+  }catch(e){ $("#log").innerHTML = `<p class="error">서버에 연결하지 못했습니다. 새로고침해 주세요. (${esc(e.message)})</p>`; return; }
+  try{ const q = await post(QUOTE_ENDPOINT, { action:"list", pin:pin() }); QUOTES = q.quotes || []; }catch(e){ QUOTES = []; }
+  renderCustomers(); renderLog();
+}
+function renderCustomers(){
+  const sel = $("#cust"), keep = sel.value;
+  const cs = CTX.items.filter(i => i.status === "서명완료" || i.status === "서명대기");
+  const qs = QUOTES.filter(q => !cs.some(c => c.qno && c.qno === q.no));
+  const label = c => `${c.customer || "(상호 없음)"} · ${c.status === "서명완료" ? "계약" : "서명대기"}${c.install ? " · 설치 " + (parts(c.install) ? `${parts(c.install).m}/${parts(c.install).d}` : "") : ""}`;
+  sel.innerHTML = `<option value="">고객을 고르면 이메일·상호·일정·금액이 채워집니다</option>`
+    + (cs.length ? `<optgroup label="계약">${cs.map(c => `<option value="c:${esc(c.id)}">${esc(label(c))}</option>`).join("")}</optgroup>` : "")
+    + (qs.length ? `<optgroup label="견적만 (계약 전)">${qs.map(q => `<option value="q:${esc(q.no)}">${esc(q.cust || "(상호 없음)")} · 견적 No. ${esc(q.no)}</option>`).join("")}</optgroup>` : "");
+  sel.value = keep;
+  const emails = [...new Set([...cs.map(c => c.email), ...QUOTES.map(q => q.email || (q.state && q.state.email))].filter(Boolean))];
+  $("#emails").innerHTML = emails.map(e => `<option value="${esc(e)}">`).join("");
+}
+function ctxOf(v){
+  if(!v) return null;
+  if(v.startsWith("c:")){
+    const c = CTX.items.find(i => i.id === v.slice(2)); if(!c) return null;
+    const q = c.qno ? QUOTES.find(h => h.no === c.qno) : null;
+    return { kind:"c", id:c.id, name:c.customer, email:c.email || (q && (q.email || (q.state && q.state.email))) || "", install:c.install, retrieve:c.retrieve,
+      price:c.price, ship:c.ship, pay:c.pay, hasPdf:c.hasPdf, hasQuote:c.hasQuote, noVat:false };
+  }
+  const q = QUOTES.find(h => h.no === v.slice(2)); if(!q) return null;
+  const st = q.state || {}, noVat = !!st.noVat, total = Number(q.total) || 0;
+  return { kind:"q", id:"", name:q.cust || st.cust || "", email:q.email || st.email || "", install:"", retrieve:"", price: noVat ? total : supplyOf(total), ship:st.ship, pay:"", hasPdf:false, hasQuote:false, noVat };
+}
+
+/* ── 문구 ── */
+const SIGN_OFF = "감사합니다.";
+const TPLS = [
+  { k:"blank", t:"빈 메일", subj: c => "[트리랜드] ", body: c => `안녕하세요, 트리랜드입니다.\n\n\n\n${SIGN_OFF}` },
+  { k:"install", t:"설치 일정 안내", subj: c => `[트리랜드] ${nm(c)}트리 설치 일정 안내`,
+    body: c => `안녕하세요, 트리랜드입니다.\n\n${v(c && fmtLong(c.install), "설치 일시")}에 트리 설치를 위해 방문합니다.\n설치는 1시간 정도 걸리며, 영업 중에도 진행할 수 있습니다.\n설치 자리 가까이 콘센트를 비워 두시면 됩니다.\n\n일정 변경이 필요하시면 회신이나 카카오톡 채널 「트리랜드」로 알려 주세요.\n\n${SIGN_OFF}` },
+  { k:"pay", t:"결제 안내", subj: c => `[트리랜드] ${nm(c)}트리 설치 결제 안내`,
+    body: c => {
+      const card = c && c.pay === "카드 결제";
+      const total = c && c.price ? (c.noVat ? c.price : c.price + Math.round(c.price * 0.1)) : 0;
+      return `안녕하세요, 트리랜드입니다.\n\n${c && c.name ? c.name + " " : ""}트리 설치를 마쳐 결제 안내드립니다.\n\n`
+        + `결제 금액: ${total ? won(total) + "원" : "[결제 금액]"}${c && c.noVat ? "" : " (부가세 포함)"}\n`
+        + (card ? `결제 링크: ${CTX.storeLink || "[결제 링크]"}\n` : `입금 계좌: ${CTX.bank || "신한은행 110-635-611292 (예금주 트리랜드)"}\n`)
+        + `${card ? "결제" : "입금"} 기한: ${v(c && dueText(c.install), "기한")}까지\n\n`
+        + (card ? "" : "세금계산서나 현금영수증이 필요하시면 말씀해 주세요.\n\n") + SIGN_OFF;
+    } },
+  { k:"tax", t:"세금계산서 발행 안내", subj: c => `[트리랜드] ${nm(c)}세금계산서 발행 안내`,
+    body: c => {
+      const s = c && c.price ? c.price : 0, t = Math.round(s * 0.1);
+      return `안녕하세요, 트리랜드입니다.\n\n트리 설치 건 세금계산서를 발행했습니다.\n`
+        + `공급가액 ${s ? won(s) : "[공급가액]"}원 · 세액 ${s ? won(t) : "[세액]"}원 · 합계 ${s ? won(s + t) : "[합계]"}원\n\n국세청 홈택스에서도 확인하실 수 있습니다.\n\n${SIGN_OFF}`;
+    } },
+  { k:"retrieve", t:"회수 일정 안내", subj: c => `[트리랜드] ${nm(c)}트리 회수 일정 안내`,
+    body: c => `안녕하세요, 트리랜드입니다.\n\n${v(c && fmtLong(c.retrieve), "회수 일시")}에 트리 회수를 위해 방문합니다.\n회수는 1시간 정도 걸리며, 따로 준비하실 것은 없습니다.\n\n일정 변경이 필요하시면 회신이나 카카오톡 채널 「트리랜드」로 알려 주세요.\n\n그동안 트리랜드를 이용해 주셔서 감사합니다.` },
+];
+const nm = c => c && c.name ? c.name + " " : "";
+const v = (x, label) => x || `[${label}]`;
+let TPL = "blank", FILLED = "";   // FILLED: 마지막으로 자동으로 채운 본문 (직접 고쳤는지 확인용)
+function applyTpl(k, force){
+  const body = $("#body").value;
+  if(!force && body.trim() && body !== FILLED && !confirm("지금 쓴 본문을 이 문구로 바꿀까요?")) return;
+  TPL = k; const t = TPLS.find(x => x.k === k);
+  $("#subj").value = t.subj(CUR); $("#body").value = FILLED = t.body(CUR);
+  document.querySelectorAll("#tpls button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === k)));
+}
+$("#tpls").innerHTML = TPLS.map(t => `<button type="button" data-k="${t.k}" aria-pressed="${t.k === TPL}">${esc(t.t)}</button>`).join("");
+$("#tpls").addEventListener("click", e => { const b = e.target.closest("button[data-k]"); if(b) applyTpl(b.dataset.k); });
+$("#cust").addEventListener("change", e => {
+  CUR = ctxOf(e.target.value);
+  if(CUR) $("#to").value = CUR.email || "";   // 고객을 바꾸면 받는 사람도 그 고객 것으로 (없으면 비움)
+  $("#attSignedW").hidden = !(CUR && CUR.hasPdf); $("#attSigned").checked = false;
+  $("#attQuoteW").hidden = !(CUR && CUR.hasQuote); $("#attQuote").checked = false;
+  const body = $("#body").value;
+  if(!body.trim() || body === FILLED) applyTpl(TPL, true);
+});
+
+/* ── 첨부 파일 ── */
+let FILES = [];   // { name, type, size, b64 }
+const kb = n => n >= 1048576 ? (n / 1048576).toFixed(1) + "MB" : Math.max(1, Math.round(n / 1024)) + "KB";
+function renderFiles(){
+  const total = FILES.reduce((a, f) => a + f.size, 0);
+  $("#files").innerHTML = FILES.map((f, i) => `<div class="f"><span>${esc(f.name)} · ${kb(f.size)}</span><button type="button" data-rm="${i}">빼기</button></div>`).join("");
+  $("#fileSum").textContent = FILES.length ? `${FILES.length}개 · ${kb(total)} / 20MB` : "사진·PDF 등 합계 20MB까지";
+  $("#fileSum").style.color = total > MAX_BYTES ? "var(--err)" : "";
+}
+$("#files").addEventListener("click", e => { const b = e.target.closest("[data-rm]"); if(b){ FILES.splice(+b.dataset.rm, 1); renderFiles(); } });
+$("#file").addEventListener("change", async e => {
+  for(const f of [...e.target.files]){
+    const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1] || ""); r.onerror = rej; r.readAsDataURL(f); });
+    FILES.push({ name:f.name, type:f.type || "application/octet-stream", size:f.size, b64 });
+  }
+  e.target.value = ""; renderFiles();
+});
+
+/* ── 미리보기: 서버와 같은 모양 ── */
+function mailHtml(body){
+  const link = t => t.replace(/https?:\/\/[^\s<]+/g, u => `<a href="${u}" style="color:#1f3d30">${u}</a>`);
+  const html = String(body).split("\n").map(l => `<div>${l ? link(esc(l)) : "&nbsp;"}</div>`).join("");
+  const sign = `<div style="margin-top:22px;padding-top:16px;border-top:1px solid #d9d9d4"><img src="${location.origin}/quote/mail-logo.png" alt="TREELAND" width="170" style="display:block;width:170px;height:auto;margin:0 0 10px">`
+    + `<div style="font-size:13px;font-weight:700;color:#1f3d30">트리랜드 TREELAND</div><div style="font-size:12px;color:#666;margin-top:3px">T. 070-4571-7467 ｜ E. info@treeland.kr</div>`
+    + `<div style="font-size:12px;margin-top:2px;color:#1f3d30">www.treeland.kr</div></div>`;
+  return `<!doctype html><meta charset="utf-8"><body style="margin:0;padding:18px 20px;background:#fff"><div style="font-family:'Malgun Gothic','Noto Sans KR',sans-serif;font-size:14px;line-height:1.7;color:#222">${html}${sign}</div></body>`;
+}
+function attachNames(){
+  return [...FILES.map(f => f.name), ...($("#attSigned").checked && !$("#attSignedW").hidden ? ["서명본 계약서 PDF"] : []), ...($("#attQuote").checked && !$("#attQuoteW").hidden ? ["견적서 PDF"] : [])];
+}
+$("#previewBtn").addEventListener("click", () => {
+  const a = attachNames();
+  $("#pvMeta").innerHTML = `받는 사람: ${esc($("#to").value) || "-"}${$("#cc").value.trim() ? ` · 참조: ${esc($("#cc").value)}` : ""}<br>제목: ${esc($("#subj").value)}${a.length ? `<br>첨부: ${esc(a.join(", "))}` : ""}`;
+  $("#pvFrame").srcdoc = mailHtml($("#body").value.replace(/\s+$/, ""));
+  $("#pv").showModal();
+});
+$("#pvClose").addEventListener("click", () => $("#pv").close());
+
+/* ── 보내기 ── */
+const EMAIL_RE = /^[^\s@,]+@[^\s@,]+\.[^\s@,]+$/;
+const emailsIn = s => String(s || "").split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+function showErr(m){ $("#err").textContent = m; $("#err").hidden = false; $("#ok").hidden = true; }
+$("#sendBtn").addEventListener("click", async e => {
+  const to = emailsIn($("#to").value), cc = emailsIn($("#cc").value), subj = $("#subj").value.trim(), body = $("#body").value;
+  if(!pin()){ $("#pinBox").hidden = false; return showErr("관리자 비밀번호를 먼저 넣어 주세요."); }
+  if(!to.length) return showErr("받는 사람을 넣어 주세요.");
+  const bad = [...to, ...cc].find(x => !EMAIL_RE.test(x)); if(bad) return showErr(`이메일 주소를 확인해 주세요: ${bad}`);
+  if(!subj || subj === "[트리랜드]") return showErr("제목을 넣어 주세요.");
+  const hole = body.match(/\[[^\]\n]{1,12}\]/); if(hole && hole[0] !== "[트리랜드]") return showErr(`본문에 채워지지 않은 칸이 있습니다: ${hole[0]}`);
+  if(FILES.reduce((a, f) => a + f.size, 0) > MAX_BYTES) return showErr("첨부 파일이 20MB를 넘습니다. 일부를 빼 주세요.");
+  const btn = e.currentTarget; btn.disabled = true; btn.textContent = "보내는 중…"; $("#err").hidden = true; $("#ok").hidden = true;
+  try{
+    const j = await post(ENDPOINT, { action:"sendMail", pin:pin(), to:to.join(","), cc:cc.join(","), subject:subj, body, copySelf:$("#copySelf").checked,
+      files: FILES.map(f => ({ name:f.name, type:f.type, b64:f.b64 })), contractId: CUR && CUR.kind === "c" ? CUR.id : "",
+      attachSigned: !$("#attSignedW").hidden && $("#attSigned").checked, attachQuote: !$("#attQuoteW").hidden && $("#attQuote").checked });
+    if(!j.ok) throw new Error(j.error === "pin" ? "비밀번호가 틀렸습니다." : j.error === "bad_email" ? "이메일 주소를 확인해 주세요." : (j.error || "보내지 못했습니다."));
+    $("#ok").textContent = `${to.join(", ")}로 보냈습니다${j.files && j.files.length ? ` (첨부 ${j.files.length}개)` : ""}.`; $("#ok").hidden = false;
+    FILES = []; renderFiles(); load();
+  }catch(ex){ showErr(ex.message); }
+  finally{ btn.disabled = false; btn.textContent = "보내기"; }
+});
+
+/* ── 보낸 내역 ── */
+function renderLog(){
+  const L = CTX.log || [];
+  $("#log").innerHTML = L.length ? L.map((x, i) => `<button type="button" class="it" data-log="${i}"><b>${esc(x.subject)}</b><span class="hint">${esc(String(x.at).slice(5).replace("-", "/"))}</span>
+    <span class="m">→ ${esc(x.to)}${x.cc ? ` · 참조 ${esc(x.cc)}` : ""}${x.files ? ` · 첨부 ${esc(x.files)}` : ""}</span></button>`).join("") : `<p class="hint">아직 보낸 메일이 없습니다.</p>`;
+}
+$("#log").addEventListener("click", e => {
+  const b = e.target.closest("[data-log]"); if(!b) return;
+  const x = CTX.log[+b.dataset.log];
+  if($("#body").value.trim() && $("#body").value !== FILLED && !confirm("지금 쓴 내용을 지우고 이 메일 내용을 불러올까요?")) return;
+  $("#to").value = x.to; $("#cc").value = x.cc; $("#subj").value = x.subject; $("#body").value = FILLED = x.body;
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+
+/* ── 비밀번호 ── */
+$("#pinGo").addEventListener("click", () => { const p = $("#pin").value.trim(); if(!p) return; try{ localStorage.setItem("tl_pin", p); }catch(e){} $("#pinMsg").textContent = "확인 중…"; $("#pinMsg").style.color = ""; load(); });
+$("#pin").addEventListener("keydown", e => { if(e.key === "Enter") $("#pinGo").click(); });
+
+applyTpl("blank", true);
+load();
+</script>
+</body>
+</html>
