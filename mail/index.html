@@ -77,6 +77,7 @@ dialog iframe{width:100%;height:65vh;border:0;background:#fff;display:block}
       <nav><a class="ghost" href="/contract/admin.html">계약 관리</a><a class="ghost" href="/quote/">견적서</a><a class="ghost" href="/schedule/">설치·회수 일정</a></nav></div>
     <h1>메일 보내기</h1>
     <p class="lead">보내는 사람은 트리랜드 &lt;info@treeland.kr&gt;이고, 본문 아래에 로고와 회사 서명이 자동으로 붙습니다.</p>
+    <div class="row" style="margin-top:6px"><button type="button" class="ghost" id="signCopy">하단 서명 복사</button><span class="hint" id="signMsg">다른 메일(지메일·네이버웍스 등)에 붙여 넣을 수 있게 로고까지 복사합니다.</span></div>
   </header>
 
   <section id="pinBox" hidden>
@@ -311,6 +312,27 @@ $("#log").addEventListener("click", e => {
 $("#pinGo").addEventListener("click", () => { const p = $("#pin").value.trim(); if(!p) return; try{ localStorage.setItem("tl_pin", p); }catch(e){} $("#pinMsg").textContent = "확인 중…"; $("#pinMsg").style.color = ""; load(); });
 $("#pin").addEventListener("keydown", e => { if(e.key === "Enter") $("#pinGo").click(); });
 
+// 하단 서명만 복사: 메일 쓰기 창에는 로고 포함 서식(HTML), 메모장·카톡에는 글자만
+const SIGN_HTML = `<div style="margin-top:22px;padding-top:16px;border-top:1px solid #d9d9d4;font-family:'Malgun Gothic',sans-serif">`
+  + `<img src="https://treeland.kr/quote/mail-logo.png" alt="TREELAND" width="170" style="display:block;width:170px;height:auto;margin:0 0 10px">`
+  + `<div style="font-size:13px;font-weight:700;color:#1f3d30">트리랜드 TREELAND</div>`
+  + `<div style="font-size:12px;color:#666;margin-top:3px">T. 070-4571-7467 ｜ E. <a href="mailto:info@treeland.kr" style="color:#666;text-decoration:none">info@treeland.kr</a></div>`
+  + `<div style="font-size:12px;margin-top:2px"><a href="https://www.treeland.kr" style="color:#1f3d30">www.treeland.kr</a></div></div>`;
+const SIGN_TEXT = "─────────────────\n트리랜드 TREELAND\nT. 070-4571-7467 ｜ E. info@treeland.kr\nwww.treeland.kr";
+$("#signCopy").addEventListener("click", async () => {
+  const m = $("#signMsg");
+  try{
+    if(window.ClipboardItem){
+      await navigator.clipboard.write([new ClipboardItem({ "text/html": new Blob([SIGN_HTML], { type:"text/html" }), "text/plain": new Blob([SIGN_TEXT], { type:"text/plain" }) })]);
+    } else {
+      // 예전 브라우저: 화면에 그린 서명을 선택해서 복사
+      const box = document.createElement("div"); box.innerHTML = SIGN_HTML; box.style.cssText = "position:fixed;left:-9999px;top:0"; document.body.appendChild(box);
+      const r = document.createRange(); r.selectNodeContents(box); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      const ok = document.execCommand("copy"); sel.removeAllRanges(); box.remove(); if(!ok) throw new Error();
+    }
+    m.textContent = "복사했습니다. 메일 쓰기 창 맨 아래에 붙여 넣으세요."; m.style.color = "var(--ok)";
+  }catch(e){ m.textContent = "복사하지 못했습니다. 다시 눌러 주세요."; m.style.color = "var(--err)"; }
+});
 applyTpl("blank", true);
 load();
 </script>
