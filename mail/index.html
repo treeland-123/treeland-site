@@ -179,7 +179,7 @@ function ctxOf(v){
     const c = CTX.items.find(i => i.id === v.slice(2)); if(!c) return null;
     const q = c.qno ? QUOTES.find(h => h.no === c.qno) : null;
     return { kind:"c", id:c.id, name:c.customer, email:c.email || (q && (q.email || (q.state && q.state.email))) || "", install:c.install, retrieve:c.retrieve,
-      price:c.price, ship:c.ship, pay:c.pay, hasPdf:c.hasPdf, hasQuote:c.hasQuote, noVat:false };
+      price:c.price, ship:c.ship, pay:c.pay, hasPdf:c.hasPdf, hasQuote:c.hasQuote, noVat:false, signed:c.signed || c.created || "" };
   }
   const q = QUOTES.find(h => h.no === v.slice(2)); if(!q) return null;
   const st = q.state || {}, noVat = !!st.noVat, total = Number(q.total) || 0;
@@ -192,6 +192,11 @@ const TPLS = [
   { k:"blank", t:"빈 메일", subj: c => "[트리랜드] ", body: c => `안녕하세요, 트리랜드입니다.\n\n\n\n${SIGN_OFF}` },
   { k:"install", t:"설치 일정 안내", subj: c => `[트리랜드] ${nm(c)}트리 설치 일정 안내`,
     body: c => `안녕하세요, 트리랜드입니다.\n\n${v(c && fmtLong(c.install), "설치 일시")}에 트리 설치를 위해 방문합니다.\n설치는 1시간 정도 걸리며, 영업 중에도 진행할 수 있습니다.\n설치 자리 가까이 콘센트를 비워 두시면 됩니다.\n\n일정 변경이 필요하시면 회신이나 카카오톡 채널 「트리랜드」로 알려 주세요.\n\n${SIGN_OFF}` },
+  // 대표님이 실제로 보낸 메일(11/3 일정 변경 안내)을 그대로 옮긴 문구 — 서명본 계약서 첨부가 자동으로 체크됨
+  { k:"change", t:"일정 변경 안내", attach:"signed", subj: c => `[트리랜드] 설치·회수 일정 변경 안내`,
+    body: c => { const p = c && parts(c.signed);
+      return `안녕하세요, 트리랜드입니다.\n말씀 주신 대로 일정을 아래와 같이 변경했습니다.\n\n설치: ${v(c && fmtLong(c.install), "설치 일시")}\n회수: ${v(c && fmtLong(c.retrieve), "회수 일시")}\n\n`
+        + `금액과 구성 등 그 외 조건은 기존 계약(${p ? `${p.m}월 ${p.d}일` : "[계약일]"} 체결)과 같습니다.\n참고로 기존 계약서를 첨부드립니다.\n\n감사합니다.\n트리랜드 드림`; } },
   { k:"pay", t:"결제 안내", subj: c => `[트리랜드] ${nm(c)}트리 설치 결제 안내`,
     body: c => {
       const card = c && c.pay === "카드 결제";
@@ -219,6 +224,7 @@ function applyTpl(k, force){
   if(!force && body.trim() && body !== FILLED && !confirm("지금 쓴 본문을 이 문구로 바꿀까요?")) return;
   TPL = k; const t = TPLS.find(x => x.k === k);
   $("#subj").value = t.subj(CUR); $("#body").value = FILLED = t.body(CUR);
+  if(t.attach === "signed" && !$("#attSignedW").hidden) $("#attSigned").checked = true;
   document.querySelectorAll("#tpls button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.k === k)));
 }
 $("#tpls").innerHTML = TPLS.map(t => `<button type="button" data-k="${t.k}" aria-pressed="${t.k === TPL}">${esc(t.t)}</button>`).join("");
