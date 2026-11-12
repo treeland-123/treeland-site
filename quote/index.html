@@ -237,8 +237,8 @@ button{font:inherit;cursor:pointer}
         <div class="field"><label for="mailSubj">제목</label><input id="mailSubj" autocomplete="off"></div>
         <div class="field"><label for="mailBody">본문</label><textarea id="mailBody" style="min-height:220px"></textarea></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin:0 0 8px">
-          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBiz" data-doc="biz" style="width:auto;margin:0"> 사업자등록증 첨부</label>
-          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBank" data-doc="bank" style="width:auto;margin:0"> 통장사본 첨부</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBiz" data-doc="biz" style="width:auto;margin:0" disabled> 사업자등록증 첨부</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBank" data-doc="bank" style="width:auto;margin:0" disabled> 통장사본 첨부</label>
         </div>
         <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="mailCopy" style="width:auto;margin:0" checked> info@treeland.kr로 사본 받기</label>
         <button type="button" class="primary" id="mailSend">보내기</button>
@@ -886,9 +886,11 @@ function docLine() {   // 체크한 서류를 본문 한 줄로 ("첨부된 PDF 
 }
 document.querySelectorAll('#mailBox [data-doc]').forEach(x => x.addEventListener('change', docLine));
 async function docStatus() {
-  try { const j = await api('docList'); const have = (j.docs || []).map(d => d.label);
-    $('#docState').textContent = have.length ? `보관 중: ${have.join(' · ')}` : '아직 올린 서류가 없습니다';
-  } catch { $('#docState').textContent = '견적 서버 연결 후 사용'; }
+  const set = (ok, keys) => document.querySelectorAll('#mailBox [data-doc]').forEach(x => { const on = ok && keys.includes(x.dataset.doc); x.disabled = !on; if (!on) x.checked = false; x.parentElement.style.opacity = on ? '' : '.45'; });
+  try { const j = await api('docList'); const have = (j.docs || []);
+    $('#docState').textContent = have.length ? `보관 중: ${have.map(d => d.label).join(' · ')}` : '아직 올린 서류가 없습니다';
+    set(true, have.map(d => d.key));
+  } catch { $('#docState').textContent = '견적 서버 준비 중 (서버 새 버전 배포 후 사용)'; set(false, []); }
 }
 document.querySelectorAll('[data-docget]').forEach(b => b.onclick = async () => {
   const k = b.dataset.docget, label = b.textContent; b.disabled = true; b.textContent = '받는 중…';
