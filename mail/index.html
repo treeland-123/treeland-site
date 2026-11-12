@@ -99,7 +99,7 @@ dialog iframe{width:100%;height:65vh;border:0;background:#fff;display:block}
     <div class="field"><label for="body">본문</label><textarea id="body"></textarea>
       <p class="hint">[ ]로 표시된 칸은 고객을 고르면 채워집니다. 비어 있으면 보내기 전에 알려 드립니다.</p></div>
     <div class="field"><span class="lbl">첨부</span>
-      <div class="row"><label class="ghost" for="file" style="cursor:pointer">파일 선택</label><input type="file" id="file" multiple hidden><span class="hint" id="fileSum">사진·PDF 등 합계 20MB까지</span></div>
+      <div class="row"><label class="ghost" for="file" style="cursor:pointer">파일 선택</label><input type="file" id="file" multiple hidden><button type="button" class="ghost" data-doc="biz">+ 사업자등록증</button><button type="button" class="ghost" data-doc="bank">+ 통장사본</button><span class="hint" id="fileSum">사진·PDF 등 합계 20MB까지</span></div>
       <div class="files" id="files"></div>
       <label class="ck" id="attSignedW" hidden><input type="checkbox" id="attSigned"> 서명본 계약서 (드라이브)</label>
       <label class="ck" id="attQuoteW" hidden><input type="checkbox" id="attQuote"> 견적서 PDF (드라이브)</label>
@@ -255,6 +255,20 @@ $("#file").addEventListener("change", async e => {
   }
   e.target.value = ""; renderFiles();
 });
+
+// 회사 서류: 견적 서버('서류' 탭)에 보관된 사업자등록증·통장사본을 받아 첨부 목록에 넣음 (견적서 페이지 '회사 서류'에서 교체)
+document.querySelectorAll("[data-doc]").forEach(b => b.addEventListener("click", async () => {
+  const k = b.dataset.doc, label = b.textContent;
+  if(!pin()){ $("#pinBox").hidden = false; return showErr("관리자 비밀번호를 먼저 넣어 주세요."); }
+  b.disabled = true; b.textContent = "가져오는 중…";
+  try{
+    const j = await post(QUOTE_ENDPOINT, { action:"docGet", key:k, pin:pin() });
+    if(!j.ok) throw new Error(j.error === "no_doc" ? "서류 파일이 아직 서버에 없습니다. 견적서 페이지 '회사 서류'에서 올려 주세요." : j.error === "pin" ? "비밀번호가 틀렸습니다." : (j.error || "가져오지 못했습니다."));
+    FILES = FILES.filter(f => f.name !== j.name);
+    FILES.push({ name:j.name, type:j.type || "application/pdf", size:Math.floor(j.b64.length * 3 / 4), b64:j.b64 }); renderFiles(); $("#err").hidden = true;
+  }catch(ex){ showErr(ex.message); }
+  finally{ b.disabled = false; b.textContent = label; }
+}));
 
 /* ── 미리보기: 서버와 같은 모양 ── */
 function mailHtml(body){

@@ -236,8 +236,22 @@ button{font:inherit;cursor:pointer}
         <div class="field"><label for="mailTo">받는 사람</label><input id="mailTo" type="email" inputmode="email" autocomplete="off"></div>
         <div class="field"><label for="mailSubj">제목</label><input id="mailSubj" autocomplete="off"></div>
         <div class="field"><label for="mailBody">본문</label><textarea id="mailBody" style="min-height:220px"></textarea></div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin:0 0 8px">
+          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBiz" data-doc="biz" style="width:auto;margin:0"> 사업자등록증 첨부</label>
+          <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="docBank" data-doc="bank" style="width:auto;margin:0"> 통장사본 첨부</label>
+        </div>
         <label style="display:flex;gap:6px;align-items:center;font-size:14px"><input type="checkbox" id="mailCopy" style="width:auto;margin:0" checked> info@treeland.kr로 사본 받기</label>
         <button type="button" class="primary" id="mailSend">보내기</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>회사 서류 <small id="docState">견적 서버에 보관</small></h2>
+      <p class="hint">사업자등록증·통장사본을 달라는 곳에 씁니다. 메일 보내기에서 체크하면 함께 첨부되고, 아래 버튼으로 받아 카톡으로 보낼 수 있습니다. 사이트에는 올리지 않고 관리 비밀번호가 있어야 받을 수 있습니다.</p>
+      <div class="inline" style="flex-wrap:wrap;gap:8px">
+        <button type="button" class="ghost" data-docget="biz">사업자등록증 받기</button>
+        <button type="button" class="ghost" data-docget="bank">통장사본 받기</button>
+        <label class="link" style="cursor:pointer;font-size:13px">파일 교체 <select id="docKey" style="width:auto;padding:2px 4px;font-size:13px"><option value="biz">사업자등록증</option><option value="bank">통장사본</option></select><input type="file" id="docFile" accept="application/pdf,image/*" hidden></label>
       </div>
     </section>
 
@@ -733,7 +747,7 @@ async function sync() {
     HIST = merged; keepLocal(); ONLINE = true; $('#pinBox').hidden = true;
     if (pending.length) { const k = await api('list', { year: new Date().getFullYear() }); NEXT_NO = k.next; } else NEXT_NO = j.next;
     if (S && S.autoNo && NEXT_NO && !HIST.some(h => h.no === S.no && h.cust === S.cust)) { S.no = NEXT_NO; $('#qno').value = S.no; update(); }
-    syncState('모든 기기 공유');
+    syncState('모든 기기 공유'); docStatus();
   } catch (err) {
     ONLINE = false;
     if (err.code === 'pin') { try { localStorage.removeItem('tl_pin'); } catch {} $('#pinBox').hidden = false; syncState('비밀번호가 틀렸습니다', true); }
@@ -851,10 +865,48 @@ $('#mailSend').onclick = e => {
     pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
     const b64 = pdf.output('datauristring').split(',')[1];
     const quote = { no: S.no, cust: S.cust, email: to, total: R.total, at: new Date().toISOString(), state: JSON.parse(JSON.stringify(S)) };
-    const j = await api('send', { to, subject: $('#mailSubj').value.trim(), body: $('#mailBody').value, copySelf: $('#mailCopy').checked, pdf: b64, filename: fileBase() + '.pdf', quote });
-    $('#mailBox').hidden = true; msg(`${to}로 견적서를 보냈습니다.`);
+    const docs = [...document.querySelectorAll('#mailBox [data-doc]:checked')].map(x => x.dataset.doc);
+    const j = await api('send', { to, subject: $('#mailSubj').value.trim(), body: $('#mailBody').value, copySelf: $('#mailCopy').checked, pdf: b64, filename: fileBase() + '.pdf', quote, docs });
+    $('#mailBox').hidden = true; msg(`${to}로 견적서를 보냈습니다${docs.length ? ` (${docs.map(k => DOC_LABEL[k]).join('·')} 함께 첨부)` : ''}.`);
     return { sentAt: j.sentAt, sentTo: to };
   });
+};
+
+/* ── 회사 서류: 견적 서버(시트 '서류' 탭)에 보관, 비밀번호로만 받음 ── */
+const DOC_LABEL = { biz: '사업자등록증', bank: '통장사본' };
+function docLine() {   // 체크한 서류를 본문 한 줄로 ("첨부된 PDF 파일을 확인해 주세요." 바로 아래)
+  const ks = [...document.querySelectorAll('#mailBox [data-doc]:checked')].map(x => DOC_LABEL[x.dataset.doc]);
+  let lines = $('#mailBody').value.split('\n').filter(l => !/^(사업자등록증|통장사본).*함께 첨부드립니다\.$/.test(l.trim()));
+  if (ks.length) {
+    const add = `${ks.join('과 ')}도 함께 첨부드립니다.`;
+    const i = lines.findIndex(l => l.includes('첨부된 PDF 파일을 확인해 주세요'));
+    if (i > -1) lines.splice(i + 1, 0, add); else lines.push(add);
+  }
+  $('#mailBody').value = lines.join('\n');
+}
+document.querySelectorAll('#mailBox [data-doc]').forEach(x => x.addEventListener('change', docLine));
+async function docStatus() {
+  try { const j = await api('docList'); const have = (j.docs || []).map(d => d.label);
+    $('#docState').textContent = have.length ? `보관 중: ${have.join(' · ')}` : '아직 올린 서류가 없습니다';
+  } catch { $('#docState').textContent = '견적 서버 연결 후 사용'; }
+}
+document.querySelectorAll('[data-docget]').forEach(b => b.onclick = async () => {
+  const k = b.dataset.docget, label = b.textContent; b.disabled = true; b.textContent = '받는 중…';
+  try { const j = await api('docGet', { key: k });
+    const bin = atob(j.b64), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i);
+    download(new Blob([u8], { type: j.type || 'application/pdf' }), j.name); msg(`${j.name} 받았습니다.`);
+  } catch (err) { msg(err.code === 'no_doc' ? `${DOC_LABEL[k]} 파일이 아직 서버에 없습니다. '파일 교체'로 올려 주세요.` : err.code === 'pin' ? '관리자 비밀번호를 다시 확인해 주세요.' : '받지 못했습니다. (' + err.message + ')', false); }
+  finally { b.disabled = false; b.textContent = label; }
+});
+$('#docFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  const k = $('#docKey').value; if (!confirm(`${DOC_LABEL[k]} 파일을 '${f.name}'로 바꿀까요?`)) return;
+  try {
+    const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(f); });
+    const ext = (f.name.match(/\.[a-z0-9]+$/i) || ['.pdf'])[0].toLowerCase();
+    await api('docSet', { key: k, name: `트리랜드_${DOC_LABEL[k]}${ext}`, type: f.type || 'application/pdf', b64 });
+    msg(`${DOC_LABEL[k]}을 바꿨습니다.`); docStatus();
+  } catch (err) { msg('올리지 못했습니다. (' + err.message + ')', false); }
 };
 
 /* ── 도장 ── */

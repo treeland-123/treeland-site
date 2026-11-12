@@ -29,6 +29,9 @@ function doPost(e) {
       case 'delete': return out(remove(b.no));
       case 'send': return out(send(b));
       case 'check': return out({ ok: true, aliasReady: aliasReady() });
+      case 'docList': return out({ ok: true, docs: docList() });
+      case 'docGet': return out(docGet(b.key));
+      case 'docSet': return out(docSet(b));
       default: return out({ error: 'bad_action' });
     }
   } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); }
@@ -151,7 +154,9 @@ function send(b) {
   const esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
   const html = body.split('\n').map(l => `<div>${l ? esc(l) : '&nbsp;'}</div>`).join('');
   const logo = logoBlob();
-  const opt = { from: FROM, name: FROM_NAME, replyTo: FROM, attachments: [blob],
+  const extra = [];   // 사업자등록증·통장사본 (b.docs = ['biz','bank'])
+  for (const k of (Array.isArray(b.docs) ? b.docs : [])) { const d = docBlob(k); if (!d) return { error: 'no_doc', message: (DOCS[k] || k) + ' 파일이 서버에 없습니다.' }; extra.push(d); }
+  const opt = { from: FROM, name: FROM_NAME, replyTo: FROM, attachments: [blob].concat(extra),
     htmlBody: `<div style="font-family:'Malgun Gothic',sans-serif;font-size:14px;line-height:1.7;color:#222">${html}${logo ? SIGN_HTML : SIGN_HTML.replace(/<img[^>]*>/, '')}</div>` };
   if (logo) opt.inlineImages = { tlLogo: logo };
   if (b.copySelf) opt.bcc = FROM;
@@ -162,7 +167,52 @@ function send(b) {
     try { upsert({ no: String(b.quote.no), cust: b.quote.cust || '', email: to, total: Number(b.quote.total) || 0, savedAt: b.quote.at || sentAt, sentAt: sentAt, sentTo: to, state: b.quote.state || null }); }
     finally { lock.releaseLock(); }
   }
-  return { ok: true, sentAt: sentAt };
+  return { ok: true, sentAt: sentAt, docs: extra.map(x => x.getName()) };
+}
+
+/* ---------- 회사 서류 (사업자등록증·통장사본) ----------
+ * 공개 저장소(사이트)에 두지 않고 시트 「트리랜드 견적」의 '서류' 탭에만 보관 (base64를 칸마다 나눠 저장, 새 권한 필요 없음)
+ * 관리 비밀번호가 있어야 받을 수 있음. 교체: 견적서 페이지에서 다시 올리면 덮어씀 */
+const DOCS = { biz: '사업자등록증', bank: '통장사본' };
+const CHUNK = 45000;
+function docSheet() {
+  const ss = sheet().getParent(); let sh = ss.getSheetByName('서류');
+  if (!sh) { sh = ss.insertSheet('서류'); sh.getRange(1, 1, 1, 5).setValues([['key', 'name', 'type', 'updated', 'chunks →']]); sh.hideSheet(); }
+  return sh;
+}
+function docRow(key) {
+  const sh = docSheet(), n = sh.getLastRow() - 1; if (n < 1) return -1;
+  const ks = sh.getRange(2, 1, n, 1).getValues().map(v => String(v[0]));
+  const i = ks.indexOf(String(key)); return i < 0 ? -1 : i + 2;
+}
+function docList() {
+  const sh = docSheet(), n = sh.getLastRow() - 1; if (n < 1) return [];
+  return sh.getRange(2, 1, n, 4).getValues().filter(v => DOCS[v[0]]).map(v => ({ key: v[0], label: DOCS[v[0]], name: v[1], updated: iso(v[3]) }));
+}
+function docGet(key) {
+  const row = docRow(key); if (row < 0) return { error: 'no_doc' };
+  const sh = docSheet(), w = sh.getLastColumn(), v = sh.getRange(row, 1, 1, w).getValues()[0];
+  return { ok: true, key: key, name: v[1], type: v[2], b64: v.slice(4).join('') };
+}
+function docBlob(key) {
+  const d = docGet(key); if (!d.ok || !d.b64) return null;
+  return Utilities.newBlob(Utilities.base64Decode(d.b64), d.type || 'application/pdf', d.name);
+}
+function docSet(b) {
+  if (!DOCS[b.key]) return { error: 'bad_key' };
+  const b64 = String(b.b64 || '').replace(/\s+/g, ''); if (!b64) return { error: 'no_file' };
+  if (b64.length > 4000000) return { error: 'too_big' };
+  const chunks = []; for (let i = 0; i < b64.length; i += CHUNK) chunks.push(b64.slice(i, i + CHUNK));
+  const lock = LockService.getScriptLock(); lock.waitLock(10000);
+  try {
+    const sh = docSheet(); let row = docRow(b.key);
+    if (row < 0) { row = Math.max(2, sh.getLastRow() + 1); }
+    else sh.getRange(row, 1, 1, sh.getMaxColumns()).clearContent();
+    const vals = [b.key, String(b.name || DOCS[b.key] + '.pdf'), String(b.type || 'application/pdf'), new Date()].concat(chunks);
+    if (sh.getMaxColumns() < vals.length) sh.insertColumnsAfter(sh.getMaxColumns(), vals.length - sh.getMaxColumns());
+    sh.getRange(row, 1, 1, vals.length).setNumberFormat('@').setValues([vals]);
+    return { ok: true, chunks: chunks.length };
+  } finally { lock.releaseLock(); }
 }
 
 /* ---------- 편집기에서 한 번 실행: 시트 만들기 + 권한 승인 + 보내는 주소 확인 ---------- */
