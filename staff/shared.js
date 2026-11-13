@@ -29,6 +29,22 @@ function calc(c){
   const maxWeek = Math.max(0, ...Object.values(weeks));
   return { dates, work, hours, dayPay, total: dayPay * dates.length, maxWeek, under15: maxWeek < 15 };
 }
+// 실근무 기록(관리 화면에서 사후 수정, 내부용). 기록 없는 날은 계약 시간 그대로
+function actualDays(c){
+  let a = {}; try{ a = c.actual ? JSON.parse(c.actual) : {}; }catch(e){ a = {}; }
+  const base = dateList(c.dates), wage = Number(c.wage) || 0;
+  return [...new Set([...base, ...Object.keys(a)])].sort().map(d => {
+    const x = a[d], v = { date:d, start:c.start, end:c.end, breakMin:Number(c.breakMin) || 0, off:false, note:"", extra:!base.includes(d), edited:!!x };
+    if(x){ v.note = x.note || ""; if(x.off) v.off = true; else { v.start = x.start; v.end = x.end; v.breakMin = Number(x.breakMin) || 0; } }
+    let span = toMin(v.end) - toMin(v.start); if(span <= 0) span += 1440;
+    v.hours = v.off ? 0 : Math.max(0, span - v.breakMin) / 60; v.pay = v.off ? 0 : Math.round(wage * v.hours);
+    return v;
+  });
+}
+function calcActual(c){
+  const days = actualDays(c), worked = days.filter(d => !d.off);
+  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), total: worked.reduce((s, d) => s + d.pay, 0), edited: days.some(d => d.edited) };
+}
 const hText = h => (Math.round(h * 100) / 100).toString().replace(/\.0+$/, "") + "시간";
 
 // 계약서 조항. 각 항목은 [제목, [문단...]]

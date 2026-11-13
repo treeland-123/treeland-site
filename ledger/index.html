@@ -344,11 +344,14 @@ function contractSites(){
 const grossOf=s=>s.vat==="in"?(s.revenueInput||Math.round((s.revenue||0)*1.1)):Math.round((s.revenueInput||s.revenue||0)*1.1);
 function staffExp(){   // 서명완료 근로계약 → 인건비 지출 (총 임금 = 시급 × 실근로시간 × 근로일수)
   return (S.staff||[]).filter(t=>t.status==="서명완료").map(t=>{
-    const days=String(t.dates||"").split(",").filter(Boolean).sort(),[sh,sm]=String(t.start).split(":").map(Number),[eh,em]=String(t.end).split(":").map(Number);
-    let span=(eh*60+em)-(sh*60+sm);if(span<=0)span+=1440;
-    const hours=Math.max(0,span-(Number(t.breakMin)||0))/60,amount=Math.round((Number(t.wage)||0)*hours)*days.length;
+    // 근로계약 화면에서 근무시간을 수정한 기록(actual)이 있으면 그 시간으로 계산
+    let act={};try{act=t.actual?JSON.parse(t.actual):{}}catch(e){act={}}
+    const base=String(t.dates||"").split(",").filter(Boolean),all=[...new Set(base.concat(Object.keys(act)))].sort();
+    const hrs=(st,en,br)=>{const[sh,sm]=String(st).split(":").map(Number),[eh,em]=String(en).split(":").map(Number);let span=(eh*60+em)-(sh*60+sm);if(span<=0)span+=1440;return Math.max(0,span-(Number(br)||0))/60};
+    const days=all.filter(d=>!(act[d]&&act[d].off));
+    const amount=days.reduce((sum,d)=>{const x=act[d];return sum+Math.round((Number(t.wage)||0)*(x?hrs(x.start,x.end,x.breakMin):hrs(t.start,t.end,t.breakMin)))},0);
     return {id:"s:"+t.id,fromStaff:true,amount,category:"인건비",date:days[0]||"",siteId:"",season:seasonOf(days[0]),vendor:t.name,pay:"계좌이체",
-      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}`,createdAt:0};
+      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}${Object.keys(act).length?" (근무시간 수정됨)":""}`,createdAt:0};
   });
 }
 const allExp=()=>S.expenses.concat(staffExp());

@@ -11,7 +11,7 @@
  */
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const COLS = ['id', 'created', 'status', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'memo',
-  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl'];
+  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual'];
 const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay'];
 
 function doGet(e) {
@@ -36,6 +36,7 @@ function doPost(e) {
       case 'cancel': return out(setStatus(b.id, '링크중지'));
       case 'resume': return out(setStatus(b.id, '서명대기'));
       case 'delete': return out(remove(b.id));
+      case 'actual': return out(saveActual(b.id, b.actual));
       default: return out({ error: 'bad_action' });
     }
   } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); }
@@ -174,6 +175,26 @@ function remove(id) {
   if (o.pdfId) { try { DriveApp.getFileById(o.pdfId).setTrashed(true); } catch (x) {} }
   sheet().deleteRow(r);
   return { ok: true };
+}
+
+// 실근무 기록(내부용): 근로일별 실제 시작·종료·휴게, 결근, 추가 근로일. 서명한 계약서 PDF는 그대로 둠
+// actual = { 'yyyy-MM-dd': { start, end, breakMin, note } 또는 { off:true, note } } — 계약과 다른 날만 저장
+function saveActual(id, a) {
+  const r = findRow(id);
+  if (!r) return { error: 'not_found' };
+  if (rowObj(r).status !== '서명완료') return { error: 'not_signed' };
+  const hm = /^\d{2}:\d{2}$/, out = {};
+  Object.keys(a || {}).forEach((d) => {
+    const x = a[d] || {};
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
+    if (x.off) { out[d] = { off: true, note: String(x.note || '').slice(0, 100) }; return; }
+    if (!hm.test(x.start || '') || !hm.test(x.end || '')) return;
+    out[d] = { start: x.start, end: x.end, breakMin: Math.max(0, Math.round(Number(x.breakMin) || 0)), note: String(x.note || '').slice(0, 100) };
+  });
+  const sh = sheet();
+  if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
+  setCells(r, { actual: Object.keys(out).length ? JSON.stringify(out) : '' });
+  return { ok: true, actual: out };
 }
 
 /** 처음 한 번 편집기에서 실행: 시트·폴더를 만들고 권한을 승인받음 */
