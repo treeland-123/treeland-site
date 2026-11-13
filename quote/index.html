@@ -230,6 +230,7 @@ button{font:inherit;cursor:pointer}
         <button type="button" class="ghost" id="newBtn">새 견적</button>
       </div>
       <p class="hint" id="actMsg" role="status"></p>
+      <textarea id="copyBox" hidden readonly style="min-height:160px;font-size:13px"></textarea>
       <div class="card" id="mailBox" hidden>
         <div class="card-hd"><span>견적서 메일 보내기</span><button type="button" class="link" id="mailClose">닫기</button></div>
         <p class="hint">보내는 사람: 트리랜드 &lt;info@treeland.kr&gt; · 견적서 PDF 첨부 · 본문 아래에 로고와 회사 서명이 자동으로 붙습니다.</p>
@@ -706,8 +707,10 @@ function freshIfIssued() {   // 화면의 견적이 이미 발행된 번호면 �
 function editBar() {
   const bar = $('#editBar'), h = issued();
   if (RESUME && !S.cust && !h) {
-    $('#editTxt').innerHTML = `지난번 견적(<b>${esc(RESUME.cust || '상호 없음')}</b>)은 발행 내역에 저장되어 있어 새 견적으로 열었습니다.`;
-    $('#editBtn').textContent = '지난 견적 이어서 고치기'; $('#editBtn').dataset.act = 'resume'; bar.hidden = false;
+    const done = HIST.some(x => x.no === RESUME.no);
+    $('#editTxt').innerHTML = done ? `지난번 견적(<b>${esc(RESUME.cust || '상호 없음')}</b>)은 발행 내역에 저장되어 있어 새 견적으로 열었습니다.`
+      : `쓰던 견적(<b>${esc(RESUME.cust || '상호 없음')}</b>)이 있습니다. 아직 발행 전이라 발행 내역에는 없습니다.`;
+    $('#editBtn').textContent = done ? '지난 견적 이어서 고치기' : '쓰던 견적 이어서 쓰기'; $('#editBtn').dataset.act = 'resume'; bar.hidden = false;
   } else if (h) {
     $('#editTxt').innerHTML = `이미 발행한 견적입니다 (<b>${esc(h.cust)} · No. ${esc(h.no)}</b>). 여기서 고쳐 저장하면 이 견적이 바뀝니다.`;
     $('#editBtn').textContent = '새 견적 쓰기'; $('#editBtn').dataset.act = 'new'; bar.hidden = false;
@@ -717,7 +720,7 @@ function startNew() { S = freshState(); renderForm(); $('#cust').focus(); }
 $('#newBtn').onclick = () => { UNTOUCHED = false; if (S.cust && !issued() && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; startNew(); };
 $('#editBtn').onclick = () => {
   UNTOUCHED = false;
-  if ($('#editBtn').dataset.act === 'resume') { S = RESUME; RESUME = null; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
+  if ($('#editBtn').dataset.act === 'resume') { S = RESUME; RESUME = null; if (!HIST.some(x => x.no === S.no) && S.phase === 'e1' && e1Over()) S.phase = autoPhase(); renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
   else { RESUME = null; startNew(); scrollTo({ top: 0, behavior: 'smooth' }); }
 };
 
@@ -787,12 +790,19 @@ function saveHistory(R, extra) {
   else if (!ONLINE && QUOTE_ENDPOINT) h.pending = true;
   keepLocal(); renderHist(); editBar();
 }
-async function run(btn, fn) {
+// saveFirst: PDF·이미지·카톡 요약은 누르는 순간 발행 내역에 먼저 기록 (휴대폰에서 파일 저장·복사가 막혀도 내역은 남음)
+async function run(btn, fn, saveFirst) {
   const R = calc(); if (R.problems.length) return;
   const label = btn.textContent; btn.disabled = true; btn.textContent = '만드는 중…';
-  try { await ensureNo(); const extra = await fn(calc()); saveHistory(calc(), extra || undefined); } catch (err) {
+  let saved = false;
+  try {
+    try { await ensureNo(); } catch (e) { if (!saveFirst) throw e; }   // 서버가 안 돼도 이 기기에 먼저 기록 → 다음 연결 때 올라감
+    if (saveFirst) { saveHistory(calc()); saved = true; }
+    const extra = await fn(calc());
+    if (!saveFirst) saveHistory(calc(), extra || undefined);
+  } catch (err) {
     const why = { alias: 'Gmail에 info@treeland.kr 보내는 주소가 아직 연결되지 않았습니다.', pin: '관리자 비밀번호를 다시 확인해 주세요.', bad_email: '받는 사람 이메일 주소를 확인해 주세요.' }[err.code];
-    msg(why || '처리하지 못했습니다. 다시 눌러 주세요. (' + err.message + ')', false);
+    msg((why || '처리하지 못했습니다. 다시 눌러 주세요. (' + err.message + ')') + (saved ? ' 견적은 발행 내역에 저장됐습니다.' : ''), false);
   }
   finally { btn.disabled = false; btn.textContent = label; }
 }
@@ -802,13 +812,13 @@ $('#pdfBtn').onclick = e => run(e.currentTarget, async () => {
   const pdf = new jspdf.jsPDF({ unit: 'mm', format: 'a4', compress: true });
   pdf.addImage(c.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, 210, 297);
   download(pdf.output('blob'), fileBase() + '.pdf'); msg(`${fileBase()}.pdf 저장했습니다.`);
-});
+}, true);
 $('#pngBtn').onclick = e => run(e.currentTarget, async () => {
   const c = await capture();
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
   download(blob, fileBase() + '.png'); msg(`${fileBase()}.png 저장했습니다. 카톡에 사진으로 보내기 좋습니다.`);
-});
-$('#copyBtn').onclick = e => run(e.currentTarget, async R => {
+}, true);
+function kakaoText(R) {
   const lines = [`[트리랜드 견적] ${S.cust} 귀하`, ''];
   R.trees.forEach(t => lines.push(`${t.n}. ${t.place ? t.place + ' · ' : ''}${t.name} ${t.tier} · ${t.color}`));
   R.addons.forEach(a => lines.push(`  + ${a.name}${a.opt ? ' (' + a.opt + ')' : ''}${a.qty > 1 ? ' ×' + a.qty : ''}${a.free && a.unit ? ' — 서비스' : ''} → ${a.treeText}`));
@@ -824,8 +834,18 @@ $('#copyBtn').onclick = e => run(e.currentTarget, async R => {
   else lines.push(`공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
   if (S.phase === 'e1' && P.deadline && !e1Over()) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
   if (S.phase === 'e2' && P.deadline2) lines.push('', `${P.deadline2.m}월 ${P.deadline2.d}일까지 계약 시 2차 얼리버드 가격으로 진행됩니다.`);
-  await navigator.clipboard.writeText(lines.join('\n')); msg('카톡 요약을 복사했습니다.');
-});
+  return lines.join('\n');
+}
+$('#copyBtn').onclick = e => {
+  const R = calc(); if (R.problems.length) return;
+  const text = kakaoText(R);
+  const copied = (navigator.clipboard && window.isSecureContext ? navigator.clipboard.writeText(text) : Promise.reject(new Error('no clipboard'))).then(() => true, () => false);
+  return run(e.currentTarget, async () => {
+    if (await copied) { $('#copyBox').hidden = true; msg('카톡 요약을 복사했습니다.'); return; }
+    const box = $('#copyBox'); box.value = text; box.hidden = false; box.focus(); box.select();
+    msg('이 기기에서는 자동 복사가 막혀 있습니다. 아래 글을 길게 눌러 전체 선택 → 복사해 주세요.');
+  }, true);
+};
 
 /* ── 발행 내역 ── */
 function renderHist() {
@@ -973,9 +993,10 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
     return;
   }
   const draft = store.get('tl-quote-draft', null);
-  S = draft && draft.trees ? draft : freshState();
-  if (freshIfIssued()) {}
-  else if (S.phase === 'e1' && e1Over()) S.phase = autoPhase();
+  if (draft && draft.trees && String(draft.cust || '').trim()) {   // 항상 빈 새 견적으로 시작, 쓰던 견적은 보관 → 위 안내 줄 '이어서 쓰기'
+    store.set('tl-quote-prev', draft); RESUME = draft; S = freshState();
+  } else S = draft && draft.trees ? draft : freshState();
+  if (S.phase === 'e1' && e1Over()) S.phase = autoPhase();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
   $('#form').removeAttribute('aria-busy');
   stampState(); renderHist(); renderForm(); sync();
