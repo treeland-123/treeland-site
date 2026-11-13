@@ -697,6 +697,12 @@ $('#addAddon').onclick = () => { const ex = P.extras[0]; S.addons.push({ name: e
 // 지금 화면의 견적이 이미 발행(저장·발송)된 번호인지 → 고치면 그 견적이 바뀜
 const issued = () => HIST.find(h => h.no === S.no);
 let RESUME = null;   // 페이지를 열 때 지난번 발행 견적이 떠 있었으면 새 견적으로 시작하고, 여기에 보관
+let UNTOUCHED = true;   // 연 뒤 아직 아무것도 안 건드림 → 서버 목록을 받은 뒤에도 '발행된 견적이면 새 견적으로' 다시 확인
+['input', 'change'].forEach(ev => document.addEventListener(ev, () => { UNTOUCHED = false; }, true));
+function freshIfIssued() {   // 화면의 견적이 이미 발행된 번호면 새 견적으로 열고, 지난 견적은 '이어서 고치기'로
+  if (!S || RESUME || !HIST.some(h => h.no === S.no)) return false;
+  RESUME = S; S = freshState(); return true;
+}
 function editBar() {
   const bar = $('#editBar'), h = issued();
   if (RESUME && !S.cust && !h) {
@@ -708,8 +714,9 @@ function editBar() {
   } else bar.hidden = true;
 }
 function startNew() { S = freshState(); renderForm(); $('#cust').focus(); }
-$('#newBtn').onclick = () => { if (S.cust && !issued() && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; startNew(); };
+$('#newBtn').onclick = () => { UNTOUCHED = false; if (S.cust && !issued() && !confirm('지금 입력한 내용을 지우고 새 견적을 시작할까요?')) return; startNew(); };
 $('#editBtn').onclick = () => {
+  UNTOUCHED = false;
   if ($('#editBtn').dataset.act === 'resume') { S = RESUME; RESUME = null; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
   else { RESUME = null; startNew(); scrollTo({ top: 0, behavior: 'smooth' }); }
 };
@@ -757,7 +764,9 @@ async function sync() {
     if (err.code === 'pin') { try { localStorage.removeItem('tl_pin'); } catch {} $('#pinBox').hidden = false; syncState('비밀번호가 틀렸습니다', true); }
     else syncState('서버 연결 안 됨 — 이 기기에 임시 저장', true);
   }
-  renderHist(); mailReady(); if (S) editBar();
+  renderHist(); mailReady();
+  if (S && UNTOUCHED && freshIfIssued()) renderForm();   // 다른 기기에서 발행했거나 이 기기 내역이 늦게 받아진 경우
+  else if (S) editBar();
 }
 $('#pinGo').onclick = () => { const v = $('#pin').value.trim(); if (!v) return; try { localStorage.setItem('tl_pin', v); } catch {} syncState('확인 중…'); sync(); };
 $('#pin').addEventListener('keydown', e => { if (e.key === 'Enter') $('#pinGo').click(); });
@@ -828,6 +837,7 @@ function renderHist() {
 }
 $('#hist').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
+  UNTOUCHED = false;
   const list = HIST;
   if (b.dataset.open) { S = JSON.parse(JSON.stringify(list[+b.dataset.open].state)); S.autoNo = false; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); }
   if (b.dataset.copyq) { const st = JSON.parse(JSON.stringify(list[+b.dataset.copyq].state)); const f = freshState(); S = { ...st, no: f.no, autoNo: true, date: f.date, cust: '', email: '', phase: f.phase }; renderForm(); scrollTo({ top: 0, behavior: 'smooth' }); $('#cust').focus(); }
@@ -964,7 +974,7 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   }
   const draft = store.get('tl-quote-draft', null);
   S = draft && draft.trees ? draft : freshState();
-  if (HIST.some(h => h.no === S.no)) { RESUME = S; S = freshState(); }
+  if (freshIfIssued()) {}
   else if (S.phase === 'e1' && e1Over()) S.phase = autoPhase();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
   $('#form').removeAttribute('aria-busy');
