@@ -2,10 +2,375 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
+<script src="/admin/auth.js" data-page="home"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>트리랜드 계약 관리</title>
-<meta http-equiv="refresh" content="0; url=/contract/admin.html">
-<script>location.replace("/contract/admin.html");</script>
+<title>트리랜드 관리</title>
+<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#fafaf9; --paper:#ffffff; --ink:#1a1a19; --sub:#6b6b66; --line:#e4e4df; --soft:#f3f3ef;
+  --acc:#23392f; --acc-soft:#eef3ef; --err:#b3261e; --ok:#2e6b3a; --wait:#8a5a00;
+  --sans:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#33332f; --soft:#262624;
+  --acc:#9fc3ae; --acc-soft:#1f2a24; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141413; --paper:#1d1d1b; --ink:#ececea; --sub:#a3a39e; --line:#33332f; --soft:#262624;
+  --acc:#9fc3ae; --acc-soft:#1f2a24; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
+  padding:0 max(16px,env(safe-area-inset-right,0px)) 56px max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:880px;margin:0 auto;padding-top:28px;display:flex;flex-direction:column;gap:22px}
+h1{font-size:24px;margin:0;letter-spacing:-.01em}
+h2{font-size:16px;margin:0}
+.date{margin:0 0 2px;color:var(--sub);font-size:13.5px}
+a{color:var(--ink)}
+button,input,select{font:inherit;color:inherit}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel .ph{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.panel .ph a{font-size:13px;color:var(--sub)}
+.hint{font-size:13px;color:var(--sub);margin:0}
+.err{color:var(--err);font-size:14px;margin:0}
+
+/* 로그인 */
+.login{max-width:420px;margin:7vh auto 0;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:34px 28px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.login img{width:56px;height:auto}
+.login h1{font-size:20px}
+.login p{margin:0;color:var(--sub);font-size:14px}
+.gbtn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:260px;border:1px solid var(--line);background:var(--paper);color:var(--ink);text-decoration:none;border-radius:8px;padding:12px 18px;font-weight:500}
+.gbtn:hover{border-color:var(--sub)}
+.first{width:100%;display:flex;flex-direction:column;gap:8px;text-align:left;border-top:1px solid var(--line);padding-top:16px}
+.first label{font-size:13px;color:var(--sub)}
+.first .row{display:flex;gap:8px}
+input[type=text],input[type=email],input[type=password],select{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.btn{background:var(--acc);color:var(--paper);border:0;border-radius:8px;padding:10px 16px;font-weight:700;cursor:pointer;white-space:nowrap}
+.btn[disabled]{opacity:.5;cursor:wait}
+.ghost{background:none;border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:13.5px;text-decoration:none;display:inline-flex;align-items:center}
+
+/* 단계 카드 */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 14px 12px;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-width:0}
+.card:hover{border-color:var(--sub)}
+.card[aria-pressed=true]{border-color:var(--acc);box-shadow:inset 0 0 0 1px var(--acc);background:var(--acc-soft)}
+.card .l{font-size:13.5px;color:var(--sub)}
+.card .n{font-size:30px;font-weight:500;line-height:1.2;font-variant-numeric:tabular-nums}
+.card .n small{font-size:14px;color:var(--sub);font-weight:400;margin-left:2px}
+.card .s{font-size:12px;color:var(--sub);min-height:1.4em}
+.card.zero .n{color:var(--sub)}
+.card.warn .s{color:var(--wait)}
+
+/* 목록 */
+.rows{display:flex;flex-direction:column}
+.r{display:grid;grid-template-columns:86px 1fr auto;gap:2px 12px;padding:11px 0;border-top:1px solid var(--line);align-items:start;text-decoration:none;color:inherit}
+.rows .r:first-child{border-top:0}
+.r .d{font-size:13.5px;font-variant-numeric:tabular-nums;color:var(--sub)}
+.r .d b{display:block;color:var(--ink);font-weight:500}
+.r .t{min-width:0}
+.r .t b{font-weight:500;overflow-wrap:anywhere}
+.r .t span{display:block;font-size:13px;color:var(--sub);overflow-wrap:anywhere}
+.r .x{font-size:12px;white-space:nowrap}
+.tag{font-size:12px;border-radius:999px;padding:2px 9px;border:1px solid currentColor;white-space:nowrap}
+.tag.in{color:var(--acc)} .tag.out{color:var(--wait)} .tag.wait{color:var(--wait)} .tag.q{color:var(--sub)}
+a.r:hover .t b{text-decoration:underline;text-underline-offset:3px}
+.empty{color:var(--sub);font-size:14px;padding:6px 0}
+@media (max-width:520px){.r{grid-template-columns:70px 1fr}.r .x{grid-column:2}}
+
+/* 직원 관리 */
+.people{display:flex;flex-direction:column}
+.p{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.people .p:first-child{border-top:0}
+.p .who b{font-weight:500}
+.p .who span{display:block;font-size:13px;color:var(--sub);overflow-wrap:anywhere}
+.p .ctl{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.p .ctl select{padding:6px 8px;font-size:14px}
+.p.off .who{opacity:.55}
+.sw{display:inline-flex;gap:6px;align-items:center;font-size:13.5px;cursor:pointer}
+.sw input{accent-color:var(--acc);width:16px;height:16px;margin:0}
+.who .me{font-size:11.5px;color:var(--sub);border:1px solid var(--line);border-radius:999px;padding:1px 7px;margin-left:4px;vertical-align:2px}
+.add{display:grid;grid-template-columns:1.4fr 1fr auto auto;gap:8px}
+@media (max-width:620px){.add{grid-template-columns:1fr 1fr}.add .btn{grid-column:1/-1}}
+.roles{margin:0;padding-left:18px;font-size:13.5px;color:var(--sub)}
+.roles b{color:var(--ink);font-weight:500}
+.linkdel{background:none;border:0;color:var(--sub);text-decoration:underline;text-underline-offset:2px;font-size:13px;cursor:pointer;padding:4px}
+</style>
 </head>
-<body><a href="/contract/admin.html">계약 관리로 이동</a></body>
+<body>
+<main class="wrap">
+
+  <!-- 로그인 -->
+  <section class="login" id="login" hidden aria-labelledby="h-login">
+    <img src="/img/logo-mark.png" width="300" height="453" alt="">
+    <h1 id="h-login">트리랜드 관리</h1>
+    <p>직원 명단에 등록된 구글 계정으로 들어옵니다.</p>
+    <a class="gbtn" id="gbtn" href="#"><svg viewBox="0 0 48 48" width="18" height="18" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.7 13.3l7.9 6.1C12.5 13.6 17.8 9.5 24 9.5z"/><path fill="#4285F4" d="M46.1 24.6c0-1.6-.1-3.1-.4-4.6H24v9h12.4c-.5 2.9-2.2 5.3-4.6 6.9l7.4 5.7c4.3-4 6.9-9.9 6.9-17z"/><path fill="#FBBC05" d="M10.6 28.6c-.5-1.4-.8-3-.8-4.6s.3-3.2.8-4.6l-7.9-6.1C1 16.6 0 20.2 0 24s1 7.4 2.7 10.7l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.4-5.7c-2.1 1.4-4.8 2.3-8.5 2.3-6.2 0-11.5-4.2-13.4-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>구글 계정으로 로그인</a>
+    <p class="err" id="loginErr" role="alert" hidden></p>
+    <div class="first" id="first" hidden>
+      <label for="firstPin">처음 한 번만, 관리자 비밀번호를 넣으면 <b id="firstEmail"></b> 계정이 대표로 등록됩니다.</label>
+      <div class="row"><input type="password" id="firstPin" autocomplete="current-password" style="flex:1"><button type="button" class="btn" id="firstGo">대표로 등록</button></div>
+    </div>
+    <p class="hint">비밀번호로 쓰던 화면은 위 메뉴에서 그대로 열립니다.</p>
+  </section>
+
+  <!-- 홈 -->
+  <div id="home" hidden>
+    <div class="wrap" style="padding-top:0">
+      <header><p class="date" id="today"></p><h1>오늘 할 일</h1></header>
+      <p class="err" id="denied" role="alert" hidden></p>
+      <div class="cards" id="cards" role="group" aria-label="단계별 보기"></div>
+      <section class="panel" id="detail" hidden aria-live="polite">
+        <div class="ph"><h2 id="dTitle"></h2><a id="dMore" href="#"></a></div>
+        <div class="rows" id="dRows"></div>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>오늘 · 내일 일정</h2><a href="/schedule/">일정표 전체</a></div>
+        <div class="rows" id="agenda"><p class="empty">불러오는 중…</p></div>
+      </section>
+      <p class="hint" id="stamp"></p>
+    </div>
+  </div>
+
+  <!-- 직원 관리 (대표) -->
+  <div id="people" hidden>
+    <div class="wrap" style="padding-top:0">
+      <header><p class="date">설정</p><h1>직원 관리</h1></header>
+      <section class="panel">
+        <h2>권한</h2>
+        <ul class="roles">
+          <li><b>대표</b> — 모든 화면과 금액, 계약 만들기·삭제, 직원 관리</li>
+          <li><b>직원</b> — 홈, 일정, 계약 목록. 금액·서명본 PDF는 보이지 않고 계약을 만들거나 삭제할 수 없습니다</li>
+        </ul>
+        <p class="hint">사용을 끄면 그 계정은 바로 들어올 수 없습니다. 그만둔 직원은 지우지 말고 사용을 꺼 두면 기록이 남습니다.</p>
+      </section>
+      <section class="panel">
+        <h2>직원 추가</h2>
+        <form class="add" id="addForm" novalidate>
+          <input type="email" id="aEmail" placeholder="구글 계정 이메일" aria-label="구글 계정 이메일" autocomplete="off">
+          <input type="text" id="aName" placeholder="이름" aria-label="이름" autocomplete="off">
+          <select id="aRole" aria-label="역할"><option>직원</option><option>대표</option></select>
+          <button type="submit" class="btn">추가</button>
+        </form>
+        <p class="err" id="addErr" role="alert" hidden></p>
+      </section>
+      <section class="panel">
+        <div class="ph"><h2>명단</h2><span class="hint" id="pCount"></span></div>
+        <div class="people" id="plist"><p class="empty">불러오는 중…</p></div>
+      </section>
+    </div>
+  </div>
+
+</main>
+
+<script>
+"use strict";
+const LOGIN_URL = "https://script.google.com/macros/s/AKfycbydV8V68xSIrqgjPstjoiFbHOCEIdam8IW5Y8IfWCyJ6GjmOh9VF8dur0WyCRU2OGLT/exec";   // 「트리랜드 로그인」 웹 앱: 구글 계정 이메일 확인 후 #t=토큰으로 돌려보냄
+const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n || 0).toLocaleString("ko-KR");
+const WD = ["일","월","화","수","목","금","토"];
+const U = TL.user, OWNER = !!U && U.role === "대표";
+
+/* 날짜: "2026-11-24T14:00" 또는 ISO(Z) → 서울 기준 {key:"2026-11-24", m, d, wd, hm} */
+function parts(v){
+  v = String(v ?? "");
+  if(/Z$/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T"); }
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/); if(!m) return null;
+  const hm = m[4] && !(m[4] === "00" && m[5] === "00") ? `${m[4]}:${m[5]}` : "";
+  return { key:`${m[1]}-${m[2]}-${m[3]}`, m:+m[2], d:+m[3], wd: WD[new Date(+m[1], +m[2]-1, +m[3]).getDay()], hm };
+}
+const seoulKey = (off = 0) => { const d = new Date(Date.now() + off * 864e5); return new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(d); };
+const dayDiff = key => Math.round((new Date(key + "T00:00:00") - new Date(seoulKey() + "T00:00:00")) / 864e5);
+const md = p => `${p.m}/${p.d}(${p.wd})`;
+const normName = n => String(n || "").replace(/^\s*(주식회사|유한회사|\(주\)|㈜)\s*/, "").replace(/\s*(주식회사|\(주\)|㈜)\s*$/, "").replace(/\s+/g, "");
+
+/* ---------- 로그인 ---------- */
+let tok = "";
+function loginErr(t){ $("#loginErr").textContent = t; $("#loginErr").hidden = !t; }
+async function sendLogin(extra){
+  loginErr("");
+  try{
+    const r = await fetch(TL.ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(Object.assign({ action:"login", at: tok }, extra || {})) });
+    const j = await r.json();
+    if(j.ok){ TL.save(j); location.replace("/admin/" + location.hash); return; }
+    const who = j.email ? `${j.email} 계정은` : "이 계정은";
+    if(j.error === "first"){ $("#firstEmail").textContent = j.email; $("#first").hidden = false; $("#firstPin").focus(); return; }
+    if(j.error === "pin"){ loginErr("관리자 비밀번호가 맞지 않습니다."); return; }
+    if(j.error === "not_member"){ loginErr(`${who} 아직 직원 명단에 없습니다. 대표에게 이 이메일을 직원으로 추가해 달라고 하세요.`); return; }
+    if(j.error === "off"){ loginErr(`${who} 사용이 중지되어 있습니다.`); return; }
+    if(j.error === "token"){ $("#first").hidden = true; loginErr("로그인 확인 시간이 지났거나 확인에 실패했습니다. 버튼을 다시 눌러 주세요."); return; }
+    if(j.error === "bad_action"){ loginErr("서버가 아직 예전 버전입니다."); return; }
+    loginErr(j.error || "로그인하지 못했습니다.");
+  }catch(e){ loginErr("서버에 연결하지 못했습니다. 잠시 뒤 다시 시도해 주세요."); }
+}
+$("#firstGo").onclick = () => { const p = $("#firstPin").value.trim(); if(p) sendLogin({ pin:p }); };
+$("#firstPin").addEventListener("keydown", e => { if(e.key === "Enter") $("#firstGo").click(); });
+function startLogin(){
+  $("#login").hidden = false;
+  $("#gbtn").href = LOGIN_URL;
+  const m = location.hash.match(/^#t=(.+)$/);
+  if(m){
+    history.replaceState(null, "", "/admin/");
+    if(m[1] === "none"){ loginErr("구글 계정을 확인하지 못했습니다. 크롬에서 구글에 로그인한 뒤 다시 눌러 주세요."); return; }
+    tok = m[1]; loginErr(""); $("#gbtn").textContent = "확인 중…"; sendLogin().finally(() => { if(!TL.user) $("#gbtn").innerHTML = $("#gbtn").dataset.html; });
+  }
+}
+$("#gbtn").dataset.html = $("#gbtn").innerHTML;
+
+/* ---------- 홈 ---------- */
+let SCHED = [], LIST = [], QUOTES = [], CUR = "";
+async function quoteList(){
+  try{
+    const pin = TL.LS.g("tl_pin"); if(!OWNER || !pin) return [];
+    const r = await fetch(QUOTE_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({ action:"list", pin }) });
+    const j = await r.json(); return j.quotes || [];
+  }catch(e){ return []; }
+}
+async function loadHome(){
+  const p = new Date();
+  $("#today").textContent = `${p.getMonth()+1}월 ${p.getDate()}일 ${WD[p.getDay()]}요일 · ${U.name || U.email}`;
+  const den = new URLSearchParams(location.search).get("denied");
+  if(den){ $("#denied").textContent = `「${den}」 화면은 대표만 볼 수 있습니다.`; $("#denied").hidden = false; history.replaceState(null, "", "/admin/" + location.hash); }
+  try{ const c = JSON.parse(TL.LS.g("tl_home_cache") || "null"); if(c && c.email === U.email){ SCHED = c.s || []; LIST = c.l || []; QUOTES = c.q || []; render(c.at); } }catch(e){}
+  try{
+    const [s, l, q] = await Promise.all([ TL.call({ action:"schedule" }), TL.call({ action:"list" }), quoteList() ]);
+    if(!s.ok){ if(s.error === "sess"){ TL.logout(); return; } throw new Error(s.error); }
+    SCHED = s.items || []; LIST = l.ok ? (l.items || []) : []; QUOTES = q;
+    const at = Date.now();
+    try{ TL.LS.s("tl_home_cache", JSON.stringify({ email:U.email, at, s:SCHED, l:LIST, q:OWNER ? QUOTES.map(x => ({ no:x.no, cust:x.cust, total:x.total, at:x.at, sentAt:x.sentAt })) : [] })); }catch(e){}
+    render(at);
+  }catch(e){
+    $("#stamp").textContent = "일정을 불러오지 못했습니다. " + (e.message || "") ;
+  }
+}
+function events(){   // 설치·회수를 날짜별 일정으로
+  const out = [];
+  SCHED.forEach(it => {
+    const a = parts(it.install), b = parts(it.retrieve);
+    if(a) out.push({ kind:"in", p:a, it });
+    if(b) out.push({ kind:"out", p:b, it });
+  });
+  return out.sort((x, y) => (x.p.key + (x.p.hm || "99")).localeCompare(y.p.key + (y.p.hm || "99")));
+}
+function buckets(){
+  const ev = events();
+  const inRange = (e, a, b) => { const d = dayDiff(e.p.key); return d >= a && d <= b; };
+  const B = [];
+  if(OWNER){
+    const conQ = new Set(LIST.map(x => String(x.qno || "").replace(/^'/, "")).filter(Boolean));
+    const conN = new Set(LIST.map(x => normName(x.customer)).filter(Boolean));
+    const cutoff = Date.now() - 30 * 864e5;
+    const q = QUOTES.filter(x => { const t = new Date(x.sentAt || x.at).getTime(); return t >= cutoff && !conQ.has(String(x.no)) && !conN.has(normName(x.cust)); });
+    B.push({ id:"quote", label:"견적 보냄 · 계약 전", sub:"최근 30일", more:["견적서 열기","/quote/"],
+      rows: q.map(x => ({ date: parts(x.sentAt || x.at), title: x.cust || "(상호 없음)", line:`No. ${x.no} · 합계 ${won(x.total)}원`, tag:["견적","q"], href:"/quote/" })) });
+  }
+  const wait = LIST.filter(x => x.status === "서명대기");
+  const old = wait.filter(x => (Date.now() - new Date(x.created).getTime()) / 864e5 >= 2).length;
+  B.push({ id:"sign", label:"서명 대기", sub: old ? `2일 넘은 곳 ${old}` : "", warn: !!old, more:["계약 목록","/contract/admin.html"],
+    rows: wait.map(x => ({ date: parts(x.install), dateLabel:"설치", title: x.customer || x.place || "(상호 미입력)", line: x.place || "", tag:["서명 대기","wait"], href:"/contract/admin.html" })) });
+  const wk = ev.filter(e => e.kind === "in" && inRange(e, 0, 6));
+  B.push({ id:"week", label:"이번 주 설치", sub:"오늘부터 7일", more:["일정표","/schedule/"], rows: wk.map(evRow) });
+  if(OWNER){
+    const paid = ev.filter(e => e.kind === "in" && e.it.status === "서명완료" && inRange(e, -7, -1));
+    B.push({ id:"pay", label:"설치 끝 · 결제 확인", sub:"설치 후 3일 안 결제", more:["계약 목록","/contract/admin.html"],
+      rows: paid.map(e => Object.assign(evRow(e), { line: `${e.it.pay || "결제 방법 미정"} · 기한 ${dueOf(e.p.key)}`, tag:["결제 확인","wait"] })) });
+  }
+  const ret = ev.filter(e => e.kind === "out" && inRange(e, 0, 13));
+  B.push({ id:"ret", label:"회수 예정", sub:"2주 안", more:["일정표","/schedule/"], rows: ret.map(evRow) });
+  return B;
+}
+function dueOf(key){ const d = new Date(key + "T00:00:00"); d.setDate(d.getDate() + 3); return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`; }
+function evRow(e){
+  const it = e.it;
+  return { date:e.p, title: it.name || it.place, line: [it.place, it.size].filter(Boolean).join(" · "),
+    tag: e.kind === "in" ? [it.status === "서명완료" ? "설치" : "설치 · 서명 전", "in"] : ["회수", "out"], href:"/schedule/", tel: it.tel };
+}
+function rowHtml(r){
+  const p = r.date;
+  const d = p ? `<span class="d"><b>${md(p)}</b>${r.dateLabel ? r.dateLabel + " " : ""}${p.hm || ""}</span>` : `<span class="d">—</span>`;
+  return `<a class="r" href="${esc(r.href)}">${d}<span class="t"><b>${esc(r.title)}</b>${r.line ? `<span>${esc(r.line)}</span>` : ""}</span><span class="x"><span class="tag ${r.tag[1]}">${esc(r.tag[0])}</span></span></a>`;
+}
+function render(at){
+  const B = buckets();
+  $("#cards").innerHTML = B.map(b => `<button type="button" class="card${b.rows.length ? "" : " zero"}${b.warn ? " warn" : ""}" data-id="${b.id}" aria-pressed="${CUR === b.id}">
+    <span class="l">${esc(b.label)}</span><span class="n">${b.rows.length}<small>곳</small></span><span class="s">${esc(b.sub || "")}</span></button>`).join("");
+  showDetail(B);
+  const ev = events().filter(e => { const d = dayDiff(e.p.key); return d === 0 || d === 1; });
+  $("#agenda").innerHTML = ev.length ? ev.map(e => rowHtml(Object.assign(evRow(e), { dateLabel: dayDiff(e.p.key) === 0 ? "오늘" : "내일" }))).join("") : `<p class="empty">오늘과 내일은 설치·회수 일정이 없습니다.</p>`;
+  if(at){ const d = new Date(at); $("#stamp").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")} 기준`; }
+}
+function showDetail(B){
+  const b = (B || buckets()).find(x => x.id === CUR);
+  if(!b){ $("#detail").hidden = true; return; }
+  $("#detail").hidden = false;
+  $("#dTitle").textContent = `${b.label} ${b.rows.length}곳`;
+  $("#dMore").textContent = b.more[0]; $("#dMore").href = b.more[1];
+  $("#dRows").innerHTML = b.rows.length ? b.rows.map(rowHtml).join("") : `<p class="empty">해당하는 곳이 없습니다.</p>`;
+}
+$("#cards").addEventListener("click", e => {
+  const c = e.target.closest(".card"); if(!c) return;
+  CUR = CUR === c.dataset.id ? "" : c.dataset.id;
+  document.querySelectorAll(".card").forEach(x => x.setAttribute("aria-pressed", String(x.dataset.id === CUR)));
+  showDetail();
+});
+
+/* ---------- 직원 관리 ---------- */
+let PEOPLE = [];
+function peopleHtml(){
+  $("#pCount").textContent = `${PEOPLE.filter(x => x.on).length}명 사용 중`;
+  $("#plist").innerHTML = PEOPLE.length ? PEOPLE.map(x => `<div class="p${x.on ? "" : " off"}" data-email="${esc(x.email)}">
+    <div class="who"><b>${esc(x.name || "(이름 없음)")}</b>${x.email === U.email ? `<span class="me">나</span>` : ""}<span>${esc(x.email)}</span><span>${x.last ? "마지막 접속 " + esc(x.last) : "아직 접속 안 함"}</span></div>
+    <div class="ctl"><select data-act="role" aria-label="${esc(x.email)} 역할"><option${x.role === "직원" ? " selected" : ""}>직원</option><option${x.role === "대표" ? " selected" : ""}>대표</option></select>
+      <label class="sw"><input type="checkbox" data-act="on"${x.on ? " checked" : ""}> 사용</label>
+      <button type="button" class="linkdel" data-act="del">지우기</button></div></div>`).join("") : `<p class="empty">아직 등록된 사람이 없습니다.</p>`;
+}
+async function staffCall(body){
+  const j = await TL.call(Object.assign({ action:"staffSet" }, body));
+  if(!j.ok){ $("#addErr").textContent = j.error === "role" ? "대표만 바꿀 수 있습니다." : (j.error || "저장하지 못했습니다."); $("#addErr").hidden = false; peopleHtml(); return false; }
+  $("#addErr").hidden = true; PEOPLE = j.staff || []; peopleHtml(); return true;
+}
+async function loadPeople(){
+  const j = await TL.call({ action:"staffList" });
+  if(!j.ok){ $("#plist").innerHTML = `<p class="err">${esc(j.error === "role" ? "대표만 볼 수 있습니다." : j.error)}</p>`; return; }
+  PEOPLE = j.staff || []; peopleHtml();
+}
+$("#plist").addEventListener("change", e => {
+  const row = e.target.closest(".p"); if(!row) return; const x = PEOPLE.find(p => p.email === row.dataset.email); if(!x) return;
+  const role = row.querySelector('[data-act="role"]').value, on = row.querySelector('[data-act="on"]').checked;
+  staffCall({ email:x.email, name:x.name, role, on });
+});
+$("#plist").addEventListener("click", e => {
+  const b = e.target.closest('[data-act="del"]'); if(!b) return;
+  const row = b.closest(".p");
+  if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 지움"; setTimeout(() => { b.dataset.armed = ""; b.textContent = "지우기"; }, 4000); return; }
+  staffCall({ email:row.dataset.email, remove:true });
+});
+$("#addForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const email = $("#aEmail").value.trim(), name = $("#aName").value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ $("#addErr").textContent = "구글 계정 이메일을 넣어 주세요."; $("#addErr").hidden = false; $("#aEmail").focus(); return; }
+  const btn = e.submitter || $("#addForm .btn"); btn.disabled = true;
+  if(await staffCall({ email, name, role:$("#aRole").value, on:true })){ $("#aEmail").value = ""; $("#aName").value = ""; }
+  btn.disabled = false;
+});
+
+/* ---------- 화면 전환 ---------- */
+function route(){
+  if(!U){ $("#home").hidden = true; $("#people").hidden = true; startLogin(); return; }
+  const ppl = location.hash === "#people" && OWNER;
+  $("#home").hidden = ppl; $("#people").hidden = !ppl;
+  if(ppl) loadPeople();
+  else if(!SCHED.length) loadHome();
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
 </html>

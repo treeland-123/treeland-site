@@ -7,6 +7,7 @@
 <title>트리랜드 계약 관리</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="robots" content="noindex">
+<script src="/admin/auth.js" data-page="contract"></script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
 /* 레이아웃: 위 링크 만들기, 아래 계약 목록. 휴대폰에서도 한 칼럼 */
@@ -23,6 +24,7 @@
   --act:#ececea; --act-ink:#141413; --err:#f2b8b5; --ok:#9fd3a8; --wait:#e8c27a; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+[data-role] .pin-sec{display:none}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
 .wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
@@ -97,14 +99,14 @@ a{color:var(--ink)}
     <div class="demo" id="demoNote" hidden>미리보기 화면입니다. 저장 기능이 연결되기 전이라 예시 데이터로 동작합니다.</div>
   </header>
 
-  <section>
+  <section class="pin-sec">
     <div class="field"><label for="pin">관리자 비밀번호</label>
       <div class="row"><input type="password" id="pin" autocomplete="current-password" enterkeyhint="go"><button type="button" class="ghost" id="loadBtn">확인</button></div>
       <span class="hint" id="pinMsg" role="status">이 기기에서는 다음부터 자동으로 입력됩니다.</span>
     </div>
   </section>
 
-  <section aria-labelledby="h-new">
+  <section aria-labelledby="h-new" class="owner-only">
     <h2 id="h-new">새 계약 링크 만들기</h2>
     <form id="newForm" novalidate>
       <div class="wrap" style="gap:12px">
@@ -226,11 +228,11 @@ async function load(){
       const cls = it.status === "서명완료" ? "done" : it.status === "서명대기" ? "wait" : "stop";
       const days = Math.floor((Date.now() - new Date(it.created).getTime()) / 864e5);
       const label = it.status === "서명대기" && days >= 2 ? `서명대기 · ${days}일째` : it.status;
-      return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
-        <span class="m">설치 ${esc(fmtDT(it.install))} · ₩${won(it.price)} · 생성 ${esc(fmtCreated(it.created))}${it.mailed ? ` · 메일 ${esc(mailedText(it.mailed))}` : ""}</span><span></span>
+      return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn owner-only" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
+        <span class="m">설치 ${esc(fmtDT(it.install))}${it.price != null ? ` · ₩${won(it.price)}` : ""} · 생성 ${esc(fmtCreated(it.created))}${it.mailed ? ` · 메일 ${esc(mailedText(it.mailed))}` : ""}</span><span></span>
         <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
-        ${it.status === "서명완료" ? `<button type="button" class="ghost" data-pay="${esc(it.id)}">결제 안내 복사</button>` : ""}
-        ${it.status === "서명대기" ? `<button type="button" class="ghost" data-mail="${esc(it.id)}">메일 보내기</button>` : ""}
+        ${it.status === "서명완료" ? `<button type="button" class="ghost owner-only" data-pay="${esc(it.id)}">결제 안내 복사</button>` : ""}
+        ${it.status === "서명대기" ? `<button type="button" class="ghost owner-only" data-mail="${esc(it.id)}">메일 보내기</button>` : ""}
         ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div>
         <div class="confirm" hidden></div></div>`;
     }).join("");
@@ -499,7 +501,7 @@ function addonText(st){
 const QUOTE_ENDPOINT = "https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec";
 async function serverQuotes(){
   try{
-    const pin = localStorage.getItem("tl_pin") || ""; if(!pin) return [];
+    const pin = localStorage.getItem("tl_pin") || ""; if(!pin || pin === "@staff") return [];
     const r = await fetch(QUOTE_ENDPOINT, { method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify({ action:"list", pin }) });
     const j = await r.json(); return j.quotes || [];
   }catch(e){ return []; }

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
+<script src="/admin/auth.js" data-page="schedule"></script>
 <link rel="manifest" href="/schedule/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
@@ -233,6 +234,7 @@ let quotes = [];
 try{ quotes = JSON.parse(localStorage.getItem("tl_sched_quotes") || "[]"); }catch(e){}
 async function loadQuotes(pin){
   if(DEMO){ quotes = SAMPLE_Q; return; }
+  if(pin === "@staff"){ quotes = []; return; }   // 직원: 견적(금액) 서버는 쓰지 않음, 추가 장식은 계약 서버 값으로
   try{
     const r = await fetch(QUOTE_ENDPOINT, {method:"POST", headers:{"Content-Type":"text/plain;charset=utf-8"}, body:JSON.stringify({action:"list", pin})});
     const j = await r.json();
@@ -448,14 +450,15 @@ function openDetail(e){
     ["장소", esc(it.place)],
     ["트리", esc(it.size)],
     ["장식 색상", esc(it.color)],
-    ...(() => { const q = quoteFor(it); if(!q) return [];
+    ...(() => { const q = quoteFor(it);
+      if(!q) return it.addons ? [["추가 장식", esc(it.addons)]] : [];
       const a = addonLines(q);
       return [["추가 장식", a.length ? a.map(esc).join("\n") : `<span style="color:var(--sub)">없음</span>`]]; })(),
     it.note ? ["비고", esc(it.note)] : null,
     ["담당자", esc(it.contact || "서명 전")],
     ["연락처", it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전"],
     [other[0], esc(fmtFull(other[1]))],
-    ["임대료", `${won(it.price)}원 <span style="color:var(--sub)">(부가세 별도)</span>`],
+    it.price != null ? ["임대료", `${won(it.price)}원 <span style="color:var(--sub)">(부가세 별도)</span>`] : null,
     it.pay ? ["결제", esc(it.pay)] : null,
   ].filter(Boolean);
   $("#sheet").innerHTML = `
