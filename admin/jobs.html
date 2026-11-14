@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script src="/admin/auth.js?v=5" data-page="jobs"></script>
+<script src="/admin/ui.js?v=5"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>건 · 트리랜드 관리</title>
+<link rel="icon" href="/favicon.ico">
+<meta name="theme-color" content="#F5F5F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="/admin/admin.css?v=5">
+<style>
+.top{position:sticky;top:var(--tlbar-h,56px);z-index:5;background:var(--bg);padding:10px 0 8px;display:flex;flex-direction:column;gap:10px}
+@media (max-width:760px){.top{top:52px}}
+.bulk{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:var(--wait-soft);border-radius:var(--r-card);font-size:15px;flex-wrap:wrap}
+.payq{min-height:36px;padding:0 12px;border-radius:10px;border:0;background:var(--acc);color:var(--acc-ink);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.payq.armed{background:var(--bad);color:#fff}
+.rowwrap{display:flex;align-items:center;position:relative}
+.rowwrap .row{flex:1;min-width:0}
+.rowwrap .payq{margin-right:16px}
+.rowwrap + .rowwrap::before{content:"";position:absolute;left:20px;right:20px;top:0;height:1px;background:var(--line)}
+.rowwrap .row::before{display:none}
+.count{font-size:14px;color:var(--sub);padding:0 4px}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="head"><div><p class="eyebrow" id="sub">계약한 곳 전체</p><h1 id="ttl">건</h1></div></div>
+  <div class="top">
+    <div class="search"><input type="search" id="q" placeholder="상호 · 전화 · 주소 · 담당자 · 견적번호" aria-label="검색" autocomplete="off" enterkeyhint="search"></div>
+    <div class="filters" id="filters" role="group" aria-label="단계"></div>
+  </div>
+  <div id="bulkBox"></div>
+  <section class="card flush"><div class="rows" id="list"></div></section>
+  <p class="hint" id="stamp" style="padding:0 4px"></p>
+</main>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const { esc } = UI;
+const OWNER = !TL.staff;
+const P = new URLSearchParams(location.search);
+let D = null, F = P.get("f") || "", Q = "";
+const FILTERS = [
+  ["", "전체", "계약한 곳 전체"],
+  ["mine", "내 담당", "내가 현장 담당인 곳", "staff"],
+  ["sign", "서명 대기", "서명 링크를 보냈고 아직 서명 전"],
+  ["week", "이번 주 설치", "오늘부터 7일 · 완료 처리 안 된 지난 설치 포함"],
+  ["install", "설치 예정", "설치 완료 처리 전 전체"],
+  ["pay", "입금 대기", "설치 후 3일 안 결제 · 장부 기준", "owner"],
+  ["ret", "회수 예정", "회수 완료 처리 전"],
+  ["done", "회수 완료", "끝난 곳"],
+  ["halt", "설치 중단", "분쟁 등 미해결"],
+  ["quote", "견적 · 계약 전", "견적을 보냈고 계약 전 · 최근 30일", "owner"],
+  ["archived", "보관", "목록에서 숨긴 곳"]
+].filter(f => !(f[3] === "owner" && !OWNER));
+if(!FILTERS.some(f => f[0] === F)) F = "";
+if(F === "ret2w") F = "ret";
+
+function list(G){
+  switch(F){
+    case "mine": return { items: G.mine, mode:"in" };
+    case "sign": return { items: G.sign, mode:"in" };
+    case "week": return { items: G.week, mode:"in" };
+    case "install": return { items: G.install, mode:"in" };
+    case "pay": return { items: G.pay, mode:"pay" };
+    case "ret": return { items: G.ret, mode:"out" };
+    case "done": return { items: G.done, mode:"out" };
+    case "halt": return { items: G.halt, mode:"in" };
+    case "archived": return { items: G.archived, mode:"in" };
+    case "quote": return { quotes: G.quote };
+    default: {
+      const t = UI.seoulKey();
+      const items = G.live.slice().sort((a, b) => {   // 앞으로 할 일이 가까운 순, 끝난 곳은 뒤로
+        const k = x => x.doneOut ? "z" + (UI.parts(x.retrieve) || {}).key : x.doneIn ? ((UI.parts(x.retrieve) || {}).key || "y") : ((UI.parts(x.install) || {}).key || "y");
+        return k(a).localeCompare(k(b));
+      });
+      return { items, mode:"auto" };
+    }
+  }
+}
+function matches(it){
+  if(!Q) return true;
+  const q = Q.replace(/[\s-]+/g, "").toLowerCase();
+  return [it.name, it.place, it.tel, it.contact, it.qno, it.email, it.cust, it.no].some(v => String(v || "").replace(/[\s-]+/g, "").toLowerCase().includes(q));
+}
+function render(animate){
+  const G = UI.groups(D);
+  const cnt = { "": G.live.length, mine:G.mine.length, sign:G.sign.length, week:G.week.length, install:G.install.length, pay:G.pay.length, ret:G.ret.length, done:G.done.length, halt:G.halt.length, quote:G.quote.length, archived:G.archived.length };
+  const shown = FILTERS.filter(f => f[0] === "" || f[0] === F || cnt[f[0]] || f[0] === "pay");
+  $("#filters").innerHTML = shown.map(f => `<button type="button" data-f="${f[0]}" aria-pressed="${f[0] === F}">${esc(f[1])} <b>${cnt[f[0]] ?? 0}</b></button>`).join("");
+  const cur = FILTERS.find(f => f[0] === F);
+  $("#ttl").textContent = F ? cur[1] : "건";
+  $("#sub").textContent = cur[2];
+  document.title = `${F ? cur[1] : "건"} · 트리랜드 관리`;
+  // 검색하면 단계와 상관없이 전체(보관 포함)에서 찾음
+  const L = Q ? { items: (D.all || []).slice(), mode:"auto", quotes2: G.quote } : list(G);
+  let html = "";
+  if(L.quotes){
+    const qs = L.quotes.filter(matches);
+    html = qs.length ? qs.map(UI.quoteRow).join("") : `<p class="empty">${Q ? "찾는 견적이 없습니다." : "계약 전인 견적이 없습니다."}</p>`;
+  }else{
+    const items = L.items.filter(matches);
+    html = items.length ? items.map(it => {
+      const mode = L.mode === "auto" ? (it.doneIn ? "out" : "in") : L.mode;
+      const row = UI.rowHtml(it, mode, D);
+      return L.mode === "pay" && OWNER && !Q ? `<div class="rowwrap">${row}<button type="button" class="payq" data-pay="${esc(it.id)}">입금 확인</button></div>` : row;
+    }).join("") : (L.quotes2 && L.quotes2.filter(matches).length ? "" : `<p class="empty">${Q ? "찾는 곳이 없습니다." : "해당하는 곳이 없습니다."}</p>`);
+    if(L.quotes2) html += L.quotes2.filter(matches).map(UI.quoteRow).join("");
+  }
+  $("#list").innerHTML = html;
+  $("#bulkBox").innerHTML = OWNER && (F === "week" || F === "install") && G.late.length
+    ? `<div class="bulk"><span>지난 설치 <b>${G.late.length}곳</b>이 아직 완료 처리 전입니다.</span><button type="button" class="btn sm" id="bulkIn">모두 설치 완료로</button></div>` : "";
+  if(animate) UI.rise($("#list"));
+}
+$("#filters").addEventListener("click", e => {
+  const b = e.target.closest("[data-f]"); if(!b) return;
+  F = b.dataset.f; history.replaceState(null, "", F ? `?f=${F}` : location.pathname);
+  render(true); b.scrollIntoView({ inline:"center", block:"nearest", behavior:"smooth" });
+});
+let qt; $("#q").addEventListener("input", e => { clearTimeout(qt); qt = setTimeout(() => { Q = e.target.value.trim(); render(false); }, 120); });
+/* 입금 확인: 누르면 바로 목록에서 빠지고, 저장은 뒤에서 (실패하면 되돌림) */
+document.addEventListener("click", async e => {
+  const b = e.target.closest(".payq");
+  if(b){
+    if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "한 번 더"; setTimeout(() => { if(b.isConnected){ b.dataset.armed = ""; b.classList.remove("armed"); b.textContent = "입금 확인"; } }, 3000); return; }
+    const id = b.dataset.pay, it = D.all.find(x => x.id === id);
+    const before = D.extras ? JSON.stringify(D.extras[id] || null) : null;
+    if(D.extras) D.extras[id] = Object.assign({}, D.extras[id] || {}, { paid:true, paidDate: UI.seoulKey() }); else it.paid = UI.seoulKey();
+    const wrap = b.closest(".rowwrap"); wrap.style.transition = "opacity .2s, transform .2s"; wrap.style.opacity = "0"; wrap.style.transform = "translateX(24px)";
+    setTimeout(() => render(false), 200);
+    TL.toast(`${it.name || "선택한 곳"} 입금 확인`);
+    // 장부에 쓸 때 원래 값(세금계산서·메모)을 써야 하므로 되돌린 사본을 넘김
+    const ex = D.extras ? Object.assign({}, D.extras, { [id]: before ? JSON.parse(before) : undefined }) : null;
+    const j = await TL.setPaid(id, true, ex).catch(() => null);
+    if(!j || !j.ok){
+      if(D.extras){ if(before) D.extras[id] = JSON.parse(before); else delete D.extras[id]; } else it.paid = "";
+      render(false); TL.toast("저장하지 못했습니다. 다시 눌러 주세요.", "bad"); return;
+    }
+    if(ex && D.extras) D.extras[id] = ex[id];
+    UI.cache.set("all", D);
+    return;
+  }
+  const bk = e.target.closest("#bulkIn");
+  if(bk){
+    if(bk.dataset.armed !== "1"){ bk.dataset.armed = "1"; bk.textContent = "한 번 더 누르면 처리"; bk.classList.add("armed"); return; }
+    const G = UI.groups(D), ids = G.late.map(x => x.id); bk.disabled = true;
+    for(let i = 0; i < ids.length; i++){
+      bk.textContent = `처리 중 ${i + 1}/${ids.length}`;
+      const j = await TL.call({ action:"update", id: ids[i], field:"doneIn", value:true, quiet:true }).catch(() => null);
+      const it = D.all.find(x => x.id === ids[i]); if(j && j.ok && it) it.doneIn = j.item.doneIn;
+    }
+    UI.cache.set("all", D); render(true); TL.toast(`${ids.length}곳 설치 완료로 정리했습니다`);
+  }
+});
+
+(async function(){
+  if(!TL.user && !TL.LS.g("tl_pin")){ location.replace("/admin/"); return; }
+  if(P.get("s")) setTimeout(() => $("#q").focus(), 50);
+  const c = UI.cache.get("all");
+  if(c){ D = c; render(true); $("#stamp").textContent = "새로 받는 중…"; }
+  else { $("#list").innerHTML = UI.skRows(6); FILTERS.length && ($("#filters").innerHTML = FILTERS.slice(0, 5).map(f => `<button type="button" aria-pressed="${f[0] === F}">${esc(f[1])}</button>`).join("")); }
+  try{
+    D = await UI.loadAll({ quotes: OWNER, log: false });
+    render(!c);
+    const d = new Date(); $("#stamp").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")} 기준`;
+  }catch(e){
+    if(e.code === "sess"){ TL.logout(); return; }
+    $("#stamp").textContent = "새 내용을 받지 못했습니다. " + (e.message || "");
+    if(!c) $("#list").innerHTML = `<p class="empty">불러오지 못했습니다.</p>`;
+  }
+})();
+</script>
+</body>
+</html>

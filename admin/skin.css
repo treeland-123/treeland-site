@@ -1,0 +1,63 @@
+/* 예전 관리 화면(일정·계약·견적·메일·장부·통계·근로계약·작업지시서·제안서)을 새 디자인에 맞추는 겉옷.
+   기능·계산은 그대로 두고 색·글꼴·크기·간격만 바꿈. 견적서 종이(#paper)는 건드리지 않음. */
+
+/* 1) 색 변수 덮어쓰기 — 두 계열(--sub 계열 / --muted·--pine 계열)을 같은 팔레트로 */
+html.tl-legacy:root:root:root{
+  --bg:#F5F5F2; --paper:#FFFFFF; --ink:#191F28; --sub:#4E5968; --muted:#4E5968; --line:#E3E5E8; --soft:#F2F3F5; --grid:#ECEEF0;
+  --act:#1F3A2E; --act-ink:#FFFFFF; --pine:#1F3A2E; --pine-soft:#E7EFEA;
+  --ok:#17784A; --good:#17784A; --wait:#A25F00; --err:#D4343C; --bad:#D4343C; --bad-soft:#FDEBEC;
+  --sans:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-body:var(--sans); --f-display:var(--sans); --f-num:var(--sans);
+}
+@media (prefers-color-scheme: dark){html.tl-legacy:root:root:root:not([data-theme="light"]){
+  --bg:#0F1012; --paper:#1A1B1E; --ink:#ECEDEF; --sub:#B3BAC2; --muted:#B3BAC2; --line:#2E3035; --soft:#232529; --grid:#26282C;
+  --act:#A6CDB6; --act-ink:#0D1A13; --pine:#A6CDB6; --pine-soft:#1D2A23;
+  --ok:#6FD39C; --good:#6FD39C; --wait:#F2B95C; --err:#FF7B80; --bad:#FF7B80; --bad-soft:#3A1E21}}
+html.tl-legacy:root:root:root[data-theme="dark"]{
+  --bg:#0F1012; --paper:#1A1B1E; --ink:#ECEDEF; --sub:#B3BAC2; --muted:#B3BAC2; --line:#2E3035; --soft:#232529; --grid:#26282C;
+  --act:#A6CDB6; --act-ink:#0D1A13; --pine:#A6CDB6; --pine-soft:#1D2A23;
+  --ok:#6FD39C; --good:#6FD39C; --wait:#F2B95C; --err:#FF7B80; --bad:#FF7B80; --bad-soft:#3A1E21}
+
+/* 2) 글꼴·기본 크기 (가독성: 본문 16px) */
+html.tl-legacy body{font-family:var(--sans);font-size:16px;letter-spacing:-.01em;-webkit-font-smoothing:antialiased;background:var(--bg)}
+html.tl-legacy body :where(input,button,select,textarea){font-family:inherit}
+html.tl-legacy h1{font-size:26px;letter-spacing:-.02em;font-weight:700}
+html.tl-legacy h2{font-size:18px;font-weight:700}
+html.tl-legacy :where(.lead,.hint){font-size:14.5px;line-height:1.55}
+html.tl-legacy header{padding-top:20px}
+html.tl-legacy :where(.brand){font-size:13px;letter-spacing:.02em}
+
+/* 3) 카드: 테두리 대신 흰 카드 + 여백 */
+html.tl-legacy :where(section,.card,.box,.panel,.result,.sheet-card):not(#paper *){border-color:transparent;border-radius:18px}
+html.tl-legacy :where(main,.wrap) > :where(section,.card){padding:22px 20px}
+
+/* 4) 입력칸: 채움 배경, 글자 16px(아이폰 확대 방지) — 크기·여백은 각 화면 그대로 */
+html.tl-legacy :where(input[type=text],input[type=email],input[type=tel],input[type=number],input[type=password],input[type=date],input[type=datetime-local],input[type=search],select,textarea):not(#paper *){
+  border-radius:10px;border:1.5px solid transparent;background:var(--soft);font-size:16px}
+html.tl-legacy :where(input,select,textarea):not(#paper *):focus{border-color:var(--act);background:var(--paper);outline:0}
+
+/* 5) 버튼: 큰 버튼은 둥글고 굵게, 보조 버튼(ghost)은 테두리 대신 연한 채움 */
+html.tl-legacy :where(.primary){border-radius:14px;font-size:16px;font-weight:600}
+html.tl-legacy :where(.ghost,.btn.ghost):not(#paper *){border-color:transparent;background:var(--soft);color:var(--ink);font-weight:600;border-radius:10px}
+html.tl-legacy :where(.btn):not(#paper *){border-radius:12px}
+html.tl-legacy :where(.ghost,.btn,.primary,.chips button,.seg button,.tabs button){transition:transform .12s cubic-bezier(.2,.8,.2,1),background .15s;-webkit-tap-highlight-color:transparent}
+html.tl-legacy :where(.ghost,.btn,.primary,.chips button,.seg button,.tabs button):active{transform:scale(.97)}
+html.tl-legacy :where(.pill){font-weight:600;font-size:12.5px;border-color:transparent;background:var(--soft)}
+html.tl-legacy :where(.pill.done){background:#E5F4EC}
+html.tl-legacy :where(.pill.wait){background:#FFF3DE}
+html.tl-legacy :where(.pill.halt){background:#FDEBEC}
+@media (prefers-color-scheme: dark){html.tl-legacy:not([data-theme="light"]) :where(.pill.done,.pill.wait,.pill.halt){background:var(--soft)}}
+
+/* 6) 목록 줄 간격 */
+html.tl-legacy :where(.item){padding-top:16px;padding-bottom:16px}
+html.tl-legacy :where(.item .t){font-size:16px;font-weight:600}
+html.tl-legacy :where(.item .m){font-size:14px}
+
+/* 7) 휴대폰: 아래 탭에 가리지 않게 */
+@media (max-width:760px){
+  html.tl-legacy :where(.toast){bottom:calc(92px + env(safe-area-inset-bottom,0px))!important}
+}
+@media (prefers-reduced-motion: reduce){html.tl-legacy *{transition:none!important}}
+
+/* 견적서 종이는 원래 모습 그대로 (PDF·이미지와 같아야 함) */
+html.tl-legacy #paper{letter-spacing:normal}

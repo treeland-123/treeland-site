@@ -51,4 +51,6 @@
 - 직원 권한은 계약 서버(전자계약 v23~)가 막음: 직원 허용 list·schedule·cancel·jobs·job·update(준비·설치/회수 완료·보관)·photo·photoGet, 응답에서 금액·PDF·메일 목록 제거. 화면에서만 숨기는 것이 아님.
 - 건 상세 /admin/job.html?id= : 현장 담당·필요 자재 체크·설치/회수 완료·사진(드라이브 '현장 사진')·기록('기록' 시트).
 - 입금 여부는 지출 장부(/ledger) 계약보충 extras가 기준. 홈·건 상세의 입금 확인은 장부와 계약 서버 양쪽에 씀(세금계산서·메모 유지).
-- 위쪽 메뉴 높이 52px는 CSS 변수 --tlbar-h. 페이지에 sticky 요소를 만들면 top에 var(--tlbar-h,0px)를 더할 것. 메뉴 z-index 30보다 위에 떠야 하는 전체화면은 z-index 40 이상.
+- 디자인(2026-11-14 개편): 새 화면(홈 /admin/, 건 /admin/jobs.html, 건 상세 /admin/job.html)은 admin/admin.css + admin/ui.js(날짜·상태·캐시·목록 공통). 예전 화면은 auth.js가 admin/skin.css를 붙여 같은 글꼴(Pretendard)·색·입력칸·버튼으로 맞춤(기능·계산은 그대로, 견적서 종이 #paper는 제외). 휴대폰은 아래 탭(홈·건·일정·더보기), PC는 위쪽 메뉴. 용어: 서명 대기·설치 예정·설치 완료·입금 대기·입금 확인·회수 예정·회수 완료·설치 중단·보관.
+- 속도: 새 화면은 이 기기 캐시(localStorage tl_c_all)로 먼저 그리고 서버 응답으로 갱신, 버튼은 누르는 즉시 반영 후 실패하면 되돌림. 계약 서버는 읽기 요청을 잠금 없이 동시에 처리(v25).
+- 위쪽 메뉴 높이는 CSS 변수 --tlbar-h(PC 56px, 휴대폰 52px). 페이지에 sticky 요소를 만들면 top에 var(--tlbar-h,0px)를 더할 것. 메뉴 z-index 30보다 위에 떠야 하는 전체화면은 z-index 40 이상.

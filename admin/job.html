@@ -2,109 +2,86 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=3" data-page="job"></script>
+<script src="/admin/auth.js?v=5" data-page="job"></script>
+<script src="/admin/ui.js?v=5"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 상세 · 트리랜드 관리</title>
 <link rel="icon" href="/favicon.ico">
-<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="/admin/admin.css?v=3">
+<meta name="theme-color" content="#F5F5F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="/admin/admin.css?v=5">
 <style>
-.back{font-size:13.5px;color:var(--sub);text-decoration:none}
-.top{display:flex;flex-direction:column;gap:8px}
-.badges{display:flex;gap:6px;flex-wrap:wrap}
-.badge{font-size:12.5px;border-radius:999px;padding:3px 10px;border:1px solid currentColor;white-space:nowrap}
-.badge.ok{color:var(--ok)} .badge.wait{color:var(--wait)} .badge.err{color:var(--err)} .badge.sub{color:var(--sub)}
-.actions{display:flex;gap:8px;flex-wrap:wrap}
-.actions .btn{padding:12px 18px;font-size:15px}
-.actions .ghost{padding:11px 14px;font-size:14px}
-.btn.armed{background:var(--err)}
-dl.info{display:grid;grid-template-columns:96px 1fr;gap:9px 12px;margin:0;font-size:14.5px}
-dl.info dt{color:var(--sub)}
+.back{display:inline-flex;align-items:center;gap:4px;color:var(--sub);text-decoration:none;font-size:15px;font-weight:500;padding:4px 0}
+.back::before{content:"‹";font-size:24px;line-height:1;margin-top:-2px}
+.hero{display:flex;flex-direction:column;gap:10px;padding:4px 4px 0}
+.hero .chips{display:flex;gap:6px;flex-wrap:wrap}
+.when2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.when2 > div{background:var(--card);border-radius:var(--r-card);padding:16px 18px}
+.when2 .l{font-size:14px;color:var(--sub);font-weight:500}
+.when2 .v{font-size:19px;font-weight:700;margin-top:2px;letter-spacing:-.02em}
+.when2 .v2{font-size:14px;color:var(--sub);margin-top:2px}
+.when2 .done{color:var(--ok)}
+.halt{border-radius:var(--r-card);padding:16px 18px;background:var(--bad-soft);font-size:15px}
+.halt b{color:var(--bad);display:block;font-size:16px;margin-bottom:2px}
+.halt span{display:block;color:var(--sub);font-size:14px;margin-top:4px}
+dl.info{display:grid;grid-template-columns:92px 1fr;gap:12px 14px;margin:0;font-size:16px}
+dl.info dt{color:var(--sub);font-size:15px}
 dl.info dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
-dl.info a{color:var(--ink)}
-.prog{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
-.bar{height:6px;border-radius:999px;background:var(--soft);overflow:hidden}
-.bar i{display:block;height:100%;background:var(--acc);border-radius:999px;transition:width .2s}
+dl.info a{color:inherit}
+.contact{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.prog{font-size:15px;color:var(--sub);font-variant-numeric:tabular-nums;font-weight:600}
+.bar{height:8px;border-radius:999px;background:var(--fill);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:999px;transition:width .35s var(--ease)}
 .checks{display:flex;flex-direction:column}
-.checks .grp{font-size:13px;color:var(--sub);padding:10px 0 2px}
-.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer;font-size:15px}
-.ck input{width:22px;height:22px;margin:0;flex:0 0 auto;accent-color:var(--acc)}
-.ck.on span{color:var(--sub);text-decoration:line-through;text-decoration-color:var(--line)}
-.ck small{display:block;color:var(--sub);font-size:12.5px;text-decoration:none}
-.note{font-size:13.5px;color:var(--sub);background:var(--soft);border-radius:8px;padding:10px 12px;margin:0}
-.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.checks .grp{font-size:14px;color:var(--sub);font-weight:600;padding:16px 0 4px}
+.ck{display:flex;gap:14px;align-items:center;padding:12px 0;cursor:pointer;font-size:16px;-webkit-tap-highlight-color:transparent}
+.ck input{appearance:none;-webkit-appearance:none;width:26px;height:26px;border-radius:8px;border:2px solid var(--line);margin:0;flex:0 0 auto;display:grid;place-items:center;transition:background .15s,border-color .15s,transform .12s;background:var(--card)}
+.ck input::after{content:"";width:7px;height:12px;border:solid #fff;border-width:0 2.5px 2.5px 0;transform:rotate(45deg) scale(0);margin-top:-3px;transition:transform .18s var(--ease)}
+.ck input:checked{background:var(--acc);border-color:var(--acc)}
+:root:not([data-theme="light"]) .ck input:checked::after{border-color:var(--acc-ink)}
+.ck input:checked::after{transform:rotate(45deg) scale(1)}
+.ck:active input{transform:scale(.9)}
+.ck span{transition:color .2s}
+.ck.on > span{color:var(--mute)}
+.ck small{display:block;color:var(--mute);font-size:13.5px}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:8px}
 .photos figure{margin:0;display:flex;flex-direction:column;gap:4px}
-.photos .ph{aspect-ratio:1;border-radius:8px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;cursor:pointer;border:0;padding:0}
-.photos img{width:100%;height:100%;object-fit:cover;display:block}
-.photos figcaption{font-size:12px;color:var(--sub)}
-.up{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.up label.ghost{cursor:pointer}
+.photos .ph{aspect-ratio:1;border-radius:12px;background:var(--fill);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--mute);font-size:12px;cursor:pointer;border:0;padding:0}
+.photos img{width:100%;height:100%;object-fit:cover;display:block;animation:rise .3s var(--ease) both}
+.photos figcaption{font-size:12.5px;color:var(--mute)}
+.up{display:flex;gap:8px;align-items:center}
+.up select{width:auto;min-height:44px}
+.up label.btn{cursor:pointer}
 .up input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
-.logs{display:flex;flex-direction:column;font-size:14px}
-.logs div{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
-.logs div:first-child{border-top:0}
-.logs time{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
-.crew{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.crew select{min-width:160px}
-dialog{border:0;border-radius:12px;padding:0;max-width:min(92vw,900px);background:var(--paper)}
-dialog img{display:block;max-width:100%;max-height:82vh}
-dialog::backdrop{background:rgba(0,0,0,.6)}
-.halt{margin:0;border:1px solid var(--err);border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
-.halt b{color:var(--err);margin-right:6px}
-.halt span{font-size:12.5px;color:var(--sub)}
-.haltbox{display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--sub)}
-.haltbox .row{display:flex;gap:8px}.haltbox input{flex:1}
-.more{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13.5px}
-.more button,.more a{background:none;border:0;color:var(--sub);text-decoration:underline;text-underline-offset:2px;font-size:13.5px;cursor:pointer;padding:4px 0}
-@media (max-width:520px){dl.info{grid-template-columns:84px 1fr}.logs div{grid-template-columns:1fr;gap:0}}
+dialog.viewer{border:0;border-radius:16px;padding:0;max-width:min(94vw,900px);background:transparent}
+dialog.viewer img{display:block;max-width:100%;max-height:84vh;border-radius:16px}
+dialog.viewer::backdrop{background:rgba(0,0,0,.7)}
+.more{display:flex;flex-direction:column;gap:2px}
+.more button,.more a{display:block;text-align:left;background:none;border:0;padding:14px 4px;font-size:16px;color:var(--ink);text-decoration:none;cursor:pointer;border-radius:10px}
+.more button:hover,.more a:hover{background:var(--fill)}
+.more .warn{color:var(--bad)}
+.haltbox{display:flex;flex-direction:column;gap:8px;padding:8px 4px}
+.cta{position:sticky;bottom:12px;z-index:4;display:flex;gap:8px}
+@media (max-width:760px){.cta{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
+.cta .btn{flex:1;box-shadow:0 8px 24px rgba(0,0,0,.12)}
 </style>
 </head>
 <body>
-<main class="wrap" id="app">
-  <a class="back" href="/admin/">← 홈</a>
-  <p class="hint" id="state">불러오는 중…</p>
+<main class="page" id="app">
+  <a class="back" href="/admin/jobs.html">건 목록</a>
+  <div class="hero"><span class="sk big"></span><span class="sk line" style="width:140px"></span></div>
+  <section class="card"><span class="sk line" style="width:40%"></span><span class="sk line"></span><span class="sk line" style="width:70%"></span></section>
 </main>
-<dialog id="viewer"><img id="viewImg" alt=""></dialog>
+<dialog class="viewer" id="viewer"><img id="viewImg" alt=""></dialog>
 
 <script>
 "use strict";
 const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const won = n => Number(n || 0).toLocaleString("ko-KR");
-const WD = ["일","월","화","수","목","금","토"];
+const { esc, won, man, parts, rel, short, telHref, telShow } = UI;
 const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
-let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = null;
-function savePrep(){
-  if(!PREP_PENDING) return; PREP_PENDING = false; clearTimeout(window.__pt);
-  TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) alertLine("체크를 저장하지 못했습니다. 다시 눌러 주세요."); }).catch(() => alertLine("체크를 저장하지 못했습니다. 인터넷 연결을 확인해 주세요."));
-}
-// 체크 직후 화면을 떠나거나 앱을 내려도 저장되게 (keepalive 요청은 페이지가 닫혀도 끝까지 감)
-function flushPrep(){
-  if(!PREP_PENDING || !D) return; PREP_PENDING = false; clearTimeout(window.__pt);
-  const b = { action:"update", id: ID, field:"prep", value: D.item.prep };
-  if(TL.user) b.sess = TL.user.sess; else b.pin = TL.LS.g("tl_pin");
-  try{ fetch(TL.ENDPOINT, { method:"POST", keepalive:true, headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(b) }); }catch(e){}
-}
-window.addEventListener("pagehide", flushPrep);
-document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") flushPrep(); });
-
-function parts(v){
-  v = String(v ?? "");
-  if(/Z$/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T"); }
-  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/); if(!m) return null;
-  const hm = m[4] && !(m[4] === "00" && m[5] === "00") ? `${m[4]}:${m[5]}` : "";
-  return { key:`${m[1]}-${m[2]}-${m[3]}`, y:+m[1], m:+m[2], d:+m[3], wd: WD[new Date(+m[1], +m[2]-1, +m[3]).getDay()], hm };
-}
-const full = v => { const p = parts(v); return p ? `${p.m}월 ${p.d}일(${p.wd})${p.hm ? " " + p.hm : ""}` : (String(v || "") || "—"); };
-const short = v => { const p = parts(v); return p ? `${p.m}/${p.d}${p.hm ? " " + p.hm : ""}` : ""; };
-const todayKey = () => new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
-function dueKey(install){ const p = parts(install); if(!p) return ""; const d = new Date(p.y, p.m - 1, p.d + 3); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-const telHref = t => String(t || "").replace(/[^0-9+]/g, "");
-function telShow(t){ const d = telHref(t); if(/^01\d{8,9}$/.test(d)) return d.length === 10 ? `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}` : `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`; if(/^02\d{7,8}$/.test(d)) return d.length === 9 ? `02-${d.slice(2,5)}-${d.slice(5)}` : `02-${d.slice(2,6)}-${d.slice(6)}`; return String(t); }
+let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = undefined, FULL = false;
 
 /* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
 const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
@@ -144,118 +121,137 @@ function materials(it){
 
 /* ---------- 서버 ---------- */
 async function load(){
-  const [j, x] = await Promise.all([ TL.call({ action:"job", id: ID }), OWNER && TL.ledgerExtras ? TL.ledgerExtras() : null ]);
+  // 홈·건 목록에서 받아 둔 내용으로 바로 그림 → 기록·사진은 뒤에서 받음
+  const c = UI.cache.get("all");
+  const cit = c && (c.all || []).find(x => x.id === ID);
+  if(cit){ D = { item: cit, photos: [], log: [], mails: [], staff: c.staff || [] }; if(EXTRAS === undefined) EXTRAS = c.extras || null; render(); }
+  const [j, x] = await Promise.all([ TL.call({ action:"job", id: ID }), OWNER ? TL.ledgerExtras() : null ]);
   EXTRAS = x;
   if(!j.ok){
     if(j.error === "sess"){ TL.logout(); return; }
-    $("#state").textContent = j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다.");
+    $("#app").innerHTML = `<a class="back" href="/admin/jobs.html">건 목록</a><p class="notice bad">${esc(j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다."))}</p>`;
     return;
   }
-  D = j; render();
+  D = j; FULL = true; render(); keepCache();
 }
-async function update(field, value, btn){
-  if(btn){ btn.disabled = true; }
+function keepCache(){   // 바뀐 내용을 목록 캐시에도 반영 → 뒤로 가면 바로 맞게 보임
+  const c = UI.cache.get("all"); if(!c || !D) return;
+  const i = (c.all || []).findIndex(x => x.id === ID);
+  if(i >= 0) c.all[i] = D.item;
+  if(EXTRAS) c.extras = EXTRAS;
+  UI.cache.set("all", c);
+}
+/* 누르면 바로 반영 → 저장은 뒤에서, 실패하면 되돌림 */
+async function update(field, value, okMsg){
+  const before = JSON.parse(JSON.stringify(D.item)), beforeEx = EXTRAS ? JSON.parse(JSON.stringify(EXTRAS)) : EXTRAS;
+  const nowS = UI.seoulKey() + " " + new Date().toTimeString().slice(0, 5);
+  if(field === "paid"){ if(EXTRAS) EXTRAS[ID] = Object.assign({}, EXTRAS[ID] || {}, { paid: !!value, paidDate: value ? UI.seoulKey() : "" }); D.item.paid = value ? nowS : ""; }
+  else if(field === "halt") D.item.halt = value ? nowS + " · " + value : "";
+  else if(field === "crew") D.item.crew = value;
+  else D.item[field] = value ? nowS : "";
+  render(); if(okMsg) TL.toast(okMsg);
   try{
-    const j = field === "paid" ? await TL.setPaid(ID, value, EXTRAS) : await TL.call({ action:"update", id: ID, field, value });
-    if(!j.ok){ alertLine(j.error === "role" ? "대표만 할 수 있습니다." : (j.error || "저장하지 못했습니다.")); return false; }
-    D = j; render(); return true;
-  }catch(e){ alertLine("서버에 연결하지 못했습니다."); return false; }
-  finally{ if(btn) btn.disabled = false; }
+    const j = field === "paid" ? await TL.setPaid(ID, value, beforeEx) : await TL.call({ action:"update", id: ID, field, value });
+    if(!j || !j.ok) throw new Error(j && j.error === "role" ? "대표만 할 수 있습니다." : (j && j.error) || "");
+    if(field === "paid" && beforeEx) EXTRAS = beforeEx;   // setPaid가 장부 값을 갱신해 둠
+    D = j; FULL = true; render(); keepCache();
+  }catch(e){
+    D.item = before; EXTRAS = beforeEx; render();
+    TL.toast("저장하지 못했습니다. " + (e.message || "다시 눌러 주세요."), "bad");
+  }
 }
-function alertLine(t){ const e = $("#msg"); if(e){ e.textContent = t; e.hidden = !t; } }
 
 /* ---------- 화면 ---------- */
-function stage(it){
-  if(it.halt) return ["설치 중단", "err"];
-  if(it.archived) return ["보관됨", "sub"];
-  if(it.status === "서명대기") return ["서명 대기", "wait"];
-  if(it.doneOut) return ["회수 완료", "ok"];
-  if(it.doneIn) return ["설치 완료", "ok"];
-  return ["설치 예정", "wait"];
-}
+// 큰 글씨: 오늘·내일·목요일 또는 12월 24일 (목) / 작은 글씨: 시각 (가까운 날이면 날짜도)
+function dayBig(p){ const d = UI.dayDiff(p.key); return d === 0 ? "오늘" : d === 1 ? "내일" : d > 1 && d < 7 ? `${p.wd}요일` : `${p.m}월 ${p.d}일 (${p.wd})`; }
+function daySmall(p){ const d = UI.dayDiff(p.key), t = UI.timeKo(p); return (d >= 0 && d < 7 ? `${p.m}월 ${p.d}일` + (t ? " · " : "") : "") + t; }
 function payState(it){
   if(!OWNER) return null;   // 직원에게는 결제 상태를 보여주지 않음
   if(TL.isPaid(it, EXTRAS)) return [`입금 확인 ${short(TL.paidDate(it, EXTRAS))}`, "ok"];
-  if(it.status !== "서명완료") return null;
-  const p = parts(it.install), t = todayKey();
+  if(it.status !== "서명완료" || it.halt) return null;
+  const p = parts(it.install), t = UI.seoulKey();
   if(!it.doneIn && (!p || p.key >= t)) return null;
-  const due = dueKey(it.install);
-  return due && due < t ? [`입금 기한 지남 (${short(due)})`, "err"] : [`입금 대기${due ? " · 기한 " + short(due) : ""}`, "wait"];
+  const due = p ? UI.dueKey(p.key) : "";
+  return due && due < t ? [`입금 기한 지남 · ${short(due)}`, "bad"] : [`입금 대기${due ? " · 기한 " + short(due) : ""}`, "wait"];
 }
 function render(){
-  const it = D.item, st = stage(it), ps = payState(it);
+  const it = D.item, st = UI.stage(it), ps = payState(it), H = !!it.halt;
   const crew = (D.staff || []).find(s => s.email === it.crew);
-  document.title = `${it.name || it.place} · 트리랜드 관리`;
-  // 지금 해야 할 일 버튼
-  const acts = [], H = !!it.halt;
-  if(!H && it.status === "서명완료" && !it.doneIn) acts.push(`<button type="button" class="btn" data-act="doneIn">설치 완료</button>`);
   const PAID = TL.isPaid(it, EXTRAS);
-  if(it.doneIn && !PAID && OWNER) acts.push(`<button type="button" class="btn" data-act="paid">입금 확인</button>`);
-  if(!H && it.doneIn && !it.doneOut) acts.push(`<button type="button" class="${acts.length ? "ghost" : "btn"}" data-act="doneOut">회수 완료</button>`);
-  if(!H && !it.doneIn && it.status === "서명완료" && OWNER && !PAID && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
-  const tel = it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전";
-  const map = it.place ? ` · <a href="https://map.naver.com/p/search/${encodeURIComponent(it.place)}" target="_blank" rel="noopener">지도</a>` : "";
+  document.title = `${it.name || it.place} · 트리랜드 관리`;
+  // 지금 해야 할 일 — 하나만 크게
+  let cta = "";
+  if(!H && it.status === "서명완료" && !it.doneIn) cta = `<button type="button" class="btn" data-act="doneIn">설치 완료</button>`;
+  else if(!H && it.doneIn && !PAID && OWNER) cta = `<button type="button" class="btn" data-act="paid">입금 확인</button>`;
+  else if(!H && it.doneIn && !it.doneOut) cta = `<button type="button" class="btn" data-act="doneOut">회수 완료</button>`;
+  const pIn = parts(it.install), pOut = parts(it.retrieve);
+  const tel = it.tel ? `<a class="btn sub" href="tel:${esc(telHref(it.tel))}">전화 ${esc(telShow(it.tel))}</a>` : "";
+  const map = it.place ? `<a class="btn sub" href="https://map.naver.com/p/search/${encodeURIComponent(it.place)}" target="_blank" rel="noopener">지도 열기</a>` : "";
   const info = [
-    ["설치", esc(full(it.install))],
-    ["회수", esc(full(it.retrieve))],
-    ["장소", esc(it.place || "—") + map],
+    ["장소", esc(it.place || "—")],
     it.outlet ? ["콘센트", esc(it.outlet)] : null,
-    ["담당자", `${esc(it.contact || "—")} · ${tel}`],
-    OWNER && EXTRAS === null ? ["입금 기준", `<span style="color:var(--wait)">장부를 불러오지 못해 이 화면의 기록만 보고 있습니다.</span>`] : null,
-    OWNER && it.email ? ["이메일", esc(it.email)] : null,
+    ["담당자", esc(it.contact || "서명 전")],
     ["트리", esc(it.size || "—")],
     ["장식 색상", esc(it.color || "—")],
     it.note ? ["비고", esc(it.note)] : null,
     it.pay ? ["결제 방법", esc(it.pay)] : null,
-    OWNER && it.price != null ? ["임대료", `${won(it.price)}원 (부가세 별도)${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}`] : null,
+    OWNER && it.price != null ? ["임대료", `<span class="num">${won(it.price)}원</span> <span class="sub small">부가세 별도${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}</span>`] : null,
+    OWNER && it.email ? ["이메일", esc(it.email)] : null,
     OWNER && it.qno ? ["견적 번호", `<a href="/quote/">${esc(it.qno)}</a>`] : null,
     OWNER && it.pdf ? ["서명본", `<a href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF 열기</a>`] : null,
   ].filter(Boolean);
-  // 자재
   const groups = materials(it), prep = it.prep || {};
   const keys = groups.flatMap(g => g.rows.map(r => r[0]));
   const done = keys.filter(k => prep[k]).length;
-  const crewSel = OWNER
-    ? `<select id="crewSel" aria-label="현장 담당"><option value="">지정 안 함</option>${(D.staff || []).map(s => `<option value="${esc(s.email)}"${s.email === it.crew ? " selected" : ""}>${esc(s.name || s.email)}${s.role === "대표" ? " (대표)" : ""}</option>`).join("")}</select>`
-    : `<b>${esc(crew ? (crew.name || crew.email) : (it.crew || "지정 안 됨"))}</b>`;
+  const crewHtml = OWNER
+    ? `<select id="crewSel" aria-label="현장 담당"><option value="">지정 안 함</option>${(D.staff || []).map(s => `<option value="${esc(s.email)}"${s.email === it.crew ? " selected" : ""}>${esc(s.name || s.email)}${s.role === "대표" ? " (대표)" : ""}</option>`).join("")}</select><p class="hint">지정하면 그 사람에게 메일이 가고, 그 사람 홈 「내 일정」에 뜹니다.</p>`
+    : `<p style="margin:0;font-size:17px;font-weight:600">${esc(crew ? (crew.name || crew.email) : (it.crew || "지정 안 됨"))}</p>`;
+  const sk = !FULL ? `<div class="rows">${UI.skRows(1)}</div>` : "";
   $("#app").innerHTML = `
-  <a class="back" href="/admin/">← 홈</a>
-  <header class="top">
+  <a class="back" href="/admin/jobs.html">건 목록</a>
+  <header class="hero">
     <h1>${esc(it.name || it.place || "(상호 미입력)")}</h1>
-    <div class="badges"><span class="badge ${st[1]}">${st[0]}</span>${ps ? `<span class="badge ${ps[1]}">${esc(ps[0])}</span>` : ""}${it.photos ? `<span class="badge sub">사진 ${it.photos}</span>` : ""}</div>
+    <div class="chips"><span class="chip ${st[1]}">${st[0]}</span>${ps ? `<span class="chip ${ps[1]}">${esc(ps[0])}</span>` : ""}${it.photos ? `<span class="chip gray">사진 ${it.photos}</span>` : ""}</div>
   </header>
-  ${acts.length ? `<div class="actions">${acts.join("")}</div>` : ""}
-  ${H ? `<p class="halt"><b>설치 중단</b> ${esc(it.halt.replace(/^(\S+ \S+) · /, "$1 · "))}<br><span>일정표·구글 캘린더에서 빠지고 홈 「설치 중단」에만 남습니다.</span></p>` : ""}
-  <p class="err" id="msg" role="alert" hidden></p>
-  <section class="panel"><h2>현장 담당</h2><div class="crew">${crewSel}<span class="hint">${OWNER ? "지정하면 그 사람에게 메일이 가고, 그 사람 홈 「내 일정」에 뜹니다." : ""}</span></div></section>
-  <section class="panel"><h2>계약 내용</h2><dl class="info">${info.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></section>
-  <section class="panel">
-    <div class="ph"><h2>필요 자재</h2><span class="prog">${done} / ${keys.length} 준비</span></div>
-    <div class="bar"><i style="width:${keys.length ? Math.round(done / keys.length * 100) : 0}%"></i></div>
-    <div class="checks">${groups.map(g => `<div class="grp">${esc(g.title)}</div>` + g.rows.map(r => `<label class="ck${prep[r[0]] ? " on" : ""}"><input type="checkbox" data-k="${esc(r[0])}"${prep[r[0]] ? " checked" : ""}><span>${esc(r[0])}${r[1] ? `<small>${esc(r[1])}</small>` : ""}</span></label>`).join("")).join("") || `<p class="empty">트리 구성이 비어 있습니다.</p>`}</div>
-    <p class="note">수량은 홈페이지 구성 기준입니다. 2.3m 외 크기의 오너먼트 개수는 작업지시서를 따르세요.</p>
+  ${H ? `<div class="halt"><b>설치 중단</b>${esc(String(it.halt).replace(/^\S+ \S+ · /, ""))}<span>${esc(String(it.halt).split(" · ")[0])}부터 · 일정표·구글 캘린더에서 빠지고 홈 「설치 중단」에만 남습니다.</span></div>` : ""}
+  <div class="when2">
+    <div><div class="l">설치</div><div class="v">${pIn ? esc(dayBig(pIn)) : "미정"}</div><div class="v2 ${it.doneIn ? "done" : ""}">${it.doneIn ? "완료 " + esc(short(it.doneIn)) : pIn ? esc(daySmall(pIn)) : ""}</div></div>
+    <div><div class="l">회수</div><div class="v">${pOut ? esc(dayBig(pOut)) : esc(it.retrieve || "미정")}</div><div class="v2 ${it.doneOut ? "done" : ""}">${it.doneOut ? "완료 " + esc(short(it.doneOut)) : pOut ? esc(daySmall(pOut)) : ""}</div></div>
+  </div>
+  ${tel || map ? `<div class="contact">${tel}${map}</div>` : ""}
+  <section class="card"><h2>계약 내용</h2><dl class="info">${info.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></section>
+  <section class="card">
+    <div class="ch"><h2>필요 자재</h2><span class="prog" id="prog">${done} / ${keys.length}</span></div>
+    <div class="bar"><i id="barI" style="width:${keys.length ? Math.round(done / keys.length * 100) : 0}%"></i></div>
+    <div class="checks">${groups.map(g => `<div class="grp">${esc(g.title)}</div>` + g.rows.map(r => `<label class="ck${prep[r[0]] ? " on" : ""}"><input type="checkbox" data-k="${esc(r[0])}"${prep[r[0]] ? " checked" : ""}><span>${esc(r[0])}${r[1] ? `<small>${esc(r[1])}</small>` : ""}</span></label>`).join("")).join("") || `<p class="hint">트리 구성이 비어 있습니다.</p>`}</div>
+    <p class="hint">수량은 홈페이지 구성 기준입니다. 2.3m 외 크기의 오너먼트 개수는 작업지시서를 따르세요.</p>
   </section>
-  <section class="panel">
-    <div class="ph"><h2>현장 사진</h2><span class="prog">${(D.photos || []).length}장</span></div>
+  <section class="card"><h2>현장 담당</h2>${crewHtml}</section>
+  <section class="card">
+    <div class="ch"><h2>현장 사진</h2><span class="prog">${(D.photos || []).length || it.photos || 0}장</span></div>
     <div class="up">
       <select id="kind" aria-label="사진 종류"><option value="in">설치</option><option value="out">회수</option></select>
-      <label class="ghost" for="file">사진 올리기</label><input type="file" id="file" accept="image/*" multiple>
+      <label class="btn sub sm" for="file" style="min-height:44px">사진 올리기</label><input type="file" id="file" accept="image/*" multiple>
       <span class="hint" id="upMsg"></span>
     </div>
-    <div class="photos">${(D.photos || []).slice().reverse().map(p => `<figure><button type="button" class="ph" data-pid="${esc(p.id)}" aria-label="${esc(p.kind)} 사진 크게 보기">불러오는 중</button><figcaption>${esc(p.kind)} · ${esc(String(p.at).slice(5, 16))} · ${esc(p.by)}</figcaption></figure>`).join("")}</div>
+    ${FULL ? `<div class="photos">${(D.photos || []).slice().reverse().map(p => `<figure><button type="button" class="ph" data-pid="${esc(p.id)}" aria-label="${esc(p.kind)} 사진 크게 보기"><span class="sk" style="width:100%;height:100%"></span></button><figcaption>${esc(p.kind)} · ${esc(String(p.at).slice(5, 10).replace("-", "/"))} · ${esc(p.by)}</figcaption></figure>`).join("")}</div>` : (it.photos ? sk : "")}
   </section>
-  <section class="panel"><h2>기록</h2><div class="logs">${(D.log || []).map(l => `<div><time>${esc(String(l.at).slice(5, 16))}</time><span>${esc(l.name)} — ${esc(l.what)}</span></div>`).join("") || `<p class="empty">아직 기록이 없습니다.</p>`}</div>
-    ${OWNER && (D.mails || []).length ? `<h2 style="margin-top:8px">보낸 메일</h2><div class="logs">${D.mails.map(m => `<div><time>${esc(String(m.at).slice(5, 16))}</time><span>${esc(m.subject)} → ${esc(m.to)}</span></div>`).join("")}</div>` : ""}
+  <section class="card flush"><div class="ch"><h2>기록</h2></div>
+    ${FULL ? `<div class="log">${(D.log || []).map(l => `<div><time>${esc(String(l.at).slice(5, 16).replace("-", "/"))}</time><span><b>${esc(l.name)}</b> · ${esc(l.what)}</span></div>`).join("") || `<p class="hint" style="padding:8px 20px 16px">아직 기록이 없습니다.</p>`}</div>` : sk}
+    ${OWNER && FULL && (D.mails || []).length ? `<div class="ch"><h2>보낸 메일</h2></div><div class="log">${D.mails.map(m => `<div><time>${esc(String(m.at).slice(5, 16).replace("-", "/"))}</time><span>${esc(m.subject)} → ${esc(m.to)}</span></div>`).join("")}</div>` : ""}
   </section>
-  <div class="more">
-    ${OWNER ? (H ? `<button type="button" id="haltOff">설치 중단 해제</button>` : `<button type="button" id="haltOn">설치 중단 (분쟁 등)</button>`) : ""}
-    <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
+  <section class="card"><h2>더보기</h2><div class="more" id="more">
+    ${!H && it.status === "서명완료" && !it.doneIn && OWNER && !PAID && pIn && pIn.key < UI.seoulKey() ? `<button type="button" data-act="paid">입금 확인 (설치 완료 전)</button>` : ""}
+    ${!H && it.doneIn && !it.doneOut && cta.indexOf("doneOut") < 0 ? `<button type="button" data-act="doneOut">회수 완료</button>` : ""}
     ${it.doneIn ? `<button type="button" data-undo="doneIn">설치 완료 취소</button>` : ""}
     ${it.doneOut ? `<button type="button" data-undo="doneOut">회수 완료 취소</button>` : ""}
     ${OWNER && PAID ? `<button type="button" data-undo="paid">입금 확인 취소</button>` : ""}
-    ${OWNER ? `<a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a><a href="/mail/">메일 보내기</a>` : ""}
-  </div>`;
-  loadThumbs();
+    ${OWNER ? (H ? `<button type="button" id="haltOff">설치 중단 해제</button>` : `<button type="button" id="haltOn" class="warn">설치 중단 (분쟁 등)</button>`) : ""}
+    <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
+    ${OWNER ? `<a href="/mail/">메일 보내기</a><a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a>` : ""}
+  </div></section>
+  ${cta ? `<div class="cta">${cta}</div>` : ""}`;
+  if(FULL) loadThumbs();
 }
 async function loadThumbs(){
   for(const b of document.querySelectorAll(".photos .ph")){
@@ -266,7 +262,7 @@ async function loadThumbs(){
         if(!j.ok){ b.textContent = "열 수 없음"; continue; }
         PHOTO_CACHE[pid] = `data:${j.type || "image/jpeg"};base64,${j.b64}`;
       }
-      b.innerHTML = `<img src="${PHOTO_CACHE[pid]}" alt="">`;
+      if(b.isConnected) b.innerHTML = `<img src="${PHOTO_CACHE[pid]}" alt="">`;
     }catch(e){ b.textContent = "열 수 없음"; }
   }
 }
@@ -284,8 +280,23 @@ function shrink(file){
     img.src = url;
   });
 }
+/* 준비 체크: 화면은 바로, 저장은 0.5초 모아서 */
+function savePrep(){
+  if(!PREP_PENDING) return; PREP_PENDING = false; clearTimeout(window.__pt);
+  TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) TL.toast("체크를 저장하지 못했습니다. 다시 눌러 주세요.", "bad"); else keepCache(); }).catch(() => TL.toast("체크를 저장하지 못했습니다. 인터넷 연결을 확인해 주세요.", "bad"));
+}
+function flushPrep(){   // 화면을 떠나거나 앱을 내려도 저장되게 (keepalive)
+  if(!PREP_PENDING || !D) return; PREP_PENDING = false; clearTimeout(window.__pt);
+  const b = { action:"update", id: ID, field:"prep", value: D.item.prep };
+  if(TL.user) b.sess = TL.user.sess; else b.pin = TL.LS.g("tl_pin");
+  try{ fetch(TL.ENDPOINT, { method:"POST", keepalive:true, headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(b) }); }catch(e){}
+  keepCache();
+}
+window.addEventListener("pagehide", flushPrep);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") flushPrep(); });
+
 document.addEventListener("change", async e => {
-  if(e.target.id === "crewSel"){ await update("crew", e.target.value); return; }
+  if(e.target.id === "crewSel"){ const s = (D.staff || []).find(x => x.email === e.target.value); await update("crew", e.target.value, e.target.value ? `현장 담당: ${s ? (s.name || s.email) : e.target.value}` : "현장 담당을 비웠습니다"); return; }
   if(e.target.id === "file"){
     const files = [...e.target.files]; if(!files.length) return;
     const kind = $("#kind").value;
@@ -295,45 +306,49 @@ document.addEventListener("change", async e => {
         const b64 = await shrink(files[i]);
         const j = await TL.call({ action:"photo", id: ID, b64, kind });
         if(!j.ok) throw new Error(j.error);
-        D = j;
-      }catch(err){ $("#upMsg").textContent = "올리지 못했습니다. " + (err.message || ""); render(); return; }
+        D = j; FULL = true;
+      }catch(err){ $("#upMsg").textContent = ""; TL.toast("사진을 올리지 못했습니다. " + (err.message || ""), "bad"); render(); return; }
     }
-    render(); $("#upMsg").textContent = "올렸습니다."; return;
+    render(); keepCache(); TL.toast(`사진 ${files.length}장을 올렸습니다`); return;
   }
   const k = e.target.dataset && e.target.dataset.k;
   if(k != null){
     const prep = Object.assign({}, D.item.prep || {}); if(e.target.checked) prep[k] = 1; else delete prep[k];
     D.item.prep = prep; e.target.closest(".ck").classList.toggle("on", e.target.checked);
-    const keys = [...document.querySelectorAll("[data-k]")], n = keys.filter(x => x.checked).length;
-    document.querySelector(".prog").textContent = `${n} / ${keys.length} 준비`;
-    document.querySelector(".bar i").style.width = `${Math.round(n / keys.length * 100)}%`;
-    clearTimeout(window.__pt); PREP_PENDING = true;
-    window.__pt = setTimeout(savePrep, 500);
+    const all = [...document.querySelectorAll("[data-k]")], n = all.filter(x => x.checked).length;
+    $("#prog").textContent = `${n} / ${all.length}`; $("#barI").style.width = `${Math.round(n / all.length * 100)}%`;
+    if(n === all.length && e.target.checked) TL.toast("자재 준비 완료");
+    clearTimeout(window.__pt); PREP_PENDING = true; window.__pt = setTimeout(savePrep, 500);
   }
 });
+const LABEL = { doneIn:"설치 완료", doneOut:"회수 완료", paid:"입금 확인" };
 document.addEventListener("click", async e => {
   const a = e.target.closest("[data-act]");
   if(a){
     const f = a.dataset.act;
-    if(f === "archived"){ await update("archived", !D.item.archived, a); return; }
-    if(a.dataset.armed !== "1"){ a.dataset.armed = "1"; a.dataset.label = a.textContent; a.textContent = "한 번 더 누르면 " + a.textContent; a.classList.add("armed"); setTimeout(() => { if(a.isConnected){ a.dataset.armed = ""; a.textContent = a.dataset.label; a.classList.remove("armed"); } }, 4000); return; }
-    await update(f, true, a); return;
+    if(f === "archived"){ await update("archived", !D.item.archived, D.item.archived ? "보관을 해제했습니다" : "보관했습니다"); return; }
+    if(a.dataset.armed !== "1"){
+      a.dataset.armed = "1"; a.dataset.label = a.textContent; a.textContent = "한 번 더 누르면 " + a.textContent; a.classList.add("armed");
+      setTimeout(() => { if(a.isConnected && a.dataset.armed === "1"){ a.dataset.armed = ""; a.textContent = a.dataset.label; a.classList.remove("armed"); } }, 3500);
+      return;
+    }
+    await update(f, true, LABEL[f] ? `${LABEL[f]} 처리했습니다` : ""); return;
   }
   const u = e.target.closest("[data-undo]");
-  if(u){ if(u.dataset.armed !== "1"){ u.dataset.armed = "1"; u.textContent = "한 번 더 누르면 취소"; return; } await update(u.dataset.undo, false, u); return; }
+  if(u){ if(u.dataset.armed !== "1"){ u.dataset.armed = "1"; u.textContent = "한 번 더 누르면 취소"; return; } await update(u.dataset.undo, false, "취소했습니다"); return; }
   if(e.target.id === "haltOn"){
     const box = document.createElement("div"); box.className = "haltbox";
-    box.innerHTML = `<label for="haltWhy">중단 사유</label><div class="row"><input type="text" id="haltWhy" value="분쟁 중 (미해결)"><button type="button" class="btn" id="haltGo">중단</button></div>`;
-    e.target.closest(".more").after(box); e.target.remove(); $("#haltWhy").focus(); return;
+    box.innerHTML = `<label class="lab" for="haltWhy">중단 사유</label><input type="text" id="haltWhy" value="분쟁 중 (미해결)"><button type="button" class="btn danger" id="haltGo">설치 중단</button>`;
+    e.target.replaceWith(box); $("#haltWhy").focus(); return;
   }
-  if(e.target.id === "haltGo"){ const why = $("#haltWhy").value.trim(); if(why) await update("halt", why, e.target); return; }
-  if(e.target.id === "haltOff"){ if(e.target.dataset.armed !== "1"){ e.target.dataset.armed = "1"; e.target.textContent = "한 번 더 누르면 해제"; return; } await update("halt", "", e.target); return; }
+  if(e.target.id === "haltGo"){ const why = $("#haltWhy").value.trim(); if(why) await update("halt", why, "설치 중단으로 바꿨습니다"); return; }
+  if(e.target.id === "haltOff"){ if(e.target.dataset.armed !== "1"){ e.target.dataset.armed = "1"; e.target.textContent = "한 번 더 누르면 해제"; return; } await update("halt", "", "설치 중단을 해제했습니다"); return; }
   const p = e.target.closest(".ph");
   if(p && PHOTO_CACHE[p.dataset.pid]){ $("#viewImg").src = PHOTO_CACHE[p.dataset.pid]; $("#viewer").showModal(); return; }
   if(e.target.id === "viewer" || e.target.id === "viewImg") $("#viewer").close();
 });
 
-if(!ID) $("#state").textContent = "건을 고르지 않았습니다.";
+if(!ID) $("#app").innerHTML = `<a class="back" href="/admin/jobs.html">건 목록</a><p class="notice">건을 고르지 않았습니다.</p>`;
 else if(!U && !TL.LS.g("tl_pin")) location.replace("/admin/");
 else load();
 </script>
