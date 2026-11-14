@@ -52,6 +52,11 @@ dl.info a{color:var(--ink)}
 dialog{border:0;border-radius:12px;padding:0;max-width:min(92vw,900px);background:var(--paper)}
 dialog img{display:block;max-width:100%;max-height:82vh}
 dialog::backdrop{background:rgba(0,0,0,.6)}
+.halt{margin:0;border:1px solid var(--err);border-radius:10px;padding:12px 14px;font-size:14.5px;color:var(--ink)}
+.halt b{color:var(--err);margin-right:6px}
+.halt span{font-size:12.5px;color:var(--sub)}
+.haltbox{display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--sub)}
+.haltbox .row{display:flex;gap:8px}.haltbox input{flex:1}
 .more{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13.5px}
 .more button,.more a{background:none;border:0;color:var(--sub);text-decoration:underline;text-underline-offset:2px;font-size:13.5px;cursor:pointer;padding:4px 0}
 @media (max-width:520px){dl.info{grid-template-columns:84px 1fr}.logs div{grid-template-columns:1fr;gap:0}}
@@ -161,6 +166,7 @@ function alertLine(t){ const e = $("#msg"); if(e){ e.textContent = t; e.hidden =
 
 /* ---------- 화면 ---------- */
 function stage(it){
+  if(it.halt) return ["설치 중단", "err"];
   if(it.archived) return ["보관됨", "sub"];
   if(it.status === "서명대기") return ["서명 대기", "wait"];
   if(it.doneOut) return ["회수 완료", "ok"];
@@ -181,12 +187,12 @@ function render(){
   const crew = (D.staff || []).find(s => s.email === it.crew);
   document.title = `${it.name || it.place} · 트리랜드 관리`;
   // 지금 해야 할 일 버튼
-  const acts = [];
-  if(it.status === "서명완료" && !it.doneIn) acts.push(`<button type="button" class="btn" data-act="doneIn">설치 완료</button>`);
+  const acts = [], H = !!it.halt;
+  if(!H && it.status === "서명완료" && !it.doneIn) acts.push(`<button type="button" class="btn" data-act="doneIn">설치 완료</button>`);
   const PAID = TL.isPaid(it, EXTRAS);
   if(it.doneIn && !PAID && OWNER) acts.push(`<button type="button" class="btn" data-act="paid">입금 확인</button>`);
-  if(it.doneIn && !it.doneOut) acts.push(`<button type="button" class="${acts.length ? "ghost" : "btn"}" data-act="doneOut">회수 완료</button>`);
-  if(!it.doneIn && it.status === "서명완료" && OWNER && !PAID && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
+  if(!H && it.doneIn && !it.doneOut) acts.push(`<button type="button" class="${acts.length ? "ghost" : "btn"}" data-act="doneOut">회수 완료</button>`);
+  if(!H && !it.doneIn && it.status === "서명완료" && OWNER && !PAID && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
   const tel = it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전";
   const map = it.place ? ` · <a href="https://map.naver.com/p/search/${encodeURIComponent(it.place)}" target="_blank" rel="noopener">지도</a>` : "";
   const info = [
@@ -219,6 +225,7 @@ function render(){
     <div class="badges"><span class="badge ${st[1]}">${st[0]}</span>${ps ? `<span class="badge ${ps[1]}">${esc(ps[0])}</span>` : ""}${it.photos ? `<span class="badge sub">사진 ${it.photos}</span>` : ""}</div>
   </header>
   ${acts.length ? `<div class="actions">${acts.join("")}</div>` : ""}
+  ${H ? `<p class="halt"><b>설치 중단</b> ${esc(it.halt.replace(/^(\S+ \S+) · /, "$1 · "))}<br><span>일정표·구글 캘린더에서 빠지고 홈 「설치 중단」에만 남습니다.</span></p>` : ""}
   <p class="err" id="msg" role="alert" hidden></p>
   <section class="panel"><h2>현장 담당</h2><div class="crew">${crewSel}<span class="hint">${OWNER ? "지정하면 그 사람에게 메일이 가고, 그 사람 홈 「내 일정」에 뜹니다." : ""}</span></div></section>
   <section class="panel"><h2>계약 내용</h2><dl class="info">${info.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></section>
@@ -241,6 +248,7 @@ function render(){
     ${OWNER && (D.mails || []).length ? `<h2 style="margin-top:8px">보낸 메일</h2><div class="logs">${D.mails.map(m => `<div><time>${esc(String(m.at).slice(5, 16))}</time><span>${esc(m.subject)} → ${esc(m.to)}</span></div>`).join("")}</div>` : ""}
   </section>
   <div class="more">
+    ${OWNER ? (H ? `<button type="button" id="haltOff">설치 중단 해제</button>` : `<button type="button" id="haltOn">설치 중단 (분쟁 등)</button>`) : ""}
     <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
     ${it.doneIn ? `<button type="button" data-undo="doneIn">설치 완료 취소</button>` : ""}
     ${it.doneOut ? `<button type="button" data-undo="doneOut">회수 완료 취소</button>` : ""}
@@ -313,6 +321,13 @@ document.addEventListener("click", async e => {
   }
   const u = e.target.closest("[data-undo]");
   if(u){ if(u.dataset.armed !== "1"){ u.dataset.armed = "1"; u.textContent = "한 번 더 누르면 취소"; return; } await update(u.dataset.undo, false, u); return; }
+  if(e.target.id === "haltOn"){
+    const box = document.createElement("div"); box.className = "haltbox";
+    box.innerHTML = `<label for="haltWhy">중단 사유</label><div class="row"><input type="text" id="haltWhy" value="분쟁 중 (미해결)"><button type="button" class="btn" id="haltGo">중단</button></div>`;
+    e.target.closest(".more").after(box); e.target.remove(); $("#haltWhy").focus(); return;
+  }
+  if(e.target.id === "haltGo"){ const why = $("#haltWhy").value.trim(); if(why) await update("halt", why, e.target); return; }
+  if(e.target.id === "haltOff"){ if(e.target.dataset.armed !== "1"){ e.target.dataset.armed = "1"; e.target.textContent = "한 번 더 누르면 해제"; return; } await update("halt", "", e.target); return; }
   const p = e.target.closest(".ph");
   if(p && PHOTO_CACHE[p.dataset.pid]){ $("#viewImg").src = PHOTO_CACHE[p.dataset.pid]; $("#viewer").showModal(); return; }
   if(e.target.id === "viewer" || e.target.id === "viewImg") $("#viewer").close();

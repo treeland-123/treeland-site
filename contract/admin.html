@@ -68,7 +68,7 @@ button{font:inherit;cursor:pointer}
 .confirm .row button{flex:1}
 .danger{background:var(--err);color:var(--paper);border:0;border-radius:6px;padding:9px 12px;font-weight:700}
 .pill{font-size:12px;border-radius:999px;padding:2px 10px;border:1px solid currentColor;align-self:start;white-space:nowrap}
-.pill.done{color:var(--ok)} .pill.wait{color:var(--wait)} .pill.stop{color:var(--sub)}
+.pill.done{color:var(--ok)} .pill.wait{color:var(--wait)} .pill.stop{color:var(--sub)} .pill.halt{color:var(--err)}
 a{color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px}
 .chips button{font-size:13.5px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:6px 12px;display:inline-flex;align-items:center;gap:6px}
@@ -225,9 +225,9 @@ async function load(){
     const cnt = s => j.items.filter(it => it.status === s).length;
     $("#listSum").textContent = `서명대기 ${cnt("서명대기")}건 · 서명완료 ${cnt("서명완료")}건 (최근 50건)`; $("#listSum").hidden = false;
     $("#list").innerHTML = j.items.map(it => {
-      const cls = it.status === "서명완료" ? "done" : it.status === "서명대기" ? "wait" : "stop";
+      const cls = it.halt ? "halt" : it.status === "서명완료" ? "done" : it.status === "서명대기" ? "wait" : "stop";
       const days = Math.floor((Date.now() - new Date(it.created).getTime()) / 864e5);
-      const label = it.status === "서명대기" && days >= 2 ? `서명대기 · ${days}일째` : it.status;
+      const label = it.halt ? "설치 중단" : it.status === "서명대기" && days >= 2 ? `서명대기 · ${days}일째` : it.status;
       return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn owner-only" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
         <span class="m">설치 ${esc(fmtDT(it.install))}${it.price != null ? ` · ₩${won(it.price)}` : ""} · 생성 ${esc(fmtCreated(it.created))}${it.mailed ? ` · 메일 ${esc(mailedText(it.mailed))}` : ""}</span><span></span>
         <div class="acts"><a class="ghost" href="/admin/job.html?id=${encodeURIComponent(it.id)}">상세·현장</a>${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
