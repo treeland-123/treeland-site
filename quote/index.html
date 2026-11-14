@@ -80,7 +80,7 @@ button{font:inherit;cursor:pointer}
 .hist .acts{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 10px;align-items:center}
 
 /* 미리보기 */
-.preview{position:sticky;top:12px;min-width:0}
+.preview{position:sticky;top:calc(var(--tlbar-h,0px) + 12px);min-width:0}
 @media (max-width:980px){.preview{position:static}}
 .stage{width:100%;overflow:hidden;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,.12),0 6px 24px rgba(0,0,0,.08);background:#fff}
 .stage-inner{transform-origin:0 0;width:794px}

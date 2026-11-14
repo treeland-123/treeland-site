@@ -72,7 +72,20 @@ const won = n => Number(n || 0).toLocaleString("ko-KR");
 const WD = ["일","월","화","수","목","금","토"];
 const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
-let D = null, PHOTO_CACHE = {};
+let D = null, PHOTO_CACHE = {}, PREP_PENDING = false;
+function savePrep(){
+  if(!PREP_PENDING) return; PREP_PENDING = false; clearTimeout(window.__pt);
+  TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) alertLine("체크를 저장하지 못했습니다. 다시 눌러 주세요."); }).catch(() => alertLine("체크를 저장하지 못했습니다. 인터넷 연결을 확인해 주세요."));
+}
+// 체크 직후 화면을 떠나거나 앱을 내려도 저장되게 (keepalive 요청은 페이지가 닫혀도 끝까지 감)
+function flushPrep(){
+  if(!PREP_PENDING || !D) return; PREP_PENDING = false; clearTimeout(window.__pt);
+  const b = { action:"update", id: ID, field:"prep", value: D.item.prep };
+  if(TL.user) b.sess = TL.user.sess; else b.pin = TL.LS.g("tl_pin");
+  try{ fetch(TL.ENDPOINT, { method:"POST", keepalive:true, headers:{"Content-Type":"text/plain;charset=utf-8"}, body: JSON.stringify(b) }); }catch(e){}
+}
+window.addEventListener("pagehide", flushPrep);
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "hidden") flushPrep(); });
 
 function parts(v){
   v = String(v ?? "");
@@ -281,7 +294,8 @@ document.addEventListener("change", async e => {
     const keys = [...document.querySelectorAll("[data-k]")], n = keys.filter(x => x.checked).length;
     document.querySelector(".prog").textContent = `${n} / ${keys.length} 준비`;
     document.querySelector(".bar i").style.width = `${Math.round(n / keys.length * 100)}%`;
-    clearTimeout(window.__pt); window.__pt = setTimeout(() => TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) alertLine("체크를 저장하지 못했습니다."); }), 700);
+    clearTimeout(window.__pt); PREP_PENDING = true;
+    window.__pt = setTimeout(savePrep, 500);
   }
 });
 document.addEventListener("click", async e => {

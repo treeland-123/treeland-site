@@ -50,7 +50,7 @@ input{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--
 .row input{flex:1;min-width:0}
 
 /* 상단 도구줄: 필터 + 새로고침 */
-.tools{position:sticky;top:0;z-index:5;background:var(--bg);padding:10px 0;margin:-6px 0 -4px;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid transparent}
+.tools{position:sticky;top:var(--tlbar-h,0px);z-index:5;background:var(--bg);padding:10px 0;margin:-6px 0 -4px;display:flex;gap:8px;align-items:center;justify-content:space-between;border-bottom:1px solid transparent}
 .tools.stuck{border-bottom-color:var(--line)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--paper)}
 .seg button{border:0;background:none;border-radius:999px;padding:5px 12px;font-size:13.5px;color:var(--sub)}
@@ -484,7 +484,7 @@ $("#board").addEventListener("click", ev => { const b = ev.target.closest(".ev")
 $("#dlg").addEventListener("click", ev => { if(ev.target === ev.currentTarget) ev.currentTarget.close(); });
 
 /* 도구줄이 붙으면 아래 선 */
-new IntersectionObserver(([en]) => $("#tools").classList.toggle("stuck", en.intersectionRatio < 1), {threshold:[1], rootMargin:"-1px 0px 0px 0px"}).observe($("#tools"));
+new IntersectionObserver(([en]) => $("#tools").classList.toggle("stuck", en.intersectionRatio < 1), {threshold:[1], rootMargin:`-${(parseInt(getComputedStyle(document.documentElement).getPropertyValue("--tlbar-h")) || 0) + 1}px 0px 0px 0px`}).observe($("#tools"));
 /* 다시 열었을 때 5분 넘었으면 새로고침 */
 document.addEventListener("visibilitychange", () => { if(!document.hidden && loadedAt && Date.now() - loadedAt > 3e5) load(); });
 

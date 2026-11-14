@@ -142,7 +142,7 @@ function startLogin(){
 $("#gbtn").dataset.html = $("#gbtn").innerHTML;
 
 /* ---------- 홈 ---------- */
-let JOBS = [], QUOTES = [], STAFF = [], CUR = "", ACTS = [];
+let ALL = [], JOBS = [], QUOTES = [], STAFF = [], CUR = "", ACTS = [];
 async function quoteList(){
   try{
     const pin = TL.LS.g("tl_pin"); if(!OWNER || !pin) return [];
@@ -155,13 +155,13 @@ async function loadHome(){
   $("#today").textContent = `${p.getMonth()+1}월 ${p.getDate()}일 ${WD[p.getDay()]}요일 · ${U.name || U.email}`;
   const den = new URLSearchParams(location.search).get("denied");
   if(den){ $("#denied").textContent = `「${den}」 화면은 대표만 볼 수 있습니다.`; $("#denied").hidden = false; history.replaceState(null, "", "/admin/" + location.hash); }
-  try{ const c = JSON.parse(TL.LS.g("tl_home_cache2") || "null"); if(c && c.email === U.email){ JOBS = c.j || []; QUOTES = c.q || []; STAFF = c.s || []; render(c.at); } }catch(e){}
+  try{ const c = JSON.parse(TL.LS.g("tl_home_cache2") || "null"); if(c && c.email === U.email){ ALL = c.j || []; JOBS = ALL.filter(x => !x.archived); QUOTES = c.q || []; STAFF = c.s || []; render(c.at); } }catch(e){}
   try{
-    const [j, q, a] = await Promise.all([ TL.call({ action:"jobs" }), quoteList(), OWNER ? TL.call({ action:"log" }).catch(() => null) : null ]);
+    const [j, q, a] = await Promise.all([ TL.call({ action:"jobs", all:true }), quoteList(), OWNER ? TL.call({ action:"log" }).catch(() => null) : null ]);
     if(!j.ok){ if(j.error === "sess"){ TL.logout(); return; } throw new Error(j.error === "bad_action" ? "서버가 아직 예전 버전입니다." : j.error); }
-    JOBS = j.items || []; STAFF = j.staff || []; QUOTES = q; ACTS = a && a.ok ? a.log || [] : [];
+    ALL = j.items || []; JOBS = ALL.filter(x => !x.archived); STAFF = j.staff || []; QUOTES = q; ACTS = a && a.ok ? a.log || [] : [];
     const at = Date.now();
-    try{ TL.LS.s("tl_home_cache2", JSON.stringify({ email:U.email, at, j:JOBS, s:STAFF, q:OWNER ? QUOTES.map(x => ({ no:x.no, cust:x.cust, total:x.total, at:x.at, sentAt:x.sentAt })) : [] })); }catch(e){}
+    try{ TL.LS.s("tl_home_cache2", JSON.stringify({ email:U.email, at, j:ALL, s:STAFF, q:OWNER ? QUOTES.map(x => ({ no:x.no, cust:x.cust, total:x.total, at:x.at, sentAt:x.sentAt })) : [] })); }catch(e){}
     render(at); renderActs();
   }catch(e){
     $("#stamp").textContent = "불러오지 못했습니다. " + (e.message || "");
@@ -192,8 +192,8 @@ function buckets(){
     B.push({ id:"mine", label:"내 일정", sub:"내가 맡은 설치·회수", more:["일정표","/schedule/"], rows: mine.map(evRow) });
   }
   if(OWNER){
-    const conQ = new Set(JOBS.map(x => String(x.qno || "")).filter(Boolean));
-    const conN = new Set(JOBS.map(x => normName(x.name)).filter(Boolean));
+    const conQ = new Set(ALL.map(x => String(x.qno || "")).filter(Boolean));
+    const conN = new Set(ALL.map(x => normName(x.name)).filter(Boolean));
     const cutoff = Date.now() - 30 * 864e5;
     const q = QUOTES.filter(x => { const t = new Date(x.sentAt || x.at).getTime(); return t >= cutoff && !conQ.has(String(x.no)) && !conN.has(normName(x.cust)); });
     B.push({ id:"quote", label:"견적 보냄 · 계약 전", sub:"최근 30일", more:["견적서 열기","/quote/"],
@@ -252,9 +252,9 @@ function search(){
   const q = ($("#q").value || "").trim().toLowerCase().replace(/\s+/g, "");
   if(!q){ $("#found").hidden = true; return; }
   const has = (...v) => v.some(x => String(x || "").toLowerCase().replace(/[\s-]+/g, "").includes(q.replace(/-/g, "")));
-  const rows = JOBS.filter(it => has(it.name, it.place, it.tel, it.contact, it.qno, it.email)).map(it => {
+  const rows = ALL.filter(it => has(it.name, it.place, it.tel, it.contact, it.qno, it.email)).map(it => {
     const p = parts(it.install);
-    return { date:p, dateLabel:"설치", title: it.name || it.place, line: [it.place, it.contact, it.tel].filter(Boolean).join(" · "), tag:[it.status === "서명대기" ? "서명 대기" : it.doneOut ? "회수 완료" : it.doneIn ? "설치 완료" : "계약", it.status === "서명대기" ? "wait" : "in"], href: jobUrl(it) };
+    return { date:p, dateLabel:"설치", title: it.name || it.place, line: [it.place, it.contact, it.tel].filter(Boolean).join(" · "), tag:[it.archived ? "보관" : it.status === "서명대기" ? "서명 대기" : it.doneOut ? "회수 완료" : it.doneIn ? "설치 완료" : "계약", it.status === "서명대기" ? "wait" : "in"], href: jobUrl(it) };
   });
   if(OWNER) QUOTES.filter(x => has(x.cust, x.no)).slice(0, 20).forEach(x => rows.push({ date: parts(x.sentAt || x.at), title: x.cust || "(상호 없음)", line:`견적 No. ${x.no} · 합계 ${won(x.total)}원`, tag:["견적","q"], href:"/quote/" }));
   $("#found").hidden = false;

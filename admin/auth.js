@@ -92,7 +92,7 @@
   }
 
   const CSS = `
-.tlbar{position:fixed;top:0;left:0;right:0;z-index:900;height:52px;display:flex;align-items:center;gap:14px;
+.tlbar{position:fixed;top:0;left:0;right:0;z-index:30;height:52px;display:flex;align-items:center;gap:14px;
   padding:0 max(16px,env(safe-area-inset-left,0px));background:var(--tlb-bg);border-bottom:1px solid var(--tlb-line);
   font-family:"Noto Sans KR","Malgun Gothic","Apple SD Gothic Neo",sans-serif;font-size:14px;line-height:1;color:var(--tlb-ink)}
 .tlbar a{color:inherit;text-decoration:none}
@@ -152,6 +152,7 @@
     groups.forEach((n, p) => { if(n >= 2 && p !== document.body) p.hidden = true; });
   }
   if(page !== "none"){
+    document.documentElement.style.setProperty("--tlbar-h", "52px");   // 각 페이지의 sticky 요소가 메뉴 아래에 붙도록
     if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", bar); else bar();
   }
 })();
