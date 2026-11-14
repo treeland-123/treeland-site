@@ -72,7 +72,7 @@ const won = n => Number(n || 0).toLocaleString("ko-KR");
 const WD = ["일","월","화","수","목","금","토"];
 const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
-let D = null, PHOTO_CACHE = {}, PREP_PENDING = false;
+let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = null;
 function savePrep(){
   if(!PREP_PENDING) return; PREP_PENDING = false; clearTimeout(window.__pt);
   TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) alertLine("체크를 저장하지 못했습니다. 다시 눌러 주세요."); }).catch(() => alertLine("체크를 저장하지 못했습니다. 인터넷 연결을 확인해 주세요."));
@@ -99,6 +99,7 @@ const short = v => { const p = parts(v); return p ? `${p.m}/${p.d}${p.hm ? " " +
 const todayKey = () => new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 function dueKey(install){ const p = parts(install); if(!p) return ""; const d = new Date(p.y, p.m - 1, p.d + 3); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
 const telHref = t => String(t || "").replace(/[^0-9+]/g, "");
+function telShow(t){ const d = telHref(t); if(/^01\d{8,9}$/.test(d)) return d.length === 10 ? `${d.slice(0,3)}-${d.slice(3,6)}-${d.slice(6)}` : `${d.slice(0,3)}-${d.slice(3,7)}-${d.slice(7)}`; if(/^02\d{7,8}$/.test(d)) return d.length === 9 ? `02-${d.slice(2,5)}-${d.slice(5)}` : `02-${d.slice(2,6)}-${d.slice(6)}`; return String(t); }
 
 /* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
 const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
@@ -138,7 +139,8 @@ function materials(it){
 
 /* ---------- 서버 ---------- */
 async function load(){
-  const j = await TL.call({ action:"job", id: ID });
+  const [j, x] = await Promise.all([ TL.call({ action:"job", id: ID }), OWNER ? TL.ledgerExtras() : null ]);
+  EXTRAS = x;
   if(!j.ok){
     if(j.error === "sess"){ TL.logout(); return; }
     $("#state").textContent = j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다.");
@@ -149,7 +151,7 @@ async function load(){
 async function update(field, value, btn){
   if(btn){ btn.disabled = true; }
   try{
-    const j = await TL.call({ action:"update", id: ID, field, value });
+    const j = field === "paid" ? await TL.setPaid(ID, value, EXTRAS) : await TL.call({ action:"update", id: ID, field, value });
     if(!j.ok){ alertLine(j.error === "role" ? "대표만 할 수 있습니다." : (j.error || "저장하지 못했습니다.")); return false; }
     D = j; render(); return true;
   }catch(e){ alertLine("서버에 연결하지 못했습니다."); return false; }
@@ -166,7 +168,8 @@ function stage(it){
   return ["설치 예정", "wait"];
 }
 function payState(it){
-  if(it.paid) return [`입금 확인 ${short(it.paid)}`, "ok"];
+  if(!OWNER) return null;   // 직원에게는 결제 상태를 보여주지 않음
+  if(TL.isPaid(it, EXTRAS)) return [`입금 확인 ${short(TL.paidDate(it, EXTRAS))}`, "ok"];
   if(it.status !== "서명완료") return null;
   const p = parts(it.install), t = todayKey();
   if(!it.doneIn && (!p || p.key >= t)) return null;
@@ -180,10 +183,11 @@ function render(){
   // 지금 해야 할 일 버튼
   const acts = [];
   if(it.status === "서명완료" && !it.doneIn) acts.push(`<button type="button" class="btn" data-act="doneIn">설치 완료</button>`);
-  if(it.doneIn && !it.paid && OWNER) acts.push(`<button type="button" class="btn" data-act="paid">입금 확인</button>`);
+  const PAID = TL.isPaid(it, EXTRAS);
+  if(it.doneIn && !PAID && OWNER) acts.push(`<button type="button" class="btn" data-act="paid">입금 확인</button>`);
   if(it.doneIn && !it.doneOut) acts.push(`<button type="button" class="${acts.length ? "ghost" : "btn"}" data-act="doneOut">회수 완료</button>`);
-  if(!it.doneIn && it.status === "서명완료" && OWNER && !it.paid && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
-  const tel = it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(it.tel)}</a>` : "서명 전";
+  if(!it.doneIn && it.status === "서명완료" && OWNER && !PAID && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
+  const tel = it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(telShow(it.tel))}</a>` : "서명 전";
   const map = it.place ? ` · <a href="https://map.naver.com/p/search/${encodeURIComponent(it.place)}" target="_blank" rel="noopener">지도</a>` : "";
   const info = [
     ["설치", esc(full(it.install))],
@@ -191,6 +195,7 @@ function render(){
     ["장소", esc(it.place || "—") + map],
     it.outlet ? ["콘센트", esc(it.outlet)] : null,
     ["담당자", `${esc(it.contact || "—")} · ${tel}`],
+    OWNER && EXTRAS === null ? ["입금 기준", `<span style="color:var(--wait)">장부를 불러오지 못해 이 화면의 기록만 보고 있습니다.</span>`] : null,
     OWNER && it.email ? ["이메일", esc(it.email)] : null,
     ["트리", esc(it.size || "—")],
     ["장식 색상", esc(it.color || "—")],
@@ -239,7 +244,7 @@ function render(){
     <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
     ${it.doneIn ? `<button type="button" data-undo="doneIn">설치 완료 취소</button>` : ""}
     ${it.doneOut ? `<button type="button" data-undo="doneOut">회수 완료 취소</button>` : ""}
-    ${OWNER && it.paid ? `<button type="button" data-undo="paid">입금 확인 취소</button>` : ""}
+    ${OWNER && PAID ? `<button type="button" data-undo="paid">입금 확인 취소</button>` : ""}
     ${OWNER ? `<a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a><a href="/mail/">메일 보내기</a>` : ""}
   </div>`;
   loadThumbs();

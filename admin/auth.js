@@ -76,7 +76,30 @@
     const r = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(b) });
     return r.json();
   }
-  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS };
+  /* 입금 여부는 지출 장부(계약보충 extras)가 기준. 대표 화면에서 읽고, 입금 확인은 장부와 계약 서버 양쪽에 같이 씀 */
+  const LEDGER = "https://script.google.com/macros/s/AKfycbxQ3PcUoyJs9t2awb8TAfD2-7T_Ov4vpXLXpr8VPOAfQVD0uO_4rpuvrcFEPLz2nJnQ/exec";
+  async function ledgerExtras(){
+    const pin = LS.g("tl_pin"); if(staff || !pin) return null;
+    try{
+      const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"load", pin }) });
+      const j = await r.json(); return j.ok ? (j.extras || {}) : null;
+    }catch(e){ return null; }
+  }
+  const todayKST = () => new Intl.DateTimeFormat("sv-SE", { timeZone:"Asia/Seoul", year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
+  // extras: ledgerExtras() 결과(없으면 장부는 건드리지 않음 — 세금계산서·메모를 덮어쓰지 않으려고)
+  async function setPaid(id, paid, extras){
+    if(extras){
+      const x = extras[id] || {}, d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!paid, paidDate: paid ? (x.paidDate || todayKST()) : "" };
+      const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
+      const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
+      extras[id] = { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate };
+    }
+    return call({ action:"update", id, field:"paid", value: !!paid });
+  }
+  // 장부를 불러왔으면 장부만 기준(장부 화면에서 결제 취소한 것도 반영), 못 불러왔으면 계약 서버 기록
+  const isPaid = (it, extras) => extras ? !!(extras[it.id] && extras[it.id].paid) : !!it.paid;
+  const paidDate = (it, extras) => extras ? ((extras[it.id] && extras[it.id].paidDate) || "") : (it.paid || "");
+  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, isPaid, paidDate };
 
   /* 역할이 바뀌었거나 사용 중지됐는지 10분에 한 번 확인 */
   if(user && !(Date.now() - (user.checked || 0) < 6e5)){
