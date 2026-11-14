@@ -179,7 +179,7 @@
       groups.push({ title: name, rows });
     });
     if(!trees.length && it.size) groups.push({ title: it.size, rows: [["트리·장식", "계약 문구를 확인하세요"]] });
-    const add = String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다");
+    const add = String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && !/^(견적서와 같습니다|없음|-)$/.test(s));
     if(add.length) groups.push({ title: "추가 장식·소품", rows: add.map(a => [a, ""]) });
     return groups;
   }
@@ -193,7 +193,7 @@
       if(!trees.length && it.size) check.push([who, "트리 구성 문구를 읽지 못함: " + it.size]);
       trees.forEach(t => {
         const q = t.qty, prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
-        put(`트리 ${t.size}${t.tier ? " " + t.tier : ""}`, q, "대", who);
+        put(`${t.size}${t.tier ? " " + t.tier : ""} 트리`, q, "대", who);
         if(t.size === "1.35m"){ put("1.35m 단일 구성 장식", q, "세트", who); put("상단 별 (기본)", q, "개", who); return; }
         if(!prem && !std){ check.push([who, `${t.size} 구성(스탠다드·프리미엄)이 없어 오너먼트·상자·스커트 수량 확인`]); return; }
         if(t.size.startsWith("2.3m")) put("오너먼트 (2.3m)", q * (prem ? 120 : 80), "개", who);
@@ -203,12 +203,12 @@
         put(prem ? "리모컨 LED 별 + 리모컨" : "상단 별 (기본)", q, "개", who);
         if(prem) put("벨벳 리본 · 솔방울 · 베리", q, "세트", who);
       });
-      String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다").forEach(s => {
+      String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && !/^(견적서와 같습니다|없음|-)$/.test(s)).forEach(s => {
         const o = addons.get(s) || { k:s, who:[] }; o.who.push(who); addons.set(s, o);
       });
     });
-    const order = k => /^트리 /.test(k) ? 0 : /^오너먼트/.test(k) ? 1 : /상자/.test(k) ? 2 : /스커트/.test(k) ? 3 : /별/.test(k) ? 4 : 5;
-    const rows = [...T.values()].sort((x, y) => order(x.k) - order(y.k) || x.k.localeCompare(y.k));
+    const order = r => r.sub === "대" ? 0 : /^오너먼트/.test(r.k) ? 1 : /상자/.test(r.k) ? 2 : /스커트/.test(r.k) ? 3 : /별/.test(r.k) ? 4 : 5;
+    const rows = [...T.values()].sort((x, y) => order(x) - order(y) || x.k.localeCompare(y.k));
     return { rows, check, addons: [...addons.values()] };
   }
 
