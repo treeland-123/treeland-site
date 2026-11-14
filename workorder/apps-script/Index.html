@@ -115,7 +115,7 @@ function ico(tok,z){const IC=(window.SITE&&window.SITE.icons)||window._ICONS||{}
 const LS={g:k=>{try{return localStorage.getItem(k)}catch(e){return null}},s:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
 const key='wo_'+TOKEN;let state={},side=LS.g('wo_side')||'B',view=-1,photos=S.donePhotos||0;
 try{state=JSON.parse(LS.g(key)||'{}')}catch(e){}
-const T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
+const EXN={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'},exTxt=e=>Object.entries(e||{}).map(([k,v])=>(EXN[k.split('-')[0]]||k)+' '+v).join(' · ');const T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
 // align: 아래 단과 가지가 수직(같은 줄), 없으면 대각선(반 칸 엇갈림)
 const OFF=(()=>{const o=[.25];for(let i=1;i<T;i++){const same=(n[i]-n[i-1])%2===0,p=o[i-1],c=S.tiers[i].align?(same?[p]:[p-.5,p+.5]):(same?[p-.5,p+.5]:[p]);o.push(c.reduce((x,y)=>Math.abs(y)<Math.abs(x)?y:x))}return o.map((v,i)=>n[i]<=3?0:v)})();
 const done=i=>side==='L'?state[i+'L']:side==='R'?state[i+'R']:state[i+'L']&&state[i+'R'];
@@ -128,7 +128,7 @@ const wf=t=>1-.66*t/T; // 단 경계 t(0=맨 아래)의 트리 폭 비율
 
 function head(){
  $('name').textContent=S.name;
- {const pd=S.tiers.reduce((a,t)=>a+t.items.reduce((b,x)=>b+x.split('/').filter(k=>k[0]==='x').length,0),0);$('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`+(pd?` (이번 ${S.total-pd}개, 보류 ${pd}개)`:'')}
+ {const pd=S.tiers.reduce((a,t)=>a+t.items.reduce((b,x)=>b+x.split('/').filter(k=>k[0]==='x').length,0),0);$('spec').innerHTML=`<b>${S.model}</b>, ${S.angle} 장식, ${S.total}개`+(pd?` (이번 ${S.total-pd}개, 보류 ${pd}개)`:'')+(S.extra&&Object.keys(S.extra).length?`<br><span style="color:#B4441F;font-weight:700">여분 ${exTxt(S.extra)}</span><br><span style="font-size:.9em">걸 가지 끝이 없어 남는 것. 보기 좋은 곳에 재량으로 끼워 넣기</span>`:'')}
  $('note').innerHTML=`정면은 <strong>${S.front}</strong>. 정면 가지에 집게 먼저 꽂고 시작.<br>${S.note}`;
  if(S.photo){$('timg').src=$('pimg').src=S.photo}else $('thumb').style.display='none';
  if(S.plan){$('plan').innerHTML=S.plan;$('plan').hidden=false}

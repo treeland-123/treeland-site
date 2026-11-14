@@ -154,7 +154,7 @@ function renderDetail(){
   <section>
     ${j.photo?`<img class="photo" src="${j.photo}" alt="${esc(S.name)} 설치 위치">`:'<p class="hint">현장 사진 없음</p>'}
     <div><h1 style="margin:0">${esc(S.name)}</h1></div>
-    <dl class="meta"><dt>설치일</dt><dd>${S.date||'미정'}</dd><dt>트리</dt><dd>${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개</dd><dt>정면</dt><dd>${esc(S.front)}</dd>${S.note?`<dt>메모</dt><dd>${esc(S.note)}</dd>`:''}</dl>
+    <dl class="meta"><dt>설치일</dt><dd>${S.date||'미정'}</dd><dt>트리</dt><dd>${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개</dd><dt>정면</dt><dd>${esc(S.front)}</dd>${S.note?`<dt>메모</dt><dd>${esc(S.note)}</dd>`:''}${S.extra&&Object.keys(S.extra).length?`<dt>여분</dt><dd>${exTxt(S.extra)} (작업자 재량)</dd>`:''}</dl>
     <div class="chips" id="stat">${['설치 전','설치 완료','철거 예정'].map(s=>`<button data-s="${s}" class="${(j.status||'설치 전')===s?'on':''}">${s}</button>`).join('')}</div>
   </section>
   <section>
@@ -201,6 +201,7 @@ function ico(tok,z){const IC=(window.SITE&&window.SITE.icons)||window._ICONS||{}
 const NAME={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'};
 const CN={N:'네이비',G:'골드',W:'화이트',B:'블루'};
 const ORD=k=>{const [t,c]=k.split('-');return ['B8','B7','B6','I','SL','SS'].indexOf(t)*100+Math.max(0,'NGWB'.indexOf(c||'N'))};
+const EXN={B8:'8cm',B7:'7cm',B6:'6cm',I:'고드름',SL:'눈송이 대',SS:'눈송이 소'},exTxt=e=>Object.entries(e||{}).map(([k,v])=>(EXN[k.split('-')[0]]||k)+' '+v).join(' · ');
 function drawSheet(S){
   window._ICONS=S.icons||{};
   const box=$('#sheet'),T=S.tiers.length,n=S.tiers.map(t=>t.items.length);
@@ -215,7 +216,7 @@ function drawSheet(S){
     h+='</div>'}
   (S.sections||[]).forEach(([nm,a,b])=>{h+=`<div class="br" style="grid-row:${2+T-b}/span ${b-a+1}"><b>${esc(nm)}</b></div>`});
   h+=`<div class="trunk" style="grid-row:${row}"></div>`;
-  box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
+  box.innerHTML=`<div class="sh-h">${esc(S.name)}</div><div class="sh-s">${esc(S.model)}, ${esc(S.angle)} 장식, ${S.total}개. 정면은 ${esc(S.front)}.${S.extra&&Object.keys(S.extra).length?' 여분 '+exTxt(S.extra)+' (재량).':''}</div>${S.plan?`<div class="plan">${S.plan}</div>`:''}
    <div class="ends"><span>${esc(S.start||'')}</span><span>${esc(S.end||'')}</span></div><div class="tree">${h}</div>
    <div class="legend">${Object.keys(cnt).sort((x,y)=>ORD(x)-ORD(y)).map(k=>`<span>${ico(k,18)}${(S.inames&&S.inames[k])?NAME[k.split('-')[0]]+' '+S.inames[k]:NAME[k.split('-')[0]]+(k.includes('-')?' '+(CN[k.split('-')[1]]||''):'')} ${cnt[k]}</span>`).join('')}${pend?`<span><b class="xx0">×</b> 보류 ${pend}개 (지금은 안 걸기)</span>`:''}</div>`;
 }
