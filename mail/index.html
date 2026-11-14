@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=6" data-page="mail"></script>
+<script src="/admin/auth.js?v=7" data-page="mail"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <title>트리랜드 메일 보내기</title>
@@ -161,6 +161,7 @@ async function load(){
   }catch(e){ $("#log").innerHTML = `<p class="error">서버에 연결하지 못했습니다. 새로고침해 주세요. (${esc(e.message)})</p>`; return; }
   try{ const q = await post(QUOTE_ENDPOINT, { action:"list", pin:pin() }); QUOTES = q.quotes || []; }catch(e){ QUOTES = []; }
   renderCustomers(); renderLog();
+  if(window.TL && TL.memo) TL.memo.set("mail", { ctx: CTX, quotes: QUOTES });
 }
 function renderCustomers(){
   const sel = $("#cust"), keep = sel.value;
@@ -355,6 +356,9 @@ $("#signCopy").addEventListener("click", async () => {
   }catch(e){ m.textContent = "복사하지 못했습니다. 다시 눌러 주세요."; m.style.color = "var(--err)"; }
 });
 applyTpl("blank", true);
+/* 받아 둔 고객·발송 내역을 먼저 보여 주고 바로 새로 받음 */
+(function(){ const c = pin() && window.TL && TL.memo ? TL.memo.get("mail") : null;
+  if(c && c.ctx){ CTX = c.ctx; QUOTES = c.quotes || []; $("#pinBox").hidden = true; renderCustomers(); renderLog(); } })();
 load();
 </script>
 </body>

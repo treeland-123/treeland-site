@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=6" data-page="ledger"></script>
+<script src="/admin/auth.js?v=7" data-page="ledger"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <meta name="robots" content="noindex,nofollow">
@@ -426,7 +426,7 @@ function render(){
   $("fSite").innerHTML=`<option value="">공통 (현장 무관)</option>`+sites.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
   if(keep&&sites.some(s=>s.id===keep))$("fSite").value=keep;
   $("recentList").innerHTML=exps.length?exps.slice(0,6).map(itemHtml).join(""):`<div class="empty">${S.ready?"이 시즌 기록이 없습니다. 위에서 첫 지출을 입력하세요.":"불러오는 중…"}</div>`;
-  renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);renderCmp();
+  renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);renderCmp();keepCache();
 }
 /* 시즌 비교: 시즌을 열로, 숫자를 줄로 (폰에서 시즌 3~4개까지 한 화면) */
 function renderCmp(){
@@ -608,9 +608,18 @@ function showPin(msg){$("pinBox").hidden=false;$("main").hidden=true;$("pinErr")
 $("pinBtn").onclick=()=>{const v=$("pin").value.trim();if(!v)return;setPin(v);load()};
 $("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("pinBtn").click()});
 
+/* 마지막으로 받은 장부를 먼저 보여 주고 뒤에서 새로 받음. 근로계약은 계산에 필요한 칸만 보관(주민번호·계좌 빼고) */
+const STAFF_KEEP=["id","name","status","dates","actual","wage","start","end","breakMin"];
+function keepCache(){if(!S.ready||!window.TL||!TL.memo)return;
+  TL.memo.set("ledger",{expenses:S.expenses,sites:S.sites,extras:S.extras,seasons:S.seasons,contracts:S.contracts,
+    staff:(S.staff||[]).map(t=>Object.fromEntries(STAFF_KEEP.map(k=>[k,t[k]])))})}
+function fromCache(){const c=window.TL&&TL.memo?TL.memo.get("ledger"):null;if(!c)return false;
+  S.expenses=c.expenses||[];S.sites=c.sites||[];S.extras=c.extras||{};S.seasons=c.seasons&&c.seasons.length?c.seasons:S.seasons;S.contracts=c.contracts||[];S.staff=c.staff||[];
+  S.ready=true;$("pinBox").hidden=true;$("main").hidden=false;render();return true}
 async function load(){
   if(!LEDGER_ENDPOINT){status("저장 서버 주소가 아직 연결되지 않았습니다.");return}
   if(!getPin()){showPin();return}
+  if(!S.ready)fromCache();
   status("");
   const [L,C,W]=await Promise.allSettled([
     ledger("load"),
@@ -619,7 +628,7 @@ async function load(){
   ]);
   if(L.status==="rejected"){
     if(L.reason&&L.reason.code==="pin"){showPin("비밀번호가 맞지 않습니다.");return}
-    status("장부를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침하세요.");return}
+    status(S.ready?"새 내용을 받지 못해 마지막으로 받은 장부를 보여 드립니다. 새로고침해 주세요.":"장부를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침하세요.");return}
   const j=L.value;
   S.expenses=j.expenses||[];S.sites=j.sites||[];S.extras=j.extras||{};S.seasons=j.seasons&&j.seasons.length?j.seasons:S.seasons;
   if(C.status==="fulfilled"&&C.value&&C.value.ok){S.contracts=C.value.items||[];S.contractErr=""}

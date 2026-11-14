@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=6" data-page="workorder"></script>
+<script src="/admin/auth.js?v=7" data-page="workorder"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex,nofollow">
 <title>작업지시서 관리</title>
@@ -126,6 +126,7 @@ async function load(){
   $('#pinMsg').textContent='불러오는 중';$('#pinMsg').className='hint';
   let j;try{j=await api({action:'list'})}catch(e){if(e.message!=='pin')$('#pinMsg').textContent='연결이 안 됩니다. 잠시 뒤 다시 눌러 주세요.';return}
   LS.s('tl_pin',$('#pin').value.trim());$('#login').hidden=true;
+  if(window.TL&&TL.memo)TL.memo.set('workorder',j.items||[]);
   renderList(j.items);
   const id=decodeURIComponent(location.hash.slice(1));if(id)open(id);
 }
@@ -233,7 +234,11 @@ function shrink(file){return new Promise(res=>{const img=new Image(),u=URL.creat
 async function upload(files){for(const f of files){toast('사진 올리는 중');await api({action:'upload',id:cur.id,data:await shrink(f),mime:'image/jpeg'})}open(cur.id)}
 
 $('#go').onclick=load;$('#pin').onkeydown=e=>{if(e.key==='Enter')load()};
-const saved=LS.g('tl_pin');if(saved){$('#pin').value=saved;load()}else showLogin('');
+const saved=LS.g('tl_pin');
+if(saved){$('#pin').value=saved;
+  const c=window.TL&&TL.memo?TL.memo.get('workorder'):null;   // 받아 둔 목록 먼저, 바로 새로 받음
+  if(c&&!location.hash.slice(1)){$('#login').hidden=true;renderList(c)}
+  load()}else showLogin('');
 </script>
 </body>
 </html>

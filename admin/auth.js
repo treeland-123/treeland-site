@@ -69,7 +69,7 @@
   function logout(){
     LS.s("tl_user", null);
     if(staff || LS.g("tl_pin") === STAFF_PIN) LS.s("tl_pin", null);
-    LS.s("tl_sched_quotes", null);
+    LS.s("tl_sched_quotes", null); LS.s("tl_sched_cache", null);
     try{ Object.keys(localStorage).filter(k => k.startsWith("tl_c_")).forEach(k => localStorage.removeItem(k)); }catch(e){}
     location.href = "/admin/";
   }
@@ -104,6 +104,14 @@
   const isPaid = (it, extras) => extras ? !!(extras[it.id] && extras[it.id].paid) : !!it.paid;
   const paidDate = (it, extras) => extras ? ((extras[it.id] && extras[it.id].paidDate) || "") : (it.paid || "");
 
+  /* 화면별 '마지막으로 받은 내용' 보관: 다음에 열 때 먼저 보여 주고 뒤에서 새로 받음.
+     로그인한 사람이 바뀌면 안 씀, 로그아웃하면 지움(tl_c_ 로 시작) */
+  const who = () => user ? user.email : "pin";
+  const memo = {
+    get(k){ try{ const c = JSON.parse(LS.g("tl_c_" + k) || "null"); return c && c.u === who() ? c.v : null; }catch(e){ return null; } },
+    set(k, v){ try{ localStorage.setItem("tl_c_" + k, JSON.stringify({ u: who(), at: Date.now(), v })); }catch(e){} }
+  };
+
   function esc(s){ return String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" })[c]); }
 
   /* 알림: 아래쪽에 잠깐 */
@@ -125,7 +133,7 @@
     d.innerHTML = `<div class="tl-sh-in"><span class="tl-grab" aria-hidden="true"></span>${opts && opts.title ? `<div class="tl-sh-t">${esc(opts.title)}</div>` : ""}${html}</div>`;
     d.showModal(); return { el: d, close };
   }
-  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, isPaid, paidDate, toast, sheet, esc };
+  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, isPaid, paidDate, toast, sheet, esc, memo };
 
   /* 역할이 바뀌었거나 사용 중지됐는지 10분에 한 번 확인 */
   if(user && !(Date.now() - (user.checked || 0) < 6e5)){

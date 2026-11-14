@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
-<script src="/admin/auth.js?v=6" data-page="schedule"></script>
+<script src="/admin/auth.js?v=7" data-page="schedule"></script>
 <link rel="manifest" href="/schedule/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
@@ -282,7 +282,7 @@ async function load(){
       throw new Error(j.error);
     }
     items = j.items || []; loadedAt = Date.now();
-    try{ localStorage.setItem("tl_sched_cache", JSON.stringify({at:loadedAt, items})); }catch(e){}
+    if(window.TL && TL.memo) TL.memo.set("sched", {at:loadedAt, items});
     $("#err").hidden = true; $("#pinBox").hidden = true; $("#tools").hidden = false;
     render();
   }catch(e){
@@ -489,7 +489,7 @@ new IntersectionObserver(([en]) => $("#tools").classList.toggle("stuck", en.inte
 document.addEventListener("visibilitychange", () => { if(!document.hidden && loadedAt && Date.now() - loadedAt > 3e5) load(); });
 
 /* 시작: 받아 둔 일정을 먼저 보여 주고 바로 새로 받음 */
-if(!DEMO){ try{ const c = JSON.parse(localStorage.getItem("tl_sched_cache") || "null");
+if(!DEMO){ try{ const c = window.TL && TL.memo ? TL.memo.get("sched") : null;
   if(c && getPin()){ items = c.items || []; loadedAt = c.at; $("#tools").hidden = false; render(); stamp(); } }catch(e){} }
 load();
 </script>

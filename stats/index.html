@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=6" data-page="stats"></script>
+<script src="/admin/auth.js?v=7" data-page="stats"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <meta name="robots" content="noindex,nofollow">
@@ -298,9 +298,20 @@ $("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("pinBtn").click()})
 
 async function load(){
   if(!getPin()){showPin();return}
-  status("불러오는 중…");
+  const shown=!$("main").hidden;
+  if(!shown)status("불러오는 중…");
   try{
     const j=await api("load",{start:DATA_START,end:today()});
+    if(window.TL&&TL.memo)TL.memo.set("stats",j);
+    apply(j);
+  }catch(err){
+    status("");
+    if(err.code==="pin")showPin("비밀번호가 맞지 않습니다.");
+    else status((shown?"새 숫자를 받지 못해 마지막으로 받은 숫자를 보여 드립니다. ":"불러오지 못했습니다. ")+"잠시 뒤 새로고침해 주세요. ("+err.message+")");
+  }
+}
+function apply(j){
+  {
     /* 인스타 자체 링크 꼬리표(utm_source=ig)와 인스타·페북 앱 안 브라우저(facebook.com 추천)는 서버에서 '기타'로 와서 여기서 인스타로 묶음 */
     S.ga=(j.ga||[]).map(r=>r.source==="other"&&/^(ig|fb)$|instagram|facebook/i.test(r.source_raw||"")?Object.assign({},r,{source:"instagram"}):r);
     S.ads=j.ads||[];S.inq=j.inquiries||[];
@@ -308,10 +319,6 @@ async function load(){
     status(j.gaError?"GA 데이터를 읽지 못했습니다: "+j.gaError:"");
     $("updated").textContent="GA 숫자는 보통 몇 시간 늦게 들어옵니다. 마지막 불러옴 "+new Date(j.updatedAt).toLocaleString("ko-KR");
     render();
-  }catch(err){
-    status("");
-    if(err.code==="pin")showPin("비밀번호가 맞지 않습니다.");
-    else status("불러오지 못했습니다. 잠시 뒤 새로고침해 주세요. ("+err.message+")");
   }
 }
 
@@ -487,6 +494,7 @@ $("inqF").addEventListener("submit",async e=>{
 $("adF").date.value=today();$("inqF").date.value=today();
 applyPreset(S.days==="custom"?0:+S.days);
 let rzT;addEventListener("resize",()=>{clearTimeout(rzT);rzT=setTimeout(()=>{if(!$("main").hidden)renderTrend()},200)});
+{const c=getPin()&&window.TL&&TL.memo?TL.memo.get("stats"):null;if(c)try{apply(c)}catch(e){}}
 load();
 </script>
 </body>

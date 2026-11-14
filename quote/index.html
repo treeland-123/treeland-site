@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=6" data-page="quote"></script>
+<script src="/admin/auth.js?v=7" data-page="quote"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="icon" href="/favicon.ico">
 <title>트리랜드 견적서 발행</title>
@@ -1049,12 +1049,25 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
 
 /* ── 시작 ── */
 (async () => {
-  try { P = await loadPrices(); }
+  /* 받아 둔 가격표로 바로 열고, 홈페이지 가격표를 뒤에서 새로 받아 다르면 바꿈. 메일용 PDF(EMBED)는 항상 새 가격표 */
+  const PK = 'tl-quote-prices';
+  const fresh = loadPrices().then(p => { store.set(PK, Object.assign({}, p, { at: p.at.toISOString() })); return p; });
+  const old = EMBED ? null : store.get(PK, null);
+  const useOld = !!(old && old.sizes && old.sizes.length);
+  try { P = useOld ? Object.assign({}, old, { at: new Date(old.at) }) : await fresh; }
   catch (err) { $('#status').textContent = '홈페이지 가격표를 불러오지 못했습니다. 새로고침해 주세요. (' + err.message + ')'; $('#status').className = 'status err'; return; }
-  const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
-  $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴)${dl2 ? ` · 2차 얼리버드 ${dl2} 마감` : dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
-  $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}${e1Over() ? ' 마감' : '까지'})` : ''}`;
-  $('#e2Label').textContent = `2차 얼리버드${dl2 ? ` (${dl2}까지)` : ''}`;
+  function priceStatus(note) {
+    const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
+    $('#status').textContent = `가격: 홈페이지 가격표 기준 (${P.at.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} 불러옴${note || ''})${dl2 ? ` · 2차 얼리버드 ${dl2} 마감` : dl ? ` · 1차 얼리버드 ${dl} 마감` : ''}`;
+    $('#e1Label').textContent = `1차 얼리버드${dl ? ` (${dl}${e1Over() ? ' 마감' : '까지'})` : ''}`;
+    $('#e2Label').textContent = `2차 얼리버드${dl2 ? ` (${dl2}까지)` : ''}`;
+  }
+  priceStatus();
+  if (useOld) fresh.then(p => {
+    const same = JSON.stringify(Object.assign({}, p, { at: 0 })) === JSON.stringify(Object.assign({}, old, { at: 0 }));
+    if (same) P.at = p.at; else { P = p; if (S) { S.trees.forEach(t => { if (!P.sizes.some(x => x.label === t.size)) t.size = P.sizes[0].label; }); renderForm(); } }
+    priceStatus();
+  }).catch(() => priceStatus(' · 새 가격표를 받지 못해 지난 가격표'));
   if (EMBED) {
     window.tlQuotePdf = async st => {
       S = JSON.parse(JSON.stringify(st)); renderForm();
