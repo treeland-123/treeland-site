@@ -470,6 +470,7 @@ function openDetail(e){
     <div class="acts">
       ${it.tel ? `<a class="primary" href="tel:${esc(telHref(it.tel))}">전화 걸기</a>` : ""}
       <a class="ghost" href="${map}" target="_blank" rel="noopener">네이버지도</a>
+      <a class="ghost" href="/admin/job.html?id=${encodeURIComponent(it.id)}">자재·완료 처리</a>
       ${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
       <button type="button" class="ghost" id="copyPlace">주소 복사</button>
     </div>`;

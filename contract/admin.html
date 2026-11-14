@@ -230,7 +230,7 @@ async function load(){
       const label = it.status === "서명대기" && days >= 2 ? `서명대기 · ${days}일째` : it.status;
       return `<div class="item"><span class="t">${esc(it.customer || it.place)}</span><span class="hd"><button type="button" class="del-btn owner-only" data-del="${esc(it.id)}" data-signed="${it.status === "서명완료" ? 1 : 0}" data-name="${esc(it.customer || it.place)}" aria-label="${esc(it.customer || it.place)} 계약 삭제">삭제</button><span class="pill ${cls}">${esc(label)}</span></span>
         <span class="m">설치 ${esc(fmtDT(it.install))}${it.price != null ? ` · ₩${won(it.price)}` : ""} · 생성 ${esc(fmtCreated(it.created))}${it.mailed ? ` · 메일 ${esc(mailedText(it.mailed))}` : ""}</span><span></span>
-        <div class="acts">${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
+        <div class="acts"><a class="ghost" href="/admin/job.html?id=${encodeURIComponent(it.id)}">상세·현장</a>${it.pdf ? `<a class="ghost" href="${esc(it.pdf)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}
         ${it.status === "서명완료" ? `<button type="button" class="ghost owner-only" data-pay="${esc(it.id)}">결제 안내 복사</button>` : ""}
         ${it.status === "서명대기" ? `<button type="button" class="ghost owner-only" data-mail="${esc(it.id)}">메일 보내기</button>` : ""}
         ${it.status === "서명대기" ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-stop="${esc(it.id)}">링크 중지</button>` : ""}</div>

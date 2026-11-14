@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script src="/admin/auth.js" data-page="job"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>건 상세 · 트리랜드 관리</title>
+<link rel="icon" href="/favicon.ico">
+<meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="/admin/admin.css?v=2">
+<style>
+.back{font-size:13.5px;color:var(--sub);text-decoration:none}
+.top{display:flex;flex-direction:column;gap:8px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:12.5px;border-radius:999px;padding:3px 10px;border:1px solid currentColor;white-space:nowrap}
+.badge.ok{color:var(--ok)} .badge.wait{color:var(--wait)} .badge.err{color:var(--err)} .badge.sub{color:var(--sub)}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{padding:12px 18px;font-size:15px}
+.actions .ghost{padding:11px 14px;font-size:14px}
+.btn.armed{background:var(--err)}
+dl.info{display:grid;grid-template-columns:96px 1fr;gap:9px 12px;margin:0;font-size:14.5px}
+dl.info dt{color:var(--sub)}
+dl.info dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
+dl.info a{color:var(--ink)}
+.prog{font-size:13px;color:var(--sub);font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:999px;background:var(--soft);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);border-radius:999px;transition:width .2s}
+.checks{display:flex;flex-direction:column}
+.checks .grp{font-size:13px;color:var(--sub);padding:10px 0 2px}
+.ck{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line);cursor:pointer;font-size:15px}
+.ck input{width:22px;height:22px;margin:0;flex:0 0 auto;accent-color:var(--acc)}
+.ck.on span{color:var(--sub);text-decoration:line-through;text-decoration-color:var(--line)}
+.ck small{display:block;color:var(--sub);font-size:12.5px;text-decoration:none}
+.note{font-size:13.5px;color:var(--sub);background:var(--soft);border-radius:8px;padding:10px 12px;margin:0}
+.photos{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+.photos figure{margin:0;display:flex;flex-direction:column;gap:4px}
+.photos .ph{aspect-ratio:1;border-radius:8px;background:var(--soft);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--sub);font-size:12px;cursor:pointer;border:0;padding:0}
+.photos img{width:100%;height:100%;object-fit:cover;display:block}
+.photos figcaption{font-size:12px;color:var(--sub)}
+.up{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.up label.ghost{cursor:pointer}
+.up input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.logs{display:flex;flex-direction:column;font-size:14px}
+.logs div{display:grid;grid-template-columns:118px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.logs div:first-child{border-top:0}
+.logs time{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
+.crew{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.crew select{min-width:160px}
+dialog{border:0;border-radius:12px;padding:0;max-width:min(92vw,900px);background:var(--paper)}
+dialog img{display:block;max-width:100%;max-height:82vh}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.more{display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:13.5px}
+.more button,.more a{background:none;border:0;color:var(--sub);text-decoration:underline;text-underline-offset:2px;font-size:13.5px;cursor:pointer;padding:4px 0}
+@media (max-width:520px){dl.info{grid-template-columns:84px 1fr}.logs div{grid-template-columns:1fr;gap:0}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app">
+  <a class="back" href="/admin/">← 홈</a>
+  <p class="hint" id="state">불러오는 중…</p>
+</main>
+<dialog id="viewer"><img id="viewImg" alt=""></dialog>
+
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const won = n => Number(n || 0).toLocaleString("ko-KR");
+const WD = ["일","월","화","수","목","금","토"];
+const U = TL.user, OWNER = !U || U.role === "대표";
+const ID = new URLSearchParams(location.search).get("id") || "";
+let D = null, PHOTO_CACHE = {};
+
+function parts(v){
+  v = String(v ?? "");
+  if(/Z$/.test(v)){ const d = new Date(v); if(!isNaN(d)) v = new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).format(d).replace(" ","T"); }
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/); if(!m) return null;
+  const hm = m[4] && !(m[4] === "00" && m[5] === "00") ? `${m[4]}:${m[5]}` : "";
+  return { key:`${m[1]}-${m[2]}-${m[3]}`, y:+m[1], m:+m[2], d:+m[3], wd: WD[new Date(+m[1], +m[2]-1, +m[3]).getDay()], hm };
+}
+const full = v => { const p = parts(v); return p ? `${p.m}월 ${p.d}일(${p.wd})${p.hm ? " " + p.hm : ""}` : (String(v || "") || "—"); };
+const short = v => { const p = parts(v); return p ? `${p.m}/${p.d}${p.hm ? " " + p.hm : ""}` : ""; };
+const todayKey = () => new Intl.DateTimeFormat("sv-SE",{timeZone:"Asia/Seoul",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+function dueKey(install){ const p = parts(install); if(!p) return ""; const d = new Date(p.y, p.m - 1, p.d + 3); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
+const telHref = t => String(t || "").replace(/[^0-9+]/g, "");
+
+/* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
+const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
+function parseTrees(size){
+  return String(size || "").split(/,\s*(?![^()]*\))/).map(s => {
+    const m = s.match(/(1\.35m|1\.95m(?: 슬림)?|2\.3m(?: 스노우)?|2\.9m)\s*(스탠다드|프리미엄)?\s*트리\s*(\d+)\s*대(?:\s*\(([^)]*)\))?/);
+    if(!m) return null;
+    const sz = m[1] === "1.95m" ? "1.95m 슬림" : m[1];
+    return { size: sz, tier: sz === "1.35m" ? "" : (m[2] || ""), qty: +m[3] || 1, place: m[4] || "" };
+  }).filter(Boolean);
+}
+function materials(it){
+  const groups = [], trees = parseTrees(it.size);
+  trees.forEach((t, i) => {
+    const q = t.qty, x = n => n * q, tag = trees.length > 1 ? `${i + 1}. ` : "";
+    const name = `${t.size}${t.tier ? " " + t.tier : ""} 트리 ${q}대${t.place ? " · " + t.place : ""}`;
+    const rows = [[`${tag}트리 본체`, `${t.size}${t.tier ? " " + t.tier : ""} ${q}대`]];
+    const prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
+    if(t.size === "1.35m"){
+      rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, ""]);
+    }else{
+      if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, "2.3m 기준 수량"]);
+      else rows.push([`${tag}오너먼트`, t.tier ? "" : "구성(스탠다드·프리미엄) 확인"]);
+      if(BOX[t.size] && (prem || std)) rows.push([`${tag}하단 상자 ${x(BOX[t.size] * (prem ? 2 : 1))}개`, ""]);
+      else rows.push([`${tag}하단 상자`, "개수 확인"]);
+      rows.push([`${tag}트리 스커트${prem ? " 150cm" : std ? " 122cm" : ""}`, q > 1 ? `${q}개` : ""]);
+      rows.push([prem ? `${tag}리모컨 LED 별 + 리모컨` : `${tag}상단 별`, prem ? "" : std ? "기본 별" : ""]);
+      if(prem) rows.push([`${tag}벨벳 리본 · 솔방울 · 베리`, "프리미엄 전용 장식"]);
+    }
+    groups.push({ title: name, rows });
+  });
+  if(!trees.length && it.size) groups.push({ title: it.size, rows: [["트리·장식", "계약 문구를 확인하세요"]] });
+  const add = String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다");
+  if(add.length) groups.push({ title: "추가 장식·소품", rows: add.map(a => [a, ""]) });
+  return groups;
+}
+
+/* ---------- 서버 ---------- */
+async function load(){
+  const j = await TL.call({ action:"job", id: ID });
+  if(!j.ok){
+    if(j.error === "sess"){ TL.logout(); return; }
+    $("#state").textContent = j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다.");
+    return;
+  }
+  D = j; render();
+}
+async function update(field, value, btn){
+  if(btn){ btn.disabled = true; }
+  try{
+    const j = await TL.call({ action:"update", id: ID, field, value });
+    if(!j.ok){ alertLine(j.error === "role" ? "대표만 할 수 있습니다." : (j.error || "저장하지 못했습니다.")); return false; }
+    D = j; render(); return true;
+  }catch(e){ alertLine("서버에 연결하지 못했습니다."); return false; }
+  finally{ if(btn) btn.disabled = false; }
+}
+function alertLine(t){ const e = $("#msg"); if(e){ e.textContent = t; e.hidden = !t; } }
+
+/* ---------- 화면 ---------- */
+function stage(it){
+  if(it.archived) return ["보관됨", "sub"];
+  if(it.status === "서명대기") return ["서명 대기", "wait"];
+  if(it.doneOut) return ["회수 완료", "ok"];
+  if(it.doneIn) return ["설치 완료", "ok"];
+  return ["설치 예정", "wait"];
+}
+function payState(it){
+  if(it.paid) return [`입금 확인 ${short(it.paid)}`, "ok"];
+  if(it.status !== "서명완료") return null;
+  const p = parts(it.install), t = todayKey();
+  if(!it.doneIn && (!p || p.key >= t)) return null;
+  const due = dueKey(it.install);
+  return due && due < t ? [`입금 기한 지남 (${short(due)})`, "err"] : [`입금 대기${due ? " · 기한 " + short(due) : ""}`, "wait"];
+}
+function render(){
+  const it = D.item, st = stage(it), ps = payState(it);
+  const crew = (D.staff || []).find(s => s.email === it.crew);
+  document.title = `${it.name || it.place} · 트리랜드 관리`;
+  // 지금 해야 할 일 버튼
+  const acts = [];
+  if(it.status === "서명완료" && !it.doneIn) acts.push(`<button type="button" class="btn" data-act="doneIn">설치 완료</button>`);
+  if(it.doneIn && !it.paid && OWNER) acts.push(`<button type="button" class="btn" data-act="paid">입금 확인</button>`);
+  if(it.doneIn && !it.doneOut) acts.push(`<button type="button" class="${acts.length ? "ghost" : "btn"}" data-act="doneOut">회수 완료</button>`);
+  if(!it.doneIn && it.status === "서명완료" && OWNER && !it.paid && parts(it.install) && parts(it.install).key < todayKey()) acts.push(`<button type="button" class="ghost" data-act="paid">입금 확인</button>`);
+  const tel = it.tel ? `<a href="tel:${esc(telHref(it.tel))}">${esc(it.tel)}</a>` : "서명 전";
+  const map = it.place ? ` · <a href="https://map.naver.com/p/search/${encodeURIComponent(it.place)}" target="_blank" rel="noopener">지도</a>` : "";
+  const info = [
+    ["설치", esc(full(it.install))],
+    ["회수", esc(full(it.retrieve))],
+    ["장소", esc(it.place || "—") + map],
+    it.outlet ? ["콘센트", esc(it.outlet)] : null,
+    ["담당자", `${esc(it.contact || "—")} · ${tel}`],
+    OWNER && it.email ? ["이메일", esc(it.email)] : null,
+    ["트리", esc(it.size || "—")],
+    ["장식 색상", esc(it.color || "—")],
+    it.note ? ["비고", esc(it.note)] : null,
+    it.pay ? ["결제 방법", esc(it.pay)] : null,
+    OWNER && it.price != null ? ["임대료", `${won(it.price)}원 (부가세 별도)${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}`] : null,
+    OWNER && it.qno ? ["견적 번호", `<a href="/quote/">${esc(it.qno)}</a>`] : null,
+    OWNER && it.pdf ? ["서명본", `<a href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF 열기</a>`] : null,
+  ].filter(Boolean);
+  // 자재
+  const groups = materials(it), prep = it.prep || {};
+  const keys = groups.flatMap(g => g.rows.map(r => r[0]));
+  const done = keys.filter(k => prep[k]).length;
+  const crewSel = OWNER
+    ? `<select id="crewSel" aria-label="현장 담당"><option value="">지정 안 함</option>${(D.staff || []).map(s => `<option value="${esc(s.email)}"${s.email === it.crew ? " selected" : ""}>${esc(s.name || s.email)}${s.role === "대표" ? " (대표)" : ""}</option>`).join("")}</select>`
+    : `<b>${esc(crew ? (crew.name || crew.email) : (it.crew || "지정 안 됨"))}</b>`;
+  $("#app").innerHTML = `
+  <a class="back" href="/admin/">← 홈</a>
+  <header class="top">
+    <h1>${esc(it.name || it.place || "(상호 미입력)")}</h1>
+    <div class="badges"><span class="badge ${st[1]}">${st[0]}</span>${ps ? `<span class="badge ${ps[1]}">${esc(ps[0])}</span>` : ""}${it.photos ? `<span class="badge sub">사진 ${it.photos}</span>` : ""}</div>
+  </header>
+  ${acts.length ? `<div class="actions">${acts.join("")}</div>` : ""}
+  <p class="err" id="msg" role="alert" hidden></p>
+  <section class="panel"><h2>현장 담당</h2><div class="crew">${crewSel}<span class="hint">${OWNER ? "지정하면 그 사람에게 메일이 가고, 그 사람 홈 「내 일정」에 뜹니다." : ""}</span></div></section>
+  <section class="panel"><h2>계약 내용</h2><dl class="info">${info.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></section>
+  <section class="panel">
+    <div class="ph"><h2>필요 자재</h2><span class="prog">${done} / ${keys.length} 준비</span></div>
+    <div class="bar"><i style="width:${keys.length ? Math.round(done / keys.length * 100) : 0}%"></i></div>
+    <div class="checks">${groups.map(g => `<div class="grp">${esc(g.title)}</div>` + g.rows.map(r => `<label class="ck${prep[r[0]] ? " on" : ""}"><input type="checkbox" data-k="${esc(r[0])}"${prep[r[0]] ? " checked" : ""}><span>${esc(r[0])}${r[1] ? `<small>${esc(r[1])}</small>` : ""}</span></label>`).join("")).join("") || `<p class="empty">트리 구성이 비어 있습니다.</p>`}</div>
+    <p class="note">수량은 홈페이지 구성 기준입니다. 2.3m 외 크기의 오너먼트 개수는 작업지시서를 따르세요.</p>
+  </section>
+  <section class="panel">
+    <div class="ph"><h2>현장 사진</h2><span class="prog">${(D.photos || []).length}장</span></div>
+    <div class="up">
+      <select id="kind" aria-label="사진 종류"><option value="in">설치</option><option value="out">회수</option></select>
+      <label class="ghost" for="file">사진 올리기</label><input type="file" id="file" accept="image/*" multiple>
+      <span class="hint" id="upMsg"></span>
+    </div>
+    <div class="photos">${(D.photos || []).slice().reverse().map(p => `<figure><button type="button" class="ph" data-pid="${esc(p.id)}" aria-label="${esc(p.kind)} 사진 크게 보기">불러오는 중</button><figcaption>${esc(p.kind)} · ${esc(String(p.at).slice(5, 16))} · ${esc(p.by)}</figcaption></figure>`).join("")}</div>
+  </section>
+  <section class="panel"><h2>기록</h2><div class="logs">${(D.log || []).map(l => `<div><time>${esc(String(l.at).slice(5, 16))}</time><span>${esc(l.name)} — ${esc(l.what)}</span></div>`).join("") || `<p class="empty">아직 기록이 없습니다.</p>`}</div>
+    ${OWNER && (D.mails || []).length ? `<h2 style="margin-top:8px">보낸 메일</h2><div class="logs">${D.mails.map(m => `<div><time>${esc(String(m.at).slice(5, 16))}</time><span>${esc(m.subject)} → ${esc(m.to)}</span></div>`).join("")}</div>` : ""}
+  </section>
+  <div class="more">
+    <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
+    ${it.doneIn ? `<button type="button" data-undo="doneIn">설치 완료 취소</button>` : ""}
+    ${it.doneOut ? `<button type="button" data-undo="doneOut">회수 완료 취소</button>` : ""}
+    ${OWNER && it.paid ? `<button type="button" data-undo="paid">입금 확인 취소</button>` : ""}
+    ${OWNER ? `<a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a><a href="/mail/">메일 보내기</a>` : ""}
+  </div>`;
+  loadThumbs();
+}
+async function loadThumbs(){
+  for(const b of document.querySelectorAll(".photos .ph")){
+    const pid = b.dataset.pid;
+    try{
+      if(!PHOTO_CACHE[pid]){
+        const j = await TL.call({ action:"photoGet", id: ID, pid });
+        if(!j.ok){ b.textContent = "열 수 없음"; continue; }
+        PHOTO_CACHE[pid] = `data:${j.type || "image/jpeg"};base64,${j.b64}`;
+      }
+      b.innerHTML = `<img src="${PHOTO_CACHE[pid]}" alt="">`;
+    }catch(e){ b.textContent = "열 수 없음"; }
+  }
+}
+/* 사진: 긴 변 1600px JPEG로 줄여서 올림 */
+function shrink(file){
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height));
+      const c = document.createElement("canvas"); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", 0.82).split(",")[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("사진을 읽지 못했습니다.")); };
+    img.src = url;
+  });
+}
+document.addEventListener("change", async e => {
+  if(e.target.id === "crewSel"){ await update("crew", e.target.value); return; }
+  if(e.target.id === "file"){
+    const files = [...e.target.files]; if(!files.length) return;
+    const kind = $("#kind").value;
+    for(let i = 0; i < files.length; i++){
+      $("#upMsg").textContent = `올리는 중 ${i + 1}/${files.length}…`;
+      try{
+        const b64 = await shrink(files[i]);
+        const j = await TL.call({ action:"photo", id: ID, b64, kind });
+        if(!j.ok) throw new Error(j.error);
+        D = j;
+      }catch(err){ $("#upMsg").textContent = "올리지 못했습니다. " + (err.message || ""); render(); return; }
+    }
+    render(); $("#upMsg").textContent = "올렸습니다."; return;
+  }
+  const k = e.target.dataset && e.target.dataset.k;
+  if(k != null){
+    const prep = Object.assign({}, D.item.prep || {}); if(e.target.checked) prep[k] = 1; else delete prep[k];
+    D.item.prep = prep; e.target.closest(".ck").classList.toggle("on", e.target.checked);
+    const keys = [...document.querySelectorAll("[data-k]")], n = keys.filter(x => x.checked).length;
+    document.querySelector(".prog").textContent = `${n} / ${keys.length} 준비`;
+    document.querySelector(".bar i").style.width = `${Math.round(n / keys.length * 100)}%`;
+    clearTimeout(window.__pt); window.__pt = setTimeout(() => TL.call({ action:"update", id: ID, field:"prep", value: D.item.prep }).then(j => { if(!j.ok) alertLine("체크를 저장하지 못했습니다."); }), 700);
+  }
+});
+document.addEventListener("click", async e => {
+  const a = e.target.closest("[data-act]");
+  if(a){
+    const f = a.dataset.act;
+    if(f === "archived"){ await update("archived", !D.item.archived, a); return; }
+    if(a.dataset.armed !== "1"){ a.dataset.armed = "1"; a.dataset.label = a.textContent; a.textContent = "한 번 더 누르면 " + a.textContent; a.classList.add("armed"); setTimeout(() => { if(a.isConnected){ a.dataset.armed = ""; a.textContent = a.dataset.label; a.classList.remove("armed"); } }, 4000); return; }
+    await update(f, true, a); return;
+  }
+  const u = e.target.closest("[data-undo]");
+  if(u){ if(u.dataset.armed !== "1"){ u.dataset.armed = "1"; u.textContent = "한 번 더 누르면 취소"; return; } await update(u.dataset.undo, false, u); return; }
+  const p = e.target.closest(".ph");
+  if(p && PHOTO_CACHE[p.dataset.pid]){ $("#viewImg").src = PHOTO_CACHE[p.dataset.pid]; $("#viewer").showModal(); return; }
+  if(e.target.id === "viewer" || e.target.id === "viewImg") $("#viewer").close();
+});
+
+if(!ID) $("#state").textContent = "건을 고르지 않았습니다.";
+else if(!U && !TL.LS.g("tl_pin")) location.replace("/admin/");
+else load();
+</script>
+</body>
+</html>

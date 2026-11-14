@@ -72,6 +72,7 @@
   async function call(body){
     const b = Object.assign({}, body);
     if(user){ b.sess = user.sess; delete b.pin; }
+    else if(!b.pin && LS.g("tl_pin")) b.pin = LS.g("tl_pin");
     const r = await fetch(ENDPOINT, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(b) });
     return r.json();
   }
