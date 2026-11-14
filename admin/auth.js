@@ -19,11 +19,14 @@
   try{ user = JSON.parse(LS.g("tl_user") || "null"); }catch(e){}
   if(user && (!user.sess || !(user.exp > Date.now()))){ user = null; LS.s("tl_user", null); }
   const staff = !!user && user.role !== "대표";
-  if(!user && LS.g("tl_pin") === STAFF_PIN) LS.s("tl_pin", null);
+  // 관리 화면은 구글 로그인만 받음: 로그인 안 한 기기에 남은 관리자 비밀번호는 지움 (11/14)
+  if(!user && LS.g("tl_pin")) LS.s("tl_pin", null);
 
   const me = document.currentScript;
   const embed = /[?&]embed=1/.test(location.search) || window.top !== window;
   const page = embed ? "none" : ((me && me.dataset.page) || "");
+  // 로그인 안 했으면 홈(로그인 화면)으로. 홈 자체와 다른 화면 안에 들어간 화면(embed)은 제외
+  if(!user && page && page !== "none" && page !== "home"){ document.documentElement.style.visibility = "hidden"; location.replace("/admin/"); }
   const NEW_PAGES = ["home", "jobs", "job", "prep"];
   // [키, 이름, 주소, 대표 전용, 묶음] 묶음: main = PC 위쪽·휴대폰 탭, more = 더보기
   const MENU = [
@@ -69,7 +72,7 @@
   }
   function logout(){
     LS.s("tl_user", null);
-    if(staff || LS.g("tl_pin") === STAFF_PIN) LS.s("tl_pin", null);
+    LS.s("tl_pin", null); LS.s("tl_pin_v", null);   // 로그아웃하면 관리자 비밀번호도 지움
     LS.s("tl_sched_quotes", null); LS.s("tl_sched_cache", null);
     try{ Object.keys(localStorage).filter(k => k.startsWith("tl_c_")).forEach(k => localStorage.removeItem(k)); }catch(e){}
     location.href = "/admin/";
@@ -137,14 +140,17 @@
   window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, isPaid, paidDate, toast, sheet, esc, memo };
 
   /* 역할이 바뀌었거나 사용 중지됐는지 10분에 한 번 확인 */
-  if(user && !(Date.now() - (user.checked || 0) < 6e5)){
+  // 대표 기기는 관리자 비밀번호가 바뀌면(PIN_V) 바로 확인해서 새 값을 받음
+  const PIN_V = "2";
+  if(user && (!(Date.now() - (user.checked || 0) < 6e5) || (user.role === "대표" && LS.g("tl_pin_v") !== PIN_V))){
     call({ action:"me" }).then(j => {
       if(!j) return;
       if(!j.ok && (j.error === "sess")){ logout(); return; }
       if(j.ok){
-        const changed = j.role !== user.role;
-        save(Object.assign({}, user, { name:j.name, role:j.role }));
-        if(changed) location.reload();
+        const changed = j.role !== user.role, newPin = !!j.pin && j.pin !== LS.g("tl_pin");
+        save(Object.assign({}, user, { name:j.name, role:j.role, pin:j.pin }));
+        if(j.pin) LS.s("tl_pin_v", PIN_V);
+        if(changed || newPin) location.reload();
       }
     }).catch(() => {});
   }
