@@ -2474,8 +2474,8 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const sum = t => list.reduce((a, u) => a + unit(u.size, t), 0), sumL = t => list.reduce((a, u) => a + P[u.size][t][0], 0);
       const pr = t => phase() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
       const w = cards([
-        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성 · 하단 상자 3·5·8개', img: 'std-tree', p: pr('std') },
-        { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-tree', p: pr('pre'), tag: '2026', k: 'pre' },
+        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성 · 하단 상자 3·5·8개', img: 'std-speak', p: pr('std') },
+        { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-hm', p: pr('pre'), tag: '2026', k: 'pre' },
       ], v => { A.tierPer = null; answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'); }, { cls: 'two' });
       if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
         bubble('me', '트리마다 다르게 고를게요');
