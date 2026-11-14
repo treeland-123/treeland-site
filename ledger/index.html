@@ -134,7 +134,18 @@ details.card[open] summary{margin-bottom:6px}
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--bad)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px}
 .status{padding:14px 16px;border-radius:10px;background:var(--brass-soft);color:var(--ink);font-size:14px}
+.scroll{overflow-x:auto;margin:0 -4px;padding:0 4px}
+.cmp{width:100%;border-collapse:collapse;font-size:14px}
+.cmp th{font-weight:600;font-size:12px;color:var(--muted);text-align:right;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.cmp th small{display:block;font-weight:500;color:var(--brass);font-size:11px}
+.cmp td{text-align:right;padding:9px 8px;border-bottom:1px solid var(--line);font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;font-family:var(--f-body);color:var(--muted);padding-left:0}
+.cmp tr:last-child td{border-bottom:0}
+.cmp tr.key td{color:var(--ink);font-weight:600}
+.cmp tr.key td:first-child{color:var(--ink)}
+.cmp td.minus{color:var(--bad)}
 @media (max-width:520px){
+  .cmp{font-size:13px}.cmp td,.cmp th{padding-left:6px;padding-right:6px}
   form{grid-template-columns:1fr}
   .ledger b{font-size:15px}
   .ledger div{padding:12px}
@@ -176,6 +187,7 @@ details.card[open] summary{margin-bottom:6px}
     <button role="tab" id="tab-site" aria-selected="false" data-tab="site">현장</button>
     <button role="tab" id="tab-cat" aria-selected="false" data-tab="cat">항목</button>
     <button role="tab" id="tab-all" aria-selected="false" data-tab="all">내역</button>
+    <button role="tab" id="tab-cmp" aria-selected="false" data-tab="cmp">비교</button>
   </nav>
 
   <!-- 기록 -->
@@ -289,6 +301,19 @@ details.card[open] summary{margin-bottom:6px}
       </div>
     </div>
   </section>
+
+  <!-- 시즌 비교 -->
+  <section id="p-cmp" hidden>
+    <div class="card">
+      <h2 style="margin-bottom:8px">시즌 비교</h2>
+      <div class="scroll"><table class="cmp" id="cmpTbl"></table></div>
+    </div>
+    <div class="card">
+      <h2 style="margin-bottom:8px">항목별 지출</h2>
+      <div class="scroll"><table class="cmp" id="cmpCat"></table></div>
+      <p class="note" style="margin:10px 0 0">위 시즌 선택과 상관없이 모든 시즌을 나란히 봅니다. 날짜를 모르는 지출은 시즌 첫날(11월 1일)로 들어가 있습니다.</p>
+    </div>
+  </section>
   </div>
 </div>
 <div class="toast" id="toast" hidden></div>
@@ -361,8 +386,8 @@ const allSites=()=>contractSites().concat(S.sites.map(s=>({...s,gross:grossOf(s)
 // tabs
 document.querySelectorAll("nav button").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
 function showTab(t){document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
-  ["rec","site","cat","all"].forEach(k=>$("p-"+k).hidden=k!==t);}
-if(/^#(rec|site|cat|all)$/.test(location.hash))showTab(location.hash.slice(1));
+  ["rec","site","cat","all","cmp"].forEach(k=>$("p-"+k).hidden=k!==t);}
+if(/^#(rec|site|cat|all|cmp)$/.test(location.hash))showTab(location.hash.slice(1));
 
 ["fAmount","sRev"].forEach(id=>$(id).addEventListener("input",e=>{const n=parseNum(e.target.value);e.target.value=n?won(n):""}));
 $("fDate").value=today();
@@ -401,7 +426,24 @@ function render(){
   $("fSite").innerHTML=`<option value="">공통 (현장 무관)</option>`+sites.map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
   if(keep&&sites.some(s=>s.id===keep))$("fSite").value=keep;
   $("recentList").innerHTML=exps.length?exps.slice(0,6).map(itemHtml).join(""):`<div class="empty">${S.ready?"이 시즌 기록이 없습니다. 위에서 첫 지출을 입력하세요.":"불러오는 중…"}</div>`;
-  renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);
+  renderSites(sites,exps);renderCats(exps);renderAll(exps,sites);renderCmp();
+}
+/* 시즌 비교: 시즌을 열로, 숫자를 줄로 (폰에서 시즌 3~4개까지 한 화면) */
+function renderCmp(){
+  const list=seasons(),now=seasonOf(today()),AS=allSites(),AE=allExp();
+  if(!list.length){$("cmpTbl").innerHTML="";$("cmpCat").innerHTML="";return}
+  const D=list.map(se=>{const st=AS.filter(s=>s.season===se),ex=AE.filter(e=>e.season===se);
+    const rev=st.reduce((a,s)=>a+(s.gross||0),0),exp=ex.reduce((a,e)=>a+(e.amount||0),0);
+    const cat={};ex.forEach(e=>cat[e.category]=(cat[e.category]||0)+(e.amount||0));
+    return {se,n:st.length,rev,exp,net:rev-exp,avg:st.length?rev/st.length:0,cat,unpaid:st.filter(s=>!s.paid).reduce((a,s)=>a+(s.gross||0),0)}});
+  const head=`<tr><th></th>${D.map(d=>`<th>${esc(d.se.replace(" 크리스마스",""))}${d.se===now?"<small>진행 중</small>":""}</th>`).join("")}</tr>`;
+  const row=(l,f,key)=>`<tr${key?' class="key"':""}><td>${l}</td>${D.map(d=>{const v=f(d);return `<td${typeof v==="number"&&v<0?' class="minus"':""}>${typeof v==="number"?won(v):v}</td>`}).join("")}</tr>`;
+  const anyUnpaid=D.some(d=>d.unpaid);
+  $("cmpTbl").innerHTML=head+row("현장",d=>d.n+"곳")+row("매출",d=>d.rev,1)+row("한 곳 평균",d=>d.avg)
+    +(anyUnpaid?row("미수금",d=>d.unpaid?won(d.unpaid):"–"):"")+row("지출",d=>d.exp)+row("남는 돈",d=>d.net,1)
+    +row("마진",d=>d.rev?(d.net/d.rev*100).toFixed(1)+"%":"–");
+  const cs=[...new Set(D.flatMap(d=>Object.keys(d.cat)))].sort((a,b)=>D.reduce((s,d)=>s+(d.cat[b]||0),0)-D.reduce((s,d)=>s+(d.cat[a]||0),0));
+  $("cmpCat").innerHTML=cs.length?head+cs.map(c=>row(esc(c),d=>d.cat[c]?won(d.cat[c]):"–")).join("")+row("합계",d=>d.exp,1):`<tr><td class="empty">지출 기록이 없습니다.</td></tr>`;
 }
 function itemHtml(e){
   const where=(e.siteId?`<span class="tag">${esc(siteName(e.siteId)||"삭제된 현장")}</span>`:`<span class="tag common">공통</span>`)+(e.fromStaff?`<span class="tag">근로계약</span>`:"");
