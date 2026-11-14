@@ -102,3 +102,4 @@ a.r:hover .t b{text-decoration:underline;text-underline-offset:3px}
 .act time{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
 .act b{font-weight:500}
 @media (max-width:520px){.rw{flex-wrap:wrap}.rw .paybtn{margin:0 0 10px 82px}.act{grid-template-columns:1fr;gap:0}}
+.bulk{display:flex;flex-direction:column;gap:6px;align-items:flex-start;margin:0 0 6px}

@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
-<link rel="stylesheet" href="/admin/admin.css?v=2">
+<link rel="stylesheet" href="/admin/admin.css?v=3">
 </head>
 <body>
 <main class="wrap">
@@ -205,7 +205,8 @@ function buckets(){
     rows: wait.map(x => ({ date: parts(x.install), dateLabel:"설치", title: x.name || x.place || "(상호 미입력)", line: x.place || "", tag:["서명 대기","wait"], href: jobUrl(x) })) });
   const wk = ev.filter(e => e.kind === "in" && dayDiff(e.p.key) <= 6 && (dayDiff(e.p.key) >= 0 || (SIGNED(e.it) && dayDiff(e.p.key) >= -14)));
   const late = wk.filter(e => dayDiff(e.p.key) < 0).length;
-  B.push({ id:"week", label:"이번 주 설치", sub: late ? `완료 처리 안 된 지난 설치 ${late}` : "오늘부터 7일", warn: !!late, more:["일정표","/schedule/"], rows: wk.map(evRow) });
+  B.push({ id:"week", label:"이번 주 설치", sub: late ? `완료 처리 안 된 지난 설치 ${late}` : "오늘부터 7일", warn: !!late, more:["일정표","/schedule/"], rows: wk.map(evRow),
+    bulk: OWNER ? wk.filter(e => dayDiff(e.p.key) < 0).map(e => e.it.id) : [] });
   if(OWNER){
     const t = seoulKey(), pw = payWaiting();
     const over = pw.filter(it => dueKey((parts(it.install) || {}).key || t) < t).length;
@@ -276,8 +277,20 @@ function showDetail(B){
   $("#detail").hidden = false;
   $("#dTitle").textContent = `${b.label} ${b.rows.length}곳`;
   $("#dMore").textContent = b.more[0]; $("#dMore").href = b.more[1];
-  $("#dRows").innerHTML = b.rows.length ? b.rows.map(rowHtml).join("") : `<p class="empty">해당하는 곳이 없습니다.</p>`;
+  $("#dRows").innerHTML = (b.bulk && b.bulk.length ? `<p class="bulk"><button type="button" class="ghost" id="bulkIn" data-ids="${esc(b.bulk.join(","))}">지난 설치 ${b.bulk.length}곳 모두 설치 완료로 처리</button><span class="hint">이미 설치를 마친 곳을 한 번에 정리합니다. 알림 메일은 가지 않습니다.</span></p>` : "")
+    + (b.rows.length ? b.rows.map(rowHtml).join("") : `<p class="empty">해당하는 곳이 없습니다.</p>`);
 }
+document.addEventListener("click", async e => {
+  const b = e.target.closest("#bulkIn"); if(!b) return;
+  if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 처리"; return; }
+  const ids = b.dataset.ids.split(","); b.disabled = true;
+  for(let i = 0; i < ids.length; i++){
+    b.textContent = `처리 중 ${i + 1}/${ids.length}…`;
+    const j = await TL.call({ action:"update", id: ids[i], field:"doneIn", value:true, quiet:true }).catch(() => null);
+    const it = JOBS.find(x => x.id === ids[i]); if(j && j.ok && it) it.doneIn = j.item.doneIn;
+  }
+  render();
+});
 $("#cards").addEventListener("click", e => {
   const c = e.target.closest(".card"); if(!c) return;
   CUR = CUR === c.dataset.id ? "" : c.dataset.id;
