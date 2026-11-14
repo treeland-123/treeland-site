@@ -158,6 +158,17 @@
       return { size: sz, tier: sz === "1.35m" ? "" : (m[2] || ""), qty: +m[3] || 1, place: m[4] || "" };
     }).filter(Boolean);
   }
+  /* 오너먼트는 색상별 세트(1세트 80개). 1.95m·2.3m 스탠다드 1 · 프리미엄 1.5, 2.9m 스탠다드 2 (프리미엄은 확인) */
+  const SETS = { "1.95m 슬림":[1, 1.5], "2.3m":[1, 1.5], "2.3m 스노우":[1, 1.5], "2.9m":[2, null] };
+  function setsOf(t){ const s = SETS[t.size]; if(!s) return null; const v = t.tier === "프리미엄" ? s[1] : t.tier === "스탠다드" ? s[0] : null; return v == null ? null : v * t.qty; }
+  // 계약의 장식 색상: 한 가지면 모든 트리, 여러 그루면 "2.3m 스노우 레드 & 골드, 2.3m 화이트 & 샴페인"처럼 트리 순서대로
+  function colorOf(it, i, n){
+    const raw = String(it.color || "").trim(); if(!raw) return "색상 미정";
+    const parts = raw.split(/\s*,\s*/).map(x => x.replace(/^\d\.\d+m(\s*(슬림|스노우))?\s*/, "").trim()).filter(Boolean);
+    if(n > 1 && parts.length === n) return parts[i];
+    return parts.length === 1 ? parts[0] : raw;
+  }
+  const setTxt = n => (Math.round(n * 10) / 10).toString();
   function materials(it){
     const groups = [], trees = parseTrees(it.size);
     trees.forEach((t, i) => {
@@ -168,8 +179,9 @@
       if(t.size === "1.35m"){
         rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, ""]);
       }else{
-        if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, "2.3m 기준 수량"]);
-        else rows.push([`${tag}오너먼트`, t.tier ? "" : "구성(스탠다드·프리미엄) 확인"]);
+        const col = colorOf(it, i, trees.length), st = setsOf(t);
+        if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, `${col} ${setTxt(st)}세트`]);
+        else rows.push([`${tag}오너먼트`, st != null ? `${col} ${setTxt(st)}세트` : t.tier ? `${col} · 세트 수 확인` : "구성(스탠다드·프리미엄) 확인"]);
         if(BOX[t.size] && (prem || std)) rows.push([`${tag}하단 상자 ${x(BOX[t.size] * (prem ? 2 : 1))}개`, ""]);
         else rows.push([`${tag}하단 상자`, "개수 확인"]);
         rows.push([`${tag}트리 스커트${prem ? " 150cm" : std ? " 122cm" : ""}`, q > 1 ? `${q}개` : ""]);
@@ -191,13 +203,14 @@
     items.forEach(it => {
       const who = it.name || it.place || "(상호 없음)", trees = parseTrees(it.size);
       if(!trees.length && it.size) check.push([who, "트리 구성 문구를 읽지 못함: " + it.size]);
-      trees.forEach(t => {
-        const q = t.qty, prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
+      trees.forEach((t, i) => {
+        const q = t.qty, prem = t.tier === "프리미엄", std = t.tier === "스탠다드", col = colorOf(it, i, trees.length);
         put(`${t.size}${t.tier ? " " + t.tier : ""} 트리`, q, "대", who);
-        if(t.size === "1.35m"){ put("1.35m 단일 구성 장식", q, "세트", who); put("상단 별 (기본)", q, "개", who); return; }
-        if(!prem && !std){ check.push([who, `${t.size} 구성(스탠다드·프리미엄)이 없어 오너먼트·상자·스커트 수량 확인`]); return; }
-        if(t.size.startsWith("2.3m")) put("오너먼트 (2.3m)", q * (prem ? 120 : 80), "개", who);
-        else put(`오너먼트 (${t.size} ${t.tier})`, q, "세트", who);
+        if(t.size === "1.35m"){ put(`1.35m 단일 구성 장식 · ${col}`, q, "세트", who); put("상단 별 (기본)", q, "개", who); return; }
+        if(!prem && !std){ check.push([who, `${t.size} (${col}) 구성(스탠다드·프리미엄)이 없어 오너먼트 세트·상자·스커트 수량 확인`]); return; }
+        const st = setsOf(t);
+        if(st != null) put(`오너먼트 ${col}`, st, "세트", who);
+        else check.push([who, `${t.size} ${t.tier} 오너먼트 세트 수 확인 (${col})`]);
         if(BOX[t.size]) put("하단 상자", q * BOX[t.size] * (prem ? 2 : 1), "개", who);
         put(`트리 스커트 ${prem ? "150cm" : "122cm"}`, q, "개", who);
         put(prem ? "리모컨 LED 별 + 리모컨" : "상단 별 (기본)", q, "개", who);
@@ -207,6 +220,7 @@
         const o = addons.get(s) || { k:s, who:[] }; o.who.push(who); addons.set(s, o);
       });
     });
+    T.forEach(o => { if(/^오너먼트 /.test(o.k)) o.n = Math.round(o.n * 10) / 10; });
     const order = r => r.sub === "대" ? 0 : /^오너먼트/.test(r.k) ? 1 : /상자/.test(r.k) ? 2 : /스커트/.test(r.k) ? 3 : /별/.test(r.k) ? 4 : 5;
     const rows = [...T.values()].sort((x, y) => order(x) - order(y) || x.k.localeCompare(y.k));
     return { rows, check, addons: [...addons.values()] };
