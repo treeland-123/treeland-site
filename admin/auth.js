@@ -24,7 +24,7 @@
   const me = document.currentScript;
   const embed = /[?&]embed=1/.test(location.search) || window.top !== window;
   const page = embed ? "none" : ((me && me.dataset.page) || "");
-  const NEW_PAGES = ["home", "jobs", "job"];
+  const NEW_PAGES = ["home", "jobs", "job", "prep"];
   // [키, 이름, 주소, 대표 전용, 묶음] 묶음: main = PC 위쪽·휴대폰 탭, more = 더보기
   const MENU = [
     ["home", "홈", "/admin/", 0, "main"],
@@ -33,6 +33,7 @@
     ["quote", "견적서", "/quote/", 1, "main"],
     ["contract", "계약", "/contract/admin.html", 0, "main"],
     ["mail", "메일", "/mail/", 1, "main"],
+    ["prep", "자재", "/admin/prep.html", 0, "more"],
     ["ledger", "장부", "/ledger/", 1, "more"],
     ["stats", "통계", "/stats/", 1, "more"],
     ["proposals", "제안서", "/proposals/", 1, "more"],
@@ -239,7 +240,7 @@ nav.tltabs{border-bottom:0;gap:0}
 
   const items = MENU.filter(m => !(staff && m[3]));
   const activeKey = () => page === "home" && location.hash === "#people" ? "people" : page === "job" ? "jobs" : page;
-  const MORE_ICON = { quote:"₩", contract:"✎", mail:"✉", ledger:"≡", stats:"↗", proposals:"❖", workorder:"✦", staff:"☺", people:"⚙", schedule:"◷" };
+  const MORE_ICON = { quote:"₩", contract:"✎", mail:"✉", prep:"▦", ledger:"≡", stats:"↗", proposals:"❖", workorder:"✦", staff:"☺", people:"⚙", schedule:"◷" };
 
   function openMore(){
     const list = items.filter(m => m[4] === "more" || (["quote", "contract", "mail"].indexOf(m[0]) >= 0));

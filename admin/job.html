@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=7" data-page="job"></script>
-<script src="/admin/ui.js?v=5"></script>
+<script src="/admin/auth.js?v=8" data-page="job"></script>
+<script src="/admin/ui.js?v=6"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 상세 · 트리랜드 관리</title>
@@ -83,41 +83,8 @@ const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
 let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = undefined, FULL = false;
 
-/* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
-const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
-function parseTrees(size){
-  return String(size || "").split(/,\s*(?![^()]*\))/).map(s => {
-    const m = s.match(/(1\.35m|1\.95m(?: 슬림)?|2\.3m(?: 스노우)?|2\.9m)\s*(스탠다드|프리미엄)?\s*트리\s*(\d+)\s*대(?:\s*\(([^)]*)\))?/);
-    if(!m) return null;
-    const sz = m[1] === "1.95m" ? "1.95m 슬림" : m[1];
-    return { size: sz, tier: sz === "1.35m" ? "" : (m[2] || ""), qty: +m[3] || 1, place: m[4] || "" };
-  }).filter(Boolean);
-}
-function materials(it){
-  const groups = [], trees = parseTrees(it.size);
-  trees.forEach((t, i) => {
-    const q = t.qty, x = n => n * q, tag = trees.length > 1 ? `${i + 1}. ` : "";
-    const name = `${t.size}${t.tier ? " " + t.tier : ""} 트리 ${q}대${t.place ? " · " + t.place : ""}`;
-    const rows = [[`${tag}트리 본체`, `${t.size}${t.tier ? " " + t.tier : ""} ${q}대`]];
-    const prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
-    if(t.size === "1.35m"){
-      rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, ""]);
-    }else{
-      if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, "2.3m 기준 수량"]);
-      else rows.push([`${tag}오너먼트`, t.tier ? "" : "구성(스탠다드·프리미엄) 확인"]);
-      if(BOX[t.size] && (prem || std)) rows.push([`${tag}하단 상자 ${x(BOX[t.size] * (prem ? 2 : 1))}개`, ""]);
-      else rows.push([`${tag}하단 상자`, "개수 확인"]);
-      rows.push([`${tag}트리 스커트${prem ? " 150cm" : std ? " 122cm" : ""}`, q > 1 ? `${q}개` : ""]);
-      rows.push([prem ? `${tag}리모컨 LED 별 + 리모컨` : `${tag}상단 별`, prem ? "" : std ? "기본 별" : ""]);
-      if(prem) rows.push([`${tag}벨벳 리본 · 솔방울 · 베리`, "프리미엄 전용 장식"]);
-    }
-    groups.push({ title: name, rows });
-  });
-  if(!trees.length && it.size) groups.push({ title: it.size, rows: [["트리·장식", "계약 문구를 확인하세요"]] });
-  const add = String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다");
-  if(add.length) groups.push({ title: "추가 장식·소품", rows: add.map(a => [a, ""]) });
-  return groups;
-}
+/* 필요 자재 계산은 ui.js(UI.materials) — 자재 합계 화면과 같은 기준 */
+const materials = UI.materials;
 
 /* ---------- 서버 ---------- */
 async function load(){
@@ -162,6 +129,16 @@ async function update(field, value, okMsg){
 }
 
 /* ---------- 화면 ---------- */
+// 계약 때 고객이 적은 세금계산서 받을 정보 (비운 칸은 계약 정보로 대신)
+function taxHtml(it){
+  const t = it.tax || {};
+  const lines = [
+    `이메일 ${esc(t.email || it.email || "—")}${!t.email && it.email ? ` <span class="sub small">(계약 이메일과 같음)</span>` : ""}`,
+    `주소 ${esc(t.addr || it.place || "—")}${!t.addr && it.place ? ` <span class="sub small">(설치 주소와 같음)</span>` : ""}`,
+    t.type || t.item ? `업태 ${esc(t.type || "—")} · 종목 ${esc(t.item || "—")}` : ""
+  ].filter(Boolean);
+  return lines.join("<br>") + (t.doc ? `<br><a href="${esc(t.doc)}" target="_blank" rel="noopener">사업자등록증 보기</a>` : "");
+}
 // 큰 글씨: 오늘·내일·목요일 또는 12월 24일 (목) / 작은 글씨: 시각 (가까운 날이면 날짜도)
 function dayBig(p){ const d = UI.dayDiff(p.key); return d === 0 ? "오늘" : d === 1 ? "내일" : d > 1 && d < 7 ? `${p.wd}요일` : `${p.m}월 ${p.d}일 (${p.wd})`; }
 function daySmall(p){ const d = UI.dayDiff(p.key), t = UI.timeKo(p); return (d >= 0 && d < 7 ? `${p.m}월 ${p.d}일` + (t ? " · " : "") : "") + t; }
@@ -197,6 +174,8 @@ function render(){
     it.pay ? ["결제 방법", esc(it.pay)] : null,
     OWNER && it.price != null ? ["임대료", `<span class="num">${won(it.price)}원</span> <span class="sub small">부가세 별도${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}</span>`] : null,
     OWNER && it.email ? ["이메일", esc(it.email)] : null,
+    OWNER && it.biz ? ["사업자번호", `${esc(it.biz)}${it.rep ? ` <span class="sub small">대표 ${esc(it.rep)}</span>` : ""}`] : null,
+    OWNER && it.tax ? ["세금계산서", taxHtml(it)] : null,
     OWNER && it.qno ? ["견적 번호", `<a href="/quote/">${esc(it.qno)}</a>`] : null,
     OWNER && it.pdf ? ["서명본", `<a href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF 열기</a>`] : null,
   ].filter(Boolean);

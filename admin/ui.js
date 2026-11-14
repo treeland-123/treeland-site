@@ -148,5 +148,69 @@
     return `<a class="row" href="/quote/">${whenCell(x.sentAt || x.at, "보냄")}<span class="what"><b>${esc(x.cust || "(상호 없음)")}</b><span>견적 No. ${esc(x.no)} · ${man(x.total)}</span></span><span class="end"><span class="chip gray">견적</span></span></a>`;
   }
 
-  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow };
+  /* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
+  const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
+  function parseTrees(size){
+    return String(size || "").split(/,\s*(?![^()]*\))/).map(s => {
+      const m = s.match(/(1\.35m|1\.95m(?: 슬림)?|2\.3m(?: 스노우)?|2\.9m)\s*(스탠다드|프리미엄)?\s*트리\s*(\d+)\s*대(?:\s*\(([^)]*)\))?/);
+      if(!m) return null;
+      const sz = m[1] === "1.95m" ? "1.95m 슬림" : m[1];
+      return { size: sz, tier: sz === "1.35m" ? "" : (m[2] || ""), qty: +m[3] || 1, place: m[4] || "" };
+    }).filter(Boolean);
+  }
+  function materials(it){
+    const groups = [], trees = parseTrees(it.size);
+    trees.forEach((t, i) => {
+      const q = t.qty, x = n => n * q, tag = trees.length > 1 ? `${i + 1}. ` : "";
+      const name = `${t.size}${t.tier ? " " + t.tier : ""} 트리 ${q}대${t.place ? " · " + t.place : ""}`;
+      const rows = [[`${tag}트리 본체`, `${t.size}${t.tier ? " " + t.tier : ""} ${q}대`]];
+      const prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
+      if(t.size === "1.35m"){
+        rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, ""]);
+      }else{
+        if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, "2.3m 기준 수량"]);
+        else rows.push([`${tag}오너먼트`, t.tier ? "" : "구성(스탠다드·프리미엄) 확인"]);
+        if(BOX[t.size] && (prem || std)) rows.push([`${tag}하단 상자 ${x(BOX[t.size] * (prem ? 2 : 1))}개`, ""]);
+        else rows.push([`${tag}하단 상자`, "개수 확인"]);
+        rows.push([`${tag}트리 스커트${prem ? " 150cm" : std ? " 122cm" : ""}`, q > 1 ? `${q}개` : ""]);
+        rows.push([prem ? `${tag}리모컨 LED 별 + 리모컨` : `${tag}상단 별`, prem ? "" : std ? "기본 별" : ""]);
+        if(prem) rows.push([`${tag}벨벳 리본 · 솔방울 · 베리`, "프리미엄 전용 장식"]);
+      }
+      groups.push({ title: name, rows });
+    });
+    if(!trees.length && it.size) groups.push({ title: it.size, rows: [["트리·장식", "계약 문구를 확인하세요"]] });
+    const add = String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다");
+    if(add.length) groups.push({ title: "추가 장식·소품", rows: add.map(a => [a, ""]) });
+    return groups;
+  }
+
+  /* 자재 합계: 여러 현장을 합쳐 셀 수 있는 것만 숫자로, 나머지는 '확인' 목록 */
+  function matTotals(items){
+    const T = new Map(), check = [], addons = new Map();
+    const put = (k, n, sub, who) => { const o = T.get(k) || { k, n:0, sub:sub || "", who:[] }; o.n += n; if(who && !o.who.includes(who)) o.who.push(who); T.set(k, o); };
+    items.forEach(it => {
+      const who = it.name || it.place || "(상호 없음)", trees = parseTrees(it.size);
+      if(!trees.length && it.size) check.push([who, "트리 구성 문구를 읽지 못함: " + it.size]);
+      trees.forEach(t => {
+        const q = t.qty, prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
+        put(`트리 ${t.size}${t.tier ? " " + t.tier : ""}`, q, "대", who);
+        if(t.size === "1.35m"){ put("1.35m 단일 구성 장식", q, "세트", who); put("상단 별 (기본)", q, "개", who); return; }
+        if(!prem && !std){ check.push([who, `${t.size} 구성(스탠다드·프리미엄)이 없어 오너먼트·상자·스커트 수량 확인`]); return; }
+        if(t.size.startsWith("2.3m")) put("오너먼트 (2.3m)", q * (prem ? 120 : 80), "개", who);
+        else put(`오너먼트 (${t.size} ${t.tier})`, q, "세트", who);
+        if(BOX[t.size]) put("하단 상자", q * BOX[t.size] * (prem ? 2 : 1), "개", who);
+        put(`트리 스커트 ${prem ? "150cm" : "122cm"}`, q, "개", who);
+        put(prem ? "리모컨 LED 별 + 리모컨" : "상단 별 (기본)", q, "개", who);
+        if(prem) put("벨벳 리본 · 솔방울 · 베리", q, "세트", who);
+      });
+      String(it.addons || "").split(/\n+/).map(s => s.trim()).filter(s => s && s !== "견적서와 같습니다").forEach(s => {
+        const o = addons.get(s) || { k:s, who:[] }; o.who.push(who); addons.set(s, o);
+      });
+    });
+    const order = k => /^트리 /.test(k) ? 0 : /^오너먼트/.test(k) ? 1 : /상자/.test(k) ? 2 : /스커트/.test(k) ? 3 : /별/.test(k) ? 4 : 5;
+    const rows = [...T.values()].sort((x, y) => order(x.k) - order(y.k) || x.k.localeCompare(y.k));
+    return { rows, check, addons: [...addons.values()] };
+  }
+
+  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, BOX, parseTrees, materials, matTotals };
 })();

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<script src="/admin/auth.js?v=8" data-page="prep"></script>
+<script src="/admin/ui.js?v=6"></script>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>자재 · 트리랜드 관리</title>
+<link rel="icon" href="/favicon.ico">
+<meta name="theme-color" content="#F5F5F2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1012" media="(prefers-color-scheme: dark)">
+<link rel="stylesheet" href="/admin/admin.css?v=5">
+<style>
+.top{position:sticky;top:var(--tlbar-h,56px);z-index:5;background:var(--bg);padding:10px 0 8px;display:flex;flex-direction:column;gap:8px}
+@media (max-width:760px){.top{top:52px}}
+.opts{display:flex;gap:8px;flex-wrap:wrap;padding:0 4px}
+.opts label{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--sub);cursor:pointer;min-height:36px}
+.opts input{width:18px;height:18px;accent-color:var(--acc);margin:0}
+.mat{display:grid;grid-template-columns:1fr auto;gap:2px 12px;align-items:baseline;padding:12px 0;border-top:1px solid var(--line)}
+.mat:first-child{border-top:0;padding-top:2px}
+.mat b{font-size:16px;font-weight:600}
+.mat .n{font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.mat .n small{font-size:14px;font-weight:600;color:var(--sub);margin-left:2px}
+.mat .who{grid-column:1/-1;font-size:13px;color:var(--sub);line-height:1.45}
+.chk{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.chk li{font-size:15px;line-height:1.5}
+.chk li b{font-weight:600}
+.sumline{font-size:15px;color:var(--sub);padding:0 4px}
+.sumline b{color:var(--ink)}
+@media print{.top,.tlbar,.tl-tabs{display:none!important}}
+</style>
+</head>
+<body>
+<main class="page">
+  <div class="head"><div><p class="eyebrow" id="sub">설치 완료 처리 전 · 서명 완료 계약</p><h1>자재</h1></div></div>
+  <div class="top">
+    <div class="filters" id="range" role="group" aria-label="기간">
+      <button type="button" data-r="week" aria-pressed="true">이번 주</button>
+      <button type="button" data-r="all" aria-pressed="false">앞으로 전체</button>
+    </div>
+    <div class="opts">
+      <label><input type="checkbox" id="optSign">서명 대기 포함</label>
+      <label><input type="checkbox" id="optReady">준비 끝난 현장 빼기</label>
+    </div>
+  </div>
+  <p class="sumline" id="sumline"></p>
+  <section class="card"><div class="ch"><h2>합계</h2></div><div id="tot"></div>
+    <p class="hint">수량은 홈페이지 구성 기준입니다(2.3m 오너먼트 스탠다드 80개·프리미엄 120개, 하단 상자 1.95m 3·2.3m 5·2.9m 8개, 프리미엄은 상자 2배). 2.3m 외 크기의 오너먼트 개수는 작업지시서를 따르세요.</p>
+  </section>
+  <section class="card" id="chkBox" hidden><div class="ch"><h2>확인 필요</h2></div><ul class="chk" id="chk"></ul></section>
+  <section class="card" id="addBox" hidden><div class="ch"><h2>추가 장식·소품</h2></div><div id="add"></div></section>
+  <section class="card flush"><div class="ch"><h2 id="listT">현장</h2></div><div class="rows" id="list"></div></section>
+  <p class="hint" id="stamp" style="padding:0 4px"></p>
+</main>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const { esc } = UI;
+const P = new URLSearchParams(location.search);
+let D = null, R = P.get("r") === "all" ? "all" : "week";
+const opt = k => { try{ return localStorage.getItem("tl_prep_" + k) === "1"; }catch(e){ return false; } };
+const setOpt = (k, v) => { try{ localStorage.setItem("tl_prep_" + k, v ? "1" : "0"); }catch(e){} };
+$("#optSign").checked = opt("sign"); $("#optReady").checked = opt("ready");
+
+const keyOf = it => (UI.parts(it.install) || {}).key || "";
+function prepState(it){   // 현장 상세의 체크와 같은 항목으로 진행률 계산
+  const keys = UI.materials(it).flatMap(g => g.rows.map(r => r[0])), prep = it.prep || {};
+  const done = keys.filter(k => prep[k]).length;
+  return { done, total: keys.length, ready: keys.length > 0 && done === keys.length };
+}
+function pick(){
+  const t = UI.seoulKey();
+  const ok = it => !it.archived && !it.halt && !it.doneIn && (it.status === "서명완료" || ($("#optSign").checked && it.status === "서명대기"));
+  let list = (D.all || []).filter(ok).filter(it => {
+    const k = keyOf(it); if(R === "all") return true;
+    return k && UI.dayDiff(k) <= 6;   // 이번 주 = 오늘부터 7일 + 완료 처리 안 된 지난 설치
+  });
+  const readyOut = $("#optReady").checked ? list.filter(it => prepState(it).ready) : [];
+  list = list.filter(it => !readyOut.includes(it));
+  list.sort((a, b) => (keyOf(a) || "9").localeCompare(keyOf(b) || "9"));
+  const signWait = (D.all || []).filter(it => !it.archived && !it.halt && it.status === "서명대기" && (R === "all" || (keyOf(it) && UI.dayDiff(keyOf(it)) <= 6)));
+  return { list, readyOut, signWait };
+}
+function render(animate){
+  document.querySelectorAll("#range [data-r]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.r === R)));
+  const { list, readyOut, signWait } = pick(), M = UI.matTotals(list);
+  const late = list.filter(it => keyOf(it) && UI.dayDiff(keyOf(it)) < 0).length;
+  $("#sub").textContent = R === "week" ? "오늘부터 7일 설치분 · 설치 완료 처리 전" : "설치 완료 처리 전 전부";
+  const trees = M.rows.filter(r => /^트리 /.test(r.k)).reduce((a, r) => a + r.n, 0);
+  $("#sumline").innerHTML = list.length
+    ? `<b>${list.length}곳</b> · 트리 <b>${trees}대</b>${late ? ` · 지난 설치 ${late}곳 포함(완료 처리 전)` : ""}${readyOut.length ? ` · 준비 끝난 ${readyOut.length}곳 뺌` : ""}${!$("#optSign").checked && signWait.length ? ` · 서명 대기 ${signWait.length}곳 빠짐` : ""}`
+    : "";
+  $("#tot").innerHTML = M.rows.length ? M.rows.map(r => `<div class="mat"><b>${esc(r.k)}</b><span class="n">${r.n.toLocaleString("ko-KR")}<small>${esc(r.sub)}</small></span><span class="who">${esc(r.who.join(" · "))}</span></div>`).join("")
+    : `<p class="hint">${R === "week" ? "이번 주 설치할 곳이 없습니다." : "설치 예정인 곳이 없습니다."}</p>`;
+  $("#chkBox").hidden = !M.check.length;
+  $("#chk").innerHTML = M.check.map(c => `<li><b>${esc(c[0])}</b> — ${esc(c[1])}</li>`).join("");
+  $("#addBox").hidden = !M.addons.length;
+  $("#add").innerHTML = M.addons.map(a => `<div class="mat"><b>${esc(a.k)}</b><span class="n">${a.who.length > 1 ? a.who.length + "<small>곳</small>" : ""}</span><span class="who">${esc(a.who.join(" · "))}</span></div>`).join("");
+  $("#listT").textContent = `현장 ${list.length}곳`;
+  $("#list").innerHTML = list.length ? list.map(it => {
+    const ps = prepState(it), row = UI.rowHtml(it, "in", D);
+    const chip = ps.total ? `<span class="chip ${ps.ready ? "ok" : ps.done ? "wait" : "gray"}">자재 ${ps.done}/${ps.total}</span>` : "";
+    return row.replace(/<span class="end">[\s\S]*?<\/span><\/a>$/, `<span class="end">${it.status === "서명대기" ? `<span class="chip wait">서명 대기</span> ` : ""}${chip}</span></a>`);
+  }).join("") : `<p class="empty">해당하는 곳이 없습니다.</p>`;
+  if(animate) UI.rise($("#list"));
+}
+$("#range").addEventListener("click", e => { const b = e.target.closest("[data-r]"); if(!b) return; R = b.dataset.r; history.replaceState(null, "", R === "all" ? "?r=all" : location.pathname); render(true); });
+$("#optSign").addEventListener("change", e => { setOpt("sign", e.target.checked); render(false); });
+$("#optReady").addEventListener("change", e => { setOpt("ready", e.target.checked); render(false); });
+
+(async function(){
+  if(!TL.user && !TL.LS.g("tl_pin")){ location.replace("/admin/"); return; }
+  const c = UI.cache.get("all");
+  if(c){ D = c; render(true); $("#stamp").textContent = "새로 받는 중…"; }
+  else { $("#tot").innerHTML = UI.skRows(3); $("#list").innerHTML = UI.skRows(4); }
+  try{
+    D = await UI.loadAll({ quotes:false, log:false });
+    render(!c);
+    const d = new Date(); $("#stamp").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")} 기준`;
+  }catch(e){
+    if(e.code === "sess"){ TL.logout(); return; }
+    $("#stamp").textContent = "새 내용을 받지 못했습니다. " + (e.message || "");
+    if(!c) $("#list").innerHTML = `<p class="empty">불러오지 못했습니다.</p>`;
+  }
+})();
+</script>
+</body>
+</html>

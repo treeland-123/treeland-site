@@ -46,6 +46,11 @@ dd{margin:0;min-width:0;overflow-wrap:anywhere;white-space:pre-line}
 input[type=text],input[type=tel],input[type=email]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%}
 input:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.taxbox{margin-top:12px;border:1px solid var(--line);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.taxbox h3{margin:0;font-size:15px}
+.taxbox .lead{font-size:13px}
+.filebtn{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:var(--sub)}
+.filebtn label{cursor:pointer;display:inline-flex;align-items:center;min-height:40px}
 .addr-row{display:flex;gap:8px}.addr-row input{flex:1;min-width:0}.addr-row .ghost{flex:0 0 auto;padding:0 14px;font-size:14px}
 #addrLayer{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
 #addrLayer[hidden]{display:none}
@@ -133,6 +138,19 @@ html.loading #app{display:none}
       <div class="field"><label for="f-tel">연락처 <span class="req">*</span></label><input type="tel" id="f-tel" autocomplete="tel" inputmode="tel" required></div>
       <div class="field"><label for="f-email">이메일 <span class="req">*</span></label><input type="email" id="f-email" autocomplete="email" required></div>
     </div>
+    <div class="taxbox" id="taxBox" hidden>
+      <h3>세금계산서 받을 정보</h3>
+      <p class="lead">사업자등록번호를 적으면 보입니다. 위 이메일·설치 주소와 같으면 비워 두셔도 됩니다.</p>
+      <div class="grid2">
+        <div class="field"><label for="t-email">세금계산서 받을 이메일</label><input type="email" id="t-email" autocomplete="off" placeholder="위 이메일과 같으면 비워 두세요"></div>
+        <div class="field"><label for="t-addr">사업장 주소 (사업자등록증 기준)</label><input type="text" id="t-addr" placeholder="설치 주소와 같으면 비워 두세요"></div>
+        <div class="field"><label for="t-type">업태</label><input type="text" id="t-type" placeholder="예: 서비스, 도소매"></div>
+        <div class="field"><label for="t-item">종목</label><input type="text" id="t-item" placeholder="예: 의원, 커피전문점"></div>
+      </div>
+      <div class="field"><label>사업자등록증 사진 또는 PDF (선택)</label>
+        <div class="filebtn"><label class="ghost" for="t-file">파일 고르기</label><input type="file" id="t-file" accept="image/*,application/pdf" hidden><span id="t-fileName">올리면 세금계산서를 더 정확하게 발행할 수 있습니다.</span></div>
+      </div>
+    </div>
     <div class="field" style="margin-top:12px"><label for="f-addr">설치 주소 <span class="req">*</span></label>
       <div class="addr-row"><input type="text" id="f-addr" placeholder="주소 찾기를 누르거나 직접 입력" autocomplete="street-address"><button type="button" class="ghost" id="addrBtn">주소 찾기</button></div>
       <input type="text" id="f-addr2" placeholder="상세 주소 (층·호수)" style="margin-top:6px">
@@ -193,7 +211,7 @@ html.loading #app{display:none}
   <section aria-labelledby="h-sign">
     <h2 id="h-sign"><span class="n">5</span>동의 및 서명</h2>
     <label class="check"><input type="checkbox" id="c-privacy"><span>개인정보 수집·이용에 동의합니다. (필수)</span></label>
-    <p class="privacy">수집 항목: 상호, 대표자, 사업자등록번호, 담당자, 연락처, 이메일, 서명 · 이용 목적: 계약 체결과 이행, 세금계산서·현금영수증 발행 · 보유 기간: 계약 종료 후 5년(세법상 장부 보관 기간) · 동의하지 않을 수 있으나, 이 경우 전자계약을 진행할 수 없습니다.</p>
+    <p class="privacy">수집 항목: 상호, 대표자, 사업자등록번호, 담당자, 연락처, 이메일, 서명, (사업자) 세금계산서 이메일·사업장 주소·업태·종목·사업자등록증 사본 · 이용 목적: 계약 체결과 이행, 세금계산서·현금영수증 발행 · 보유 기간: 계약 종료 후 5년(세법상 장부 보관 기간) · 동의하지 않을 수 있으나, 이 경우 전자계약을 진행할 수 없습니다.</p>
     <label class="check"><input type="checkbox" id="c-agree"><span>결제·취소·배상 조항을 포함한 계약서 전문을 확인했으며, 위 내용으로 계약을 체결합니다. (필수)</span></label>
     <div class="row"><span>아래 서명란에 서명해 주세요</span><button type="button" class="ghost" id="clearSig">다시 쓰기</button></div>
     <div class="pad" id="pad"><canvas id="sig" aria-label="서명란"></canvas><div class="ph" id="sigPh">여기에 서명</div></div>
@@ -329,6 +347,29 @@ function photoChoice(){
   return ["동의하지 아니함", "해당 없음"];
 }
 function val(id){ return $(id).value.trim(); }
+/* 사업자면 세금계산서 받을 정보 칸을 보여 줌. 사업자등록증은 사진이면 줄여서 보냄 */
+const isBiz = () => val("#f-biz").replace(/\D/g, "").length >= 10;
+let TAXDOC = null;
+$("#f-biz").addEventListener("input", () => { $("#taxBox").hidden = !isBiz(); });
+$("#t-file").addEventListener("change", async e => {
+  const f = e.target.files[0]; if(!f) return;
+  const show = t => $("#t-fileName").textContent = t;
+  try{
+    if(f.type === "application/pdf"){
+      if(f.size > 4 * 1024 * 1024){ TAXDOC = null; show("PDF가 너무 큽니다(4MB까지). 사진으로 올려 주세요."); return; }
+      const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); });
+      TAXDOC = { b64, mime: "application/pdf" };
+    }else{
+      const url = URL.createObjectURL(f), img = new Image();
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = url; });
+      const k = Math.min(1, 1800 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      TAXDOC = { b64: c.toDataURL("image/jpeg", 0.82).split(",")[1], mime: "image/jpeg" };
+    }
+    show("올림: " + f.name);
+  }catch(err){ TAXDOC = null; show("파일을 읽지 못했습니다. 다른 사진으로 골라 주세요."); }
+});
 function radio(n){ return document.querySelector(`input[name=${n}]:checked`)?.value || ""; }
 function showErr(m, focusEl){ const e = $("#err"); e.textContent = m; e.hidden = false; if(focusEl) focusEl.focus(); }
 
@@ -341,6 +382,7 @@ function collect(){
   if(radio("q1") === "y" && !radio("q2")) return showErr("인스타 계정 태그 동의 여부를 골라 주세요.", $("#q2-y"));
   if(radio("q1") === "y" && radio("q2") === "y" && !val("#f-ig")) return showErr("태그할 인스타 계정을 입력해 주세요.", $("#f-ig"));
   if(radio("q1") === "n" && !radio("q3")) return showErr("사진만 게시 동의 여부를 골라 주세요.", $("#q3-y"));
+  if(val("#t-email") && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#t-email"))) return showErr("세금계산서 받을 이메일 형식을 확인해 주세요.", $("#t-email"));
   if(!$("#c-privacy").checked) return showErr("개인정보 수집·이용에 동의해 주세요.", $("#c-privacy"));
   if(!$("#c-agree").checked) return showErr("계약 체결 동의에 체크해 주세요.", $("#c-agree"));
   if(!signed) return showErr("서명란에 서명해 주세요.", cv);
@@ -348,7 +390,9 @@ function collect(){
   return {
     name: val("#f-name"), rep: val("#f-rep"), biz: val("#f-biz"), contact: val("#f-contact"), tel: val("#f-tel"),
     email: val("#f-email"), addr: [val("#f-addr"), val("#f-addr2")].filter(Boolean).join(" "), outlet: val("#f-outlet"), pay: radio("pay"), photo: photoChoice()[0],
-    tag: photoChoice()[1], ig: radio("q1") === "y" && radio("q2") === "y" ? val("#f-ig") : ""
+    tag: photoChoice()[1], ig: radio("q1") === "y" && radio("q2") === "y" ? val("#f-ig") : "",
+    tax: isBiz() ? { email: val("#t-email"), addr: val("#t-addr"), type: val("#t-type"), item: val("#t-item") } : null,
+    taxDoc: isBiz() ? TAXDOC : null
   };
 }
 
@@ -372,7 +416,7 @@ function buildPaper(g, sigUrl, signedAt, hash){
     <tr><th>상호(성명)</th><td>${esc(g.name)}</td><th>상호</th><td>트리랜드 (TREELAND)</td></tr>
     <tr><th>대표자</th><td>${esc(g.rep)}</td><th>대표자</th><td>홍준서</td></tr>
     <tr><th>사업자등록번호</th><td>${esc(g.biz || "-")}</td><th>사업자등록번호</th><td>360-69-00592</td></tr>
-    <tr><th>주소</th><td>-</td><th>주소</th><td>서울 성북구 아리랑로19길 87</td></tr>
+    <tr><th>주소</th><td>${esc((g.tax && g.tax.addr) || "-")}</td><th>주소</th><td>서울 성북구 아리랑로19길 87</td></tr>
     <tr><th>담당자·연락처</th><td>${esc(g.contact)} / ${esc(g.tel)}</td><th>전화</th><td>070-4571-7467</td></tr>
     <tr><th>이메일</th><td>${esc(g.email)}</td><th>이메일</th><td>info@treeland.kr</td></tr></table>`;
   return `<h1>트리 설치 계약서</h1><div class="subt">대여 · 설치 · 회수</div>
