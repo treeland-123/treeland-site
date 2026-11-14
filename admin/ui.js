@@ -140,7 +140,7 @@
       const p = parts(it.install), od = p && dueKey(p.key) < seoulKey();
       chip = [od ? "기한 지남" : "입금 대기", od ? "bad" : "wait"];
     }
-    if(mode === "out" && !it.doneOut) chip = ["회수 예정", "acc"];
+    if(mode === "out" && !it.doneOut) chip = ["회수 예정", "ret"];
     const line = [it.place, mode === "pay" ? (it.pay || "결제 방법 미정") : it.size, crew ? "담당 " + (crew.name || crew.email) : ""].filter(Boolean).join(" · ");
     return `<a class="row" href="${jobUrl(it)}">${when}<span class="what"><b>${esc(it.name || it.place || "(상호 미입력)")}</b><span>${esc(line)}</span></span><span class="end"><span class="chip ${chip[1]}">${esc(chip[0])}</span></span></a>`;
   }

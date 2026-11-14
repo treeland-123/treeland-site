@@ -4,6 +4,7 @@
   --bg:#F5F5F2; --card:#FFFFFF; --ink:#191F28; --sub:#4E5968; --mute:#8B95A1; --line:#E8EAED; --fill:#F2F3F5;
   --acc:#1F3A2E; --acc-ink:#FFFFFF; --acc-soft:#E7EFEA;
   --ok:#17784A; --ok-soft:#E5F4EC; --wait:#A25F00; --wait-soft:#FFF3DE; --bad:#D4343C; --bad-soft:#FDEBEC; --gray:#6B7684; --gray-soft:#F0F1F3;
+  --ret:#2D5DA8; --ret-soft:#E8EFFA;   /* 회수 예정: 설치 예정(초록)과 구분되는 파랑 */
   --r-card:18px; --r-btn:14px; --r-in:12px;
   --font:"Pretendard Variable",Pretendard,-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   --ease:cubic-bezier(.2,.8,.2,1);
@@ -12,12 +13,12 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0F1012; --card:#1A1B1E; --ink:#ECEDEF; --sub:#B3BAC2; --mute:#7F8892; --line:#2A2C31; --fill:#232529;
   --acc:#A6CDB6; --acc-ink:#0D1A13; --acc-soft:#1D2A23;
-  --ok:#6FD39C; --ok-soft:#183026; --wait:#F2B95C; --wait-soft:#33281A; --bad:#FF7B80; --bad-soft:#3A1E21; --gray:#A0A8B1; --gray-soft:#26282C;
+  --ok:#6FD39C; --ok-soft:#183026; --wait:#F2B95C; --wait-soft:#33281A; --bad:#FF7B80; --bad-soft:#3A1E21; --gray:#A0A8B1; --gray-soft:#26282C; --ret:#8DB4F0; --ret-soft:#1C2533;
   color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0F1012; --card:#1A1B1E; --ink:#ECEDEF; --sub:#B3BAC2; --mute:#7F8892; --line:#2A2C31; --fill:#232529;
   --acc:#A6CDB6; --acc-ink:#0D1A13; --acc-soft:#1D2A23;
-  --ok:#6FD39C; --ok-soft:#183026; --wait:#F2B95C; --wait-soft:#33281A; --bad:#FF7B80; --bad-soft:#3A1E21; --gray:#A0A8B1; --gray-soft:#26282C;
+  --ok:#6FD39C; --ok-soft:#183026; --wait:#F2B95C; --wait-soft:#33281A; --bad:#FF7B80; --bad-soft:#3A1E21; --gray:#A0A8B1; --gray-soft:#26282C; --ret:#8DB4F0; --ret-soft:#1C2533;
   color-scheme:dark}
 
 *{box-sizing:border-box}
@@ -82,6 +83,7 @@ a.row:hover{background:var(--fill)}
 .chip.bad{background:var(--bad-soft);color:var(--bad)}
 .chip.gray{background:var(--gray-soft);color:var(--gray)}
 .chip.acc{background:var(--acc-soft);color:var(--acc)}
+.chip.ret{background:var(--ret-soft);color:var(--ret)}
 
 /* 버튼 */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:var(--r-btn);background:var(--acc);color:var(--acc-ink);
