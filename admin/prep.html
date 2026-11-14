@@ -14,6 +14,8 @@
 <style>
 .top{position:sticky;top:var(--tlbar-h,56px);z-index:5;background:var(--bg);padding:10px 0 8px;display:flex;flex-direction:column;gap:8px}
 @media (max-width:760px){.top{top:52px}}
+/* 기간 4개가 휴대폰에서 옆으로 밀려 안 보이지 않게 2줄로 */
+#range{flex-wrap:wrap;overflow:visible}
 .opts{display:flex;gap:8px;flex-wrap:wrap;padding:0 4px}
 .opts label{display:inline-flex;align-items:center;gap:7px;font-size:14px;color:var(--sub);cursor:pointer;min-height:36px}
 .opts input{width:18px;height:18px;accent-color:var(--acc);margin:0}
