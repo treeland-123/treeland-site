@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js" data-page="home"></script>
+<script src="/admin/auth.js?v=3" data-page="home"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>트리랜드 관리</title>
@@ -157,7 +157,7 @@ async function loadHome(){
   if(den){ $("#denied").textContent = `「${den}」 화면은 대표만 볼 수 있습니다.`; $("#denied").hidden = false; history.replaceState(null, "", "/admin/" + location.hash); }
   try{ const c = JSON.parse(TL.LS.g("tl_home_cache2") || "null"); if(c && c.email === U.email){ ALL = c.j || []; JOBS = ALL.filter(x => !x.archived); QUOTES = c.q || []; STAFF = c.s || []; render(c.at); } }catch(e){}
   try{
-    const [j, q, a, x] = await Promise.all([ TL.call({ action:"jobs", all:true }), quoteList(), OWNER ? TL.call({ action:"log" }).catch(() => null) : null, OWNER ? TL.ledgerExtras() : null ]);
+    const [j, q, a, x] = await Promise.all([ TL.call({ action:"jobs", all:true }), quoteList(), OWNER ? TL.call({ action:"log" }).catch(() => null) : null, OWNER && TL.ledgerExtras ? TL.ledgerExtras() : null ]);
     EXTRAS = x;
     if(!j.ok){ if(j.error === "sess"){ TL.logout(); return; } throw new Error(j.error === "bad_action" ? "서버가 아직 예전 버전입니다." : j.error); }
     ALL = j.items || []; JOBS = ALL.filter(x => !x.archived); STAFF = j.staff || []; QUOTES = q; ACTS = a && a.ok ? a.log || [] : [];
@@ -173,7 +173,7 @@ const dueKey = key => { const d = new Date(key + "T00:00:00"); d.setDate(d.getDa
 const dueOf = key => { const d = new Date(dueKey(key) + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}(${WD[d.getDay()]})`; };
 function payWaiting(){   // 설치 완료(또는 설치일 지남) + 입금 확인 전
   const t = seoulKey();
-  return JOBS.filter(it => SIGNED(it) && !TL.isPaid(it, EXTRAS) && (it.doneIn || ((parts(it.install) || {}).key || "9") < t));
+  return JOBS.filter(it => SIGNED(it) && !(TL.isPaid ? TL.isPaid(it, EXTRAS) : it.paid) && (it.doneIn || ((parts(it.install) || {}).key || "9") < t));
 }
 function events(list){
   const out = [];
@@ -267,7 +267,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest(".paybtn"); if(!b) return;
   if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 확인"; return; }
   b.disabled = true; b.textContent = "저장 중…";
-  const j = await TL.setPaid(b.dataset.pay, true, EXTRAS);
+  const j = TL.setPaid ? await TL.setPaid(b.dataset.pay, true, EXTRAS) : await TL.call({ action:"update", id: b.dataset.pay, field:"paid", value:true });
   if(!j.ok){ b.textContent = "저장 실패"; b.title = j.error || ""; b.disabled = false; return; }
   const it = JOBS.find(x => x.id === b.dataset.pay); if(it) it.paid = j.item.paid;
   render();
