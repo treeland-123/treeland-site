@@ -141,7 +141,7 @@
 
   /* 역할이 바뀌었거나 사용 중지됐는지 10분에 한 번 확인 */
   // 대표 기기는 관리자 비밀번호가 바뀌면(PIN_V) 바로 확인해서 새 값을 받음
-  const PIN_V = "2";
+  const PIN_V = "3";   // 11/14 17:39 무작위 값으로 교체
   if(user && (!(Date.now() - (user.checked || 0) < 6e5) || (user.role === "대표" && LS.g("tl_pin_v") !== PIN_V))){
     call({ action:"me" }).then(j => {
       if(!j) return;
