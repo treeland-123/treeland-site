@@ -6,7 +6,7 @@
    - 새 화면(home·jobs·job)은 admin.css, 예전 화면은 skin.css로 같은 글꼴·색·간격을 씀 */
 (function(){
   "use strict";
-  const V = "5";   // admin.css · skin.css 버전 (고치면 올릴 것)
+  const V = "6";   // admin.css · skin.css 버전 (고치면 올릴 것)
   const ENDPOINT = "https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec";
   const EP_ID = "AKfycbxSKXLeVZoI";
   const LS = {
@@ -185,6 +185,8 @@
 .tlbar .tl-new svg{width:18px;height:18px}
 .tlbar .tl-me{border:0;background:var(--tb-fill);color:var(--tb-ink);border-radius:999px;height:36px;min-width:36px;padding:0 12px;font-weight:600;font-size:14px;cursor:pointer;font-family:inherit}
 .tlbar-sp{height:56px}
+nav.tlbar button,nav.tltabs button{flex:0 0 auto;width:auto;margin:0;border-bottom-width:0;box-shadow:none;line-height:1}
+nav.tltabs{border-bottom:0;gap:0}
 .tltabs{display:none}
 @media (max-width:760px){
   .tlbar{height:52px;padding:0 max(16px,env(safe-area-inset-left,0px));gap:10px}
