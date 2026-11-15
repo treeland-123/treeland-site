@@ -1,15 +1,48 @@
+# AI 학습용 수집기 차단
+User-agent: GPTBot
+Disallow: /
+
+User-agent: ChatGPT-User
+Disallow: /
+
+User-agent: OAI-SearchBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: ClaudeBot
+Disallow: /
+
+User-agent: anthropic-ai
+Disallow: /
+
+User-agent: Google-Extended
+Disallow: /
+
+User-agent: Applebot-Extended
+Disallow: /
+
+User-agent: PerplexityBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
+User-agent: meta-externalagent
+Disallow: /
+
+User-agent: Amazonbot
+Disallow: /
+
+User-agent: cohere-ai
+Disallow: /
+
+User-agent: Diffbot
+Disallow: /
+
+# 일반 검색엔진(네이버·구글·다음 등)은 허용. 관리 페이지는 각 페이지의 noindex로 검색 제외
 User-agent: *
 Allow: /
-Disallow: /src/
-Disallow: /build/
-Disallow: /contract/
-Disallow: /admin/
-Disallow: /quote/
-Disallow: /schedule/
-Disallow: /ledger/
-Disallow: /stats/
-Disallow: /staff/
-Disallow: /p/
-Disallow: /proposals/
-Disallow: /mail/
+
 Sitemap: https://treeland.kr/sitemap.xml
