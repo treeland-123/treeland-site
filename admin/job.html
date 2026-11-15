@@ -82,6 +82,7 @@ const { esc, won, man, parts, rel, short, telHref, telShow } = UI;
 const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
 let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = undefined, FULL = false;
+let PAYINFO = { bank:"", storeLink:"" };   // 결제 안내 문구용, 서버(대표 응답)에서만 받음
 
 /* 필요 자재 계산은 ui.js(UI.materials) — 자재 합계 화면과 같은 기준 */
 const materials = UI.materials;
@@ -99,7 +100,28 @@ async function load(){
     $("#app").innerHTML = `<a class="back" href="/admin/jobs.html">건 목록</a><p class="notice bad">${esc(j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다."))}</p>`;
     return;
   }
-  D = j; FULL = true; render(); keepCache();
+  D = j; FULL = true; payInfo(j); render(); keepCache();
+}
+function payInfo(j){ if(j && j.bank !== undefined) PAYINFO = { bank: j.bank || "", storeLink: j.storeLink || "" }; }
+/* 설치 끝난 날 보내는 결제 안내 (계약 화면의 「결제 안내 복사」와 같은 문구): 부가세 포함 금액, 기한 = 설치일 + 3일 */
+function payMsg(it){
+  const n = Number(it.price) || 0, total = n + Math.round(n * 0.1), p = parts(it.install);
+  let due = ""; if(p){ const d = new Date(p.y, p.m - 1, p.d + 3); due = `${d.getMonth() + 1}월 ${d.getDate()}일(${UI.WD[d.getDay()]})까지`; }
+  const card = it.pay === "카드 결제";
+  return ["안녕하세요, 트리랜드입니다.", `${it.name ? it.name + " " : ""}트리 설치를 마쳐 결제 안내드립니다.`, "",
+    `결제 금액: ${won(total)}원 (부가세 포함)`,
+    card ? `결제 링크: ${PAYINFO.storeLink || "(결제 링크)"}` : `입금 계좌: ${PAYINFO.bank || "(계좌)"}`,
+    due ? `${card ? "결제" : "입금"} 기한: ${due}` : "",
+    "", card ? "링크에서 위 금액으로 결제해 주시면 됩니다." : "세금계산서나 현금영수증이 필요하시면 말씀해 주세요."].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+}
+async function copyPayMsg(){
+  if(!FULL){ TL.toast("불러오는 중입니다. 잠시 후 다시 눌러 주세요."); return; }
+  const text = payMsg(D.item);
+  try{ await navigator.clipboard.writeText(text); TL.toast("결제 안내를 복사했습니다. 카톡에 붙여 넣으세요."); }
+  catch(e){   // 휴대폰이 복사를 막으면 글 상자를 띄워 길게 눌러 복사
+    const sh = TL.sheet(`<textarea readonly style="width:100%;min-height:220px;font:inherit;font-size:15px;line-height:1.5;border:0;background:var(--fill);border-radius:12px;padding:12px">${esc(text)}</textarea><p class="hint" style="margin-top:8px">길게 눌러 전체 선택 → 복사</p>`, { title:"결제 안내" });
+    const ta = sh.el.querySelector("textarea"); ta.focus(); ta.select();
+  }
 }
 function keepCache(){   // 바뀐 내용을 목록 캐시에도 반영 → 뒤로 가면 바로 맞게 보임
   const c = UI.cache.get("all"); if(!c || !D) return;
@@ -121,7 +143,7 @@ async function update(field, value, okMsg){
     const j = field === "paid" ? await TL.setPaid(ID, value, beforeEx) : await TL.call({ action:"update", id: ID, field, value });
     if(!j || !j.ok) throw new Error(j && j.error === "role" ? "대표만 할 수 있습니다." : (j && j.error) || "");
     if(field === "paid" && beforeEx) EXTRAS = beforeEx;   // setPaid가 장부 값을 갱신해 둠
-    D = j; FULL = true; render(); keepCache();
+    D = j; FULL = true; payInfo(j); render(); keepCache();
   }catch(e){
     D.item = before; EXTRAS = beforeEx; render();
     TL.toast("저장하지 못했습니다. " + (e.message || "다시 눌러 주세요."), "bad");
@@ -159,7 +181,7 @@ function render(){
   // 지금 해야 할 일 — 하나만 크게
   let cta = "";
   if(!H && it.status === "서명완료" && !it.doneIn) cta = `<button type="button" class="btn" data-act="doneIn">설치 완료</button>`;
-  else if(!H && it.doneIn && !PAID && OWNER) cta = `<button type="button" class="btn" data-act="paid">입금 확인</button>`;
+  else if(!H && it.doneIn && !PAID && OWNER) cta = `<button type="button" class="btn sub" data-paymsg>결제 안내 복사</button><button type="button" class="btn" data-act="paid">입금 확인</button>`;
   else if(!H && it.doneIn && !it.doneOut) cta = `<button type="button" class="btn" data-act="doneOut">회수 완료</button>`;
   const pIn = parts(it.install), pOut = parts(it.retrieve);
   const tel = it.tel ? `<a class="btn sub" href="tel:${esc(telHref(it.tel))}">전화 ${esc(telShow(it.tel))}</a>` : "";
@@ -302,6 +324,7 @@ document.addEventListener("change", async e => {
 });
 const LABEL = { doneIn:"설치 완료", doneOut:"회수 완료", paid:"입금 확인" };
 document.addEventListener("click", async e => {
+  if(e.target.closest("[data-paymsg]")){ copyPayMsg(); return; }
   const a = e.target.closest("[data-act]");
   if(a){
     const f = a.dataset.act;
