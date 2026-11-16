@@ -170,7 +170,7 @@ function taxEdit(it){
     <div class="tform">
       <div class="seg"><label><input type="radio" name="tk" value="biz"${t.kind !== "person" ? " checked" : ""}>사업자 (세금계산서)</label><label><input type="radio" name="tk" value="person"${t.kind === "person" ? " checked" : ""}>사업자 아님 (현금영수증)</label></div>
       <div id="tBiz">
-        <label>사업자등록증 사진·PDF<span class="up"><input type="file" id="tDoc" accept="image/*,application/pdf"><small id="tDocMsg">${t.doc ? "이미 있음 · 바꿀 때만 고르세요" : "없음"}</small></span></label>
+        <div class="up"><span style="font-size:14px;color:var(--sub)">사업자등록증 사진·PDF</span><label class="btn sub sm" for="tDoc" style="flex-direction:row;color:var(--ink)">파일 고르기</label><input type="file" id="tDoc" accept="image/*,application/pdf" hidden><small id="tDocMsg" class="hint">${t.doc ? "이미 있음 · 바꿀 때만 고르세요" : "아직 없음"}</small></div>
         <label>상호<input id="tName" value="${v(t.name || it.name)}"></label>
         <label>사업자등록번호<input id="tBizNo" inputmode="numeric" value="${v(t.biz || it.biz)}"></label>
         <label>대표자<input id="tRep" value="${v(t.rep || it.rep)}"></label>
