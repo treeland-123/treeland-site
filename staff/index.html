@@ -92,7 +92,7 @@ td.n,th.n{text-align:right}
 .prow .rm{padding:6px 10px}
 .prow-h{display:grid;grid-template-columns:1fr 120px 70px 96px auto;gap:6px;font-size:12.5px;color:var(--sub);padding:0 2px}
 .prow-h span:nth-child(4){text-align:right}
-@media (max-width:560px){.prow,.prow-h{grid-template-columns:1fr 1fr 64px auto}.prow .pt{grid-column:1/-1}.prow-h span:first-child{display:none}}
+@media (max-width:560px){.prow{grid-template-columns:1fr 64px auto auto}.prow .pt{grid-column:1/-1}.prow-h{display:none}}
 </style>
 </head>
 <body>
@@ -246,10 +246,7 @@ function updateCalc(){
   if(k.piece){
     const ok = k.items.filter(x => x.rate && x.qty);
     if(!ok.length){ $("#calcBox").textContent = "작업 내용·건당 금액·건수를 넣으면 합계가 바로 계산됩니다."; return; }
-    $("#calcBox").innerHTML = `합계 <b>${won(k.total)}원</b> <span class="hint">(${ok.length}줄 · ${k.count}건)</span>`
-      + (k.dates.length && c.start && c.end
-        ? `<br><span class="hint">근무시간 ${hText(k.hours * k.dates.length)} 기준 최저임금 ${won(k.minPay)}원</span>` + (k.minShort ? `<br><span class="flag">최저임금보다 ${won(k.minShort)}원 적습니다. 금액·건수를 올리거나 근무시간을 줄여 주세요.</span>` : "")
-        : `<br><span class="hint">근무일을 넣으면 최저임금과 비교해 드립니다.</span>`);
+    $("#calcBox").innerHTML = `합계 <b>${won(k.total)}원</b> <span class="hint">(${ok.length}줄 · ${k.count}건)</span>`;
     return;
   }
   if(!k.dates.length || !c.wage){ $("#calcBox").textContent = "근무일과 시급을 넣으면 임금이 계산됩니다."; return; }
@@ -265,7 +262,6 @@ $("#newForm").addEventListener("submit", async e => {
   if(k.piece){
     if(!k.items.length) return newErr("작업 내역을 한 줄 이상 넣어 주세요.");
     const bad = k.items.find(x => !x.t || !x.rate || !x.qty); if(bad) return newErr(`${bad.t || "작업 내용이 빈 줄"}: 작업 내용·건당 금액·건수를 모두 넣어 주세요.`);
-    if(k.minShort) return newErr(`근무시간 기준 최저임금(${won(k.minPay)}원)보다 ${won(k.minShort)}원 적습니다. 금액·건수나 근무시간을 고쳐 주세요.`);
   } else if(c.wage < MIN_WAGE) return newErr(`시급은 최저시급 ${won(MIN_WAGE)}원 이상이어야 합니다.`);
   if(!c.place || !c.job) return newErr("근무 장소와 업무 내용을 넣어 주세요.");
   newErr(""); const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
