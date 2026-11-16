@@ -121,12 +121,10 @@ td.n,th.n{text-align:right}
           <div class="chips" id="dates"></div>
           <span class="hint">같은 시간으로 여러 날 일하면 날짜를 계속 추가하세요.</span>
         </div>
-        <div class="grid3">
+        <div class="grid3" style="grid-template-columns:1fr 1fr">
           <div class="field"><label for="n-start">시작</label><input type="time" id="n-start" value="14:00" step="600"></div>
           <div class="field"><label for="n-end">종료</label><input type="time" id="n-end" value="16:00" step="600"></div>
-          <div class="field"><label for="n-break">휴게 (분)</label><input type="number" id="n-break" value="0" min="0" step="10" inputmode="numeric"></div>
         </div>
-        <span class="hint" id="breakHint"></span>
         <div class="field"><span class="flabel">임금 방식</span>
           <div class="chips" id="payType"><button type="button" class="pick" data-v="hour" aria-pressed="true">시급</button><button type="button" class="pick" data-v="piece" aria-pressed="false">건당</button></div>
         </div>
@@ -199,7 +197,7 @@ const num = s => Number(String(s).replace(/[^\d]/g, "")) || 0;
 let PAYTYPE = "hour";   // hour(시급) · piece(건당)
 let PIECES = [{ t:"", rate:0, qty:1 }];   // 건당 작업 내역 줄
 const PIECE_PRESETS = ["1.95m 스탠다드", "1.95m 프리미엄", "2.3m 스탠다드", "2.3m 프리미엄", "2.9m 스탠다드", "2.9m 프리미엄"];
-function form(){ const piece = PAYTYPE === "piece"; return { dates: DATES.join(","), start: $("#n-start").value, end: $("#n-end").value, breakMin: num($("#n-break").value), payType: PAYTYPE, wage: piece ? 0 : num($("#n-wage").value), items: piece ? PIECES.filter(x => x.t.trim() || x.rate).map(x => ({ t:x.t.trim(), rate:x.rate, qty:x.qty })) : [], payDay: $("#n-pay").value.trim(), place: $("#n-place").value.trim(), job: $("#n-job").value.trim(), memo: $("#n-memo").value.trim() }; }
+function form(){ const piece = PAYTYPE === "piece"; return { dates: DATES.join(","), start: $("#n-start").value, end: $("#n-end").value, breakMin: 0, payType: PAYTYPE, wage: piece ? 0 : num($("#n-wage").value), items: piece ? PIECES.filter(x => x.t.trim() || x.rate).map(x => ({ t:x.t.trim(), rate:x.rate, qty:x.qty })) : [], payDay: $("#n-pay").value.trim(), place: $("#n-place").value.trim(), job: $("#n-job").value.trim(), memo: $("#n-memo").value.trim() }; }
 // 내용별 마지막 금액 기억 (이 기기)
 const lastRates = () => { try{ return JSON.parse(localStorage.getItem("tl_piece_rates") || "{}"); }catch(e){ return {}; } };
 function keepRates(items){ try{ const m = lastRates(); items.forEach(x => { if(x.t && x.rate) m[x.t] = x.rate; }); localStorage.setItem("tl_piece_rates", JSON.stringify(m)); }catch(e){} }
@@ -237,15 +235,14 @@ $("#addDate").onclick = () => { const v = $("#n-date").value; if(v && !DATES.inc
 $("#n-date").addEventListener("change", () => $("#addDate").click());
 $("#dates").addEventListener("click", e => { const d = e.target.dataset.rm; if(d){ DATES = DATES.filter(x => x !== d); renderDates(); } });
 $("#n-wage").addEventListener("input", e => { const n = num(e.target.value); e.target.value = n ? won(n) : ""; updateCalc(); });
-["#n-start","#n-end","#n-break"].forEach(id => $(id).addEventListener("input", updateCalc));
+["#n-start","#n-end"].forEach(id => $(id).addEventListener("input", updateCalc));
 $("#payChips").addEventListener("click", e => { const b = e.target.closest(".pick"); if(!b) return; $("#n-pay").value = b.dataset.v; syncPay(); });
 $("#n-pay").addEventListener("input", syncPay);
 function syncPay(){ document.querySelectorAll("#payChips .pick").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === $("#n-pay").value.trim()))); }
 function updateCalc(){
   const c = form(), k = calc(c);
   let span = toMin(c.end) - toMin(c.start); if(span <= 0) span += 1440;
-  $("#breakHint").textContent = span >= 480 && c.breakMin < 60 ? "8시간 이상이면 휴게 1시간 이상이 필요합니다." : span >= 240 && c.breakMin < 30 ? "4시간 이상이면 휴게 30분 이상이 필요합니다." : "";
-  $("#breakHint").style.color = $("#breakHint").textContent ? "var(--err)" : "";
+  // 휴게시간 칸은 뺌 (대표님 지시 11/16) — 계약서에는 휴게 없음으로 들어감
   if(k.piece){
     const ok = k.items.filter(x => x.rate && x.qty);
     if(!ok.length){ $("#calcBox").textContent = "작업 내용·건당 금액·건수를 넣으면 합계가 바로 계산됩니다."; return; }
@@ -270,7 +267,6 @@ $("#newForm").addEventListener("submit", async e => {
     const bad = k.items.find(x => !x.t || !x.rate || !x.qty); if(bad) return newErr(`${bad.t || "작업 내용이 빈 줄"}: 작업 내용·건당 금액·건수를 모두 넣어 주세요.`);
     if(k.minShort) return newErr(`근무시간 기준 최저임금(${won(k.minPay)}원)보다 ${won(k.minShort)}원 적습니다. 금액·건수나 근무시간을 고쳐 주세요.`);
   } else if(c.wage < MIN_WAGE) return newErr(`시급은 최저시급 ${won(MIN_WAGE)}원 이상이어야 합니다.`);
-  if($("#breakHint").textContent) return newErr($("#breakHint").textContent);
   if(!c.place || !c.job) return newErr("근무 장소와 업무 내용을 넣어 주세요.");
   newErr(""); const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
   try{
