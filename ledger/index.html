@@ -375,11 +375,10 @@ function staffExp(){   // 서명완료 근로계약 → 인건비 지출 (총 �
     const base=String(t.dates||"").split(",").filter(Boolean),all=[...new Set(base.concat(Object.keys(act)))].sort();
     const hrs=(st,en,br)=>{const[sh,sm]=String(st).split(":").map(Number),[eh,em]=String(en).split(":").map(Number);let span=(eh*60+em)-(sh*60+sm);if(span<=0)span+=1440;return Math.max(0,span-(Number(br)||0))/60};
     const days=all.filter(d=>!(act[d]&&act[d].off));
-    let al=[];try{al=t.allow?JSON.parse(t.allow):[]}catch(e){al=[]}if(!Array.isArray(al))al=[];   // 건별 수당 (근로계약 화면에서 기록)
-    const alSum=al.reduce((s,x)=>s+(Math.round(Number(x&&x.amt))||0),0);
-    const amount=days.reduce((sum,d)=>{const x=act[d];return sum+Math.round((Number(t.wage)||0)*(x?hrs(x.start,x.end,x.breakMin):hrs(t.start,t.end,t.breakMin)))},0)+alSum;
+    const piece=t.payType==="piece";   // 건당 계약: 건당 금액 × 건수 (근무시간과 무관)
+    const amount=piece?(Number(t.rate)||0)*(Number(t.qty)||0):days.reduce((sum,d)=>{const x=act[d];return sum+Math.round((Number(t.wage)||0)*(x?hrs(x.start,x.end,x.breakMin):hrs(t.start,t.end,t.breakMin)))},0);
     return {id:"s:"+t.id,fromStaff:true,amount,category:"인건비",date:days[0]||"",siteId:"",season:seasonOf(days[0]),vendor:t.name,pay:"계좌이체",
-      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}${Object.keys(act).length?" (근무시간 수정됨)":""}${alSum?` + 수당 ${alSum.toLocaleString("ko-KR")}원(${al.length}건)`:""}`,createdAt:0};
+      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}${piece?` · 건당 ${(Number(t.rate)||0).toLocaleString("ko-KR")}원 × ${t.qty}건`:""}${Object.keys(act).length?" (근무시간 수정됨)":""}`,createdAt:0};
   });
 }
 const allExp=()=>S.expenses.concat(staffExp());
@@ -611,7 +610,7 @@ $("pinBtn").onclick=()=>{const v=$("pin").value.trim();if(!v)return;setPin(v);lo
 $("pin").addEventListener("keydown",e=>{if(e.key==="Enter")$("pinBtn").click()});
 
 /* 마지막으로 받은 장부를 먼저 보여 주고 뒤에서 새로 받음. 근로계약은 계산에 필요한 칸만 보관(주민번호·계좌 빼고) */
-const STAFF_KEEP=["id","name","status","dates","actual","allow","wage","start","end","breakMin"];
+const STAFF_KEEP=["id","name","status","dates","actual","wage","start","end","breakMin","payType","rate","qty"];
 function keepCache(){if(!S.ready||!window.TL||!TL.memo)return;
   TL.memo.set("ledger",{expenses:S.expenses,sites:S.sites,extras:S.extras,seasons:S.seasons,contracts:S.contracts,
     staff:(S.staff||[]).map(t=>Object.fromEntries(STAFF_KEEP.map(k=>[k,t[k]])))})}

@@ -27,7 +27,15 @@ function calc(c){
   const weeks = {};
   dates.forEach(s => { const d = new Date(s + "T00:00:00"); const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7)); const k = mon.toDateString(); weeks[k] = (weeks[k] || 0) + hours; });
   const maxWeek = Math.max(0, ...Object.values(weeks));
-  return { dates, work, hours, dayPay, total: dayPay * dates.length, maxWeek, under15: maxWeek < 15 };
+  // 건당(piece): 1건 금액 × 건수. 최저임금(근로시간 합계 × 최저시급)에 못 미치면 minShort > 0
+  const piece = c.payType === "piece", rate = Number(c.rate) || 0, qty = Number(c.qty) || 0;
+  const total = piece ? rate * qty : dayPay * dates.length, minPay = Math.round(MIN_WAGE * hours * dates.length);
+  return { dates, work, hours, dayPay: piece ? Math.round(total / Math.max(1, dates.length)) : dayPay, total, piece, rate, qty, minPay, minShort: Math.max(0, minPay - total), maxWeek, under15: maxWeek < 15 };
+}
+// 임금 한 줄 (서명 화면·계약서·관리 목록 공통)
+function payText(c){
+  const k = calc(c);
+  return k.piece ? `건당 ${won(k.rate)}원 × ${k.qty}건 (${c.unit || "1건"}) · 총 ${won(k.total)}원` : `시급 ${won(c.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)`;
 }
 // 실근무 기록(관리 화면에서 사후 수정, 내부용). 기록 없는 날은 계약 시간 그대로
 function actualDays(c){
@@ -37,18 +45,14 @@ function actualDays(c){
     const x = a[d], v = { date:d, start:c.start, end:c.end, breakMin:Number(c.breakMin) || 0, off:false, note:"", extra:!base.includes(d), edited:!!x };
     if(x){ v.note = x.note || ""; if(x.off) v.off = true; else { v.start = x.start; v.end = x.end; v.breakMin = Number(x.breakMin) || 0; } }
     let span = toMin(v.end) - toMin(v.start); if(span <= 0) span += 1440;
-    v.hours = v.off ? 0 : Math.max(0, span - v.breakMin) / 60; v.pay = v.off ? 0 : Math.round(wage * v.hours);
+    v.hours = v.off ? 0 : Math.max(0, span - v.breakMin) / 60;
+    v.pay = v.off ? 0 : c.payType === "piece" ? (base.includes(d) ? Math.round(calc(c).total / Math.max(1, base.length)) : 0) : Math.round(wage * v.hours);   // 건당은 근무시간과 관계없이 총액을 근로일에 나눔
     return v;
   });
 }
-// 건별 수당(내부 기록): [{ d, t, amt }]
-function allowList(c){
-  let a = []; try{ a = c.allow ? JSON.parse(c.allow) : []; }catch(e){ a = []; }
-  return (Array.isArray(a) ? a : []).filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(x.d) && Number(x.amt) > 0).map(x => ({ d:x.d, t:String(x.t || ""), amt:Math.round(Number(x.amt)) })).sort((a, b) => a.d.localeCompare(b.d));
-}
 function calcActual(c){
-  const days = actualDays(c), worked = days.filter(d => !d.off), allow = allowList(c), wageSum = worked.reduce((s, d) => s + d.pay, 0), allowSum = allow.reduce((s, x) => s + x.amt, 0);
-  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), wageSum, allow, allowSum, total: wageSum + allowSum, edited: days.some(d => d.edited) };
+  const days = actualDays(c), worked = days.filter(d => !d.off);
+  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), total: worked.reduce((s, d) => s + d.pay, 0), edited: days.some(d => d.edited) };
 }
 const hText = h => (Math.round(h * 100) / 100).toString().replace(/\.0+$/, "") + "시간";
 
@@ -60,7 +64,9 @@ function terms(c){
     ["제2조 (근무 장소)", [c.place || "-"]],
     ["제3조 (업무 내용)", [c.job || "-"]],
     ["제4조 (근로시간 및 휴게시간)", [`① 근로시간은 ${c.start}부터 ${c.end}까지로 하며, ` + (Number(c.breakMin) ? `휴게시간 ${c.breakMin}분을 제외한 실근로시간은 1일 ${hText(k.hours)}으로 한다. 휴게시간은 근로자가 자유롭게 이용한다.` : `실근로시간은 1일 ${hText(k.hours)}으로 한다.`), "② 사업주와 근로자는 합의하여 근로일과 근로시간을 변경할 수 있다."]],
-    ["제5조 (임금)", [`① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
+    ["제5조 (임금)", [k.piece
+      ? `① 임금은 건당으로 정하며, 1건(${c.unit || "작업 1건"})당 금 ${won(k.rate)}원, ${k.qty}건 총 금 ${won(k.total)}원으로 한다. 다만 임금 총액이 실근로시간에 최저임금을 곱한 금액보다 적은 경우에는 그 차액을 더하여 지급한다.`
+      : `① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
       `② 임금은 ${c.payDay || "근로일 당일"}에 근로자 명의의 예금 계좌로 지급한다.`,
       "③ 임금은 소득세 등 관계 법령에 따라 공제할 금액을 공제한 후 지급한다.",
       "④ 연장·야간·휴일근로가 발생하는 경우 관계 법령에 따라 임금을 지급한다."]],

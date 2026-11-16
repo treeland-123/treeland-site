@@ -146,8 +146,8 @@ function renderSummary(){
     ["근무일", k.dates.map(s => fmtDay(s)).join(", ")],
     ["근무 시간", `${C.start} ~ ${C.end}` + (Number(C.breakMin) ? ` (휴게 ${C.breakMin}분)` : "") + ` · 하루 ${hText(k.hours)}`],
     ["장소", C.place], ["업무", C.job],
-    ["시급", `${won(C.wage)}원`],
-    ["임금", `${won(k.total)}원` + (k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
+    ...(k.piece ? [["건당", `1건(${C.unit || "작업 1건"})당 ${won(k.rate)}원 × ${k.qty}건`]] : [["시급", `${won(C.wage)}원`]]),
+    ["임금", `${won(k.total)}원` + (!k.piece && k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
     ["지급", `${C.payDay || "근로일 당일"}, 본인 계좌 입금`],
   ].map(([a, b]) => `<dt>${esc(a)}</dt><dd${a === "임금" ? ' class="amount"' : ""}>${esc(b)}</dd>`).join("");
   $("#terms").innerHTML = `<p>${esc(PREAMBLE)}</p>` + terms(C).map(([h, ps]) => `<h3>${esc(h)}</h3>` + ps.map(p => `<p>${esc(p)}</p>`).join("")).join("");
@@ -207,7 +207,7 @@ function buildPaper(w, sigUrl, signedAt, hash){
     <tr><th style="width:120px">근로일</th><td>${esc(k.dates.map(s => fmtDay(s)).join(", "))}</td></tr>
     <tr><th>근로시간</th><td>${esc(C.start)} ~ ${esc(C.end)}${Number(C.breakMin) ? ` (휴게 ${esc(C.breakMin)}분)` : " (휴게 없음)"} · 1일 ${hText(k.hours)}</td></tr>
     <tr><th>근무 장소</th><td>${esc(C.place)}</td></tr><tr><th>업무 내용</th><td>${esc(C.job)}</td></tr>
-    <tr><th>임금</th><td>시급 ${won(C.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)</td></tr>
+    <tr><th>임금</th><td>${esc(payText(C))}</td></tr>
     <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 예금 계좌</td></tr></table>`;
   const body = terms(C).map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>${ps.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("");
   return `<h1>근로계약서</h1><div class="subt">단시간 · 일용</div><p>${esc(PREAMBLE)}</p>${cond}${body}

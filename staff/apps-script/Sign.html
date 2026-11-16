@@ -155,7 +155,29 @@ function calc(c){
   const weeks = {};
   dates.forEach(s => { const d = new Date(s + "T00:00:00"); const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7)); const k = mon.toDateString(); weeks[k] = (weeks[k] || 0) + hours; });
   const maxWeek = Math.max(0, ...Object.values(weeks));
-  return { dates, work, hours, dayPay, total: dayPay * dates.length, maxWeek, under15: maxWeek < 15 };
+  const piece = c.payType === "piece", rate = Number(c.rate) || 0, qty = Number(c.qty) || 0;
+  const total = piece ? rate * qty : dayPay * dates.length, minPay = Math.round(MIN_WAGE * hours * dates.length);
+  return { dates, work, hours, dayPay: piece ? Math.round(total / Math.max(1, dates.length)) : dayPay, total, piece, rate, qty, minPay, minShort: Math.max(0, minPay - total), maxWeek, under15: maxWeek < 15 };
+}
+function payText(c){
+  const k = calc(c);
+  return k.piece ? `건당 ${won(k.rate)}원 × ${k.qty}건 (${c.unit || "1건"}) · 총 ${won(k.total)}원` : `시급 ${won(c.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)`;
+}
+function actualDays(c){
+  let a = {}; try{ a = c.actual ? JSON.parse(c.actual) : {}; }catch(e){ a = {}; }
+  const base = dateList(c.dates), wage = Number(c.wage) || 0;
+  return [...new Set([...base, ...Object.keys(a)])].sort().map(d => {
+    const x = a[d], v = { date:d, start:c.start, end:c.end, breakMin:Number(c.breakMin) || 0, off:false, note:"", extra:!base.includes(d), edited:!!x };
+    if(x){ v.note = x.note || ""; if(x.off) v.off = true; else { v.start = x.start; v.end = x.end; v.breakMin = Number(x.breakMin) || 0; } }
+    let span = toMin(v.end) - toMin(v.start); if(span <= 0) span += 1440;
+    v.hours = v.off ? 0 : Math.max(0, span - v.breakMin) / 60;
+    v.pay = v.off ? 0 : c.payType === "piece" ? (base.includes(d) ? Math.round(calc(c).total / Math.max(1, base.length)) : 0) : Math.round(wage * v.hours);   // 건당은 근무시간과 관계없이 총액을 근로일에 나눔
+    return v;
+  });
+}
+function calcActual(c){
+  const days = actualDays(c), worked = days.filter(d => !d.off);
+  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), total: worked.reduce((s, d) => s + d.pay, 0), edited: days.some(d => d.edited) };
 }
 const hText = h => (Math.round(h * 100) / 100).toString().replace(/\.0+$/, "") + "시간";
 
@@ -166,7 +188,9 @@ function terms(c){
     ["제2조 (근무 장소)", [c.place || "-"]],
     ["제3조 (업무 내용)", [c.job || "-"]],
     ["제4조 (근로시간 및 휴게시간)", [`① 근로시간은 ${c.start}부터 ${c.end}까지로 하며, ` + (Number(c.breakMin) ? `휴게시간 ${c.breakMin}분을 제외한 실근로시간은 1일 ${hText(k.hours)}으로 한다. 휴게시간은 근로자가 자유롭게 이용한다.` : `실근로시간은 1일 ${hText(k.hours)}으로 한다.`), "② 사업주와 근로자는 합의하여 근로일과 근로시간을 변경할 수 있다."]],
-    ["제5조 (임금)", [`① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
+    ["제5조 (임금)", [k.piece
+      ? `① 임금은 건당으로 정하며, 1건(${c.unit || "작업 1건"})당 금 ${won(k.rate)}원, ${k.qty}건 총 금 ${won(k.total)}원으로 한다. 다만 임금 총액이 실근로시간에 최저임금을 곱한 금액보다 적은 경우에는 그 차액을 더하여 지급한다.`
+      : `① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
       `② 임금은 ${c.payDay || "근로일 당일"}에 근로자 명의의 예금 계좌로 지급한다.`,
       "③ 임금은 소득세 등 관계 법령에 따라 공제할 금액을 공제한 후 지급한다.",
       "④ 연장·야간·휴일근로가 발생하는 경우 관계 법령에 따라 임금을 지급한다."]],
@@ -203,8 +227,8 @@ function renderSummary(){
     ["근무일", k.dates.map(s => fmtDay(s)).join(", ")],
     ["근무 시간", `${C.start} ~ ${C.end}` + (Number(C.breakMin) ? ` (휴게 ${C.breakMin}분)` : "") + ` · 하루 ${hText(k.hours)}`],
     ["장소", C.place], ["업무", C.job],
-    ["시급", `${won(C.wage)}원`],
-    ["임금", `${won(k.total)}원` + (k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
+    ...(k.piece ? [["건당", `1건(${C.unit || "작업 1건"})당 ${won(k.rate)}원 × ${k.qty}건`]] : [["시급", `${won(C.wage)}원`]]),
+    ["임금", `${won(k.total)}원` + (!k.piece && k.dates.length > 1 ? ` (하루 ${won(k.dayPay)}원 × ${k.dates.length}일)` : "")],
     ["지급", `${C.payDay || "근로일 당일"}, 본인 계좌 입금`],
   ].map(([a, b]) => `<dt>${esc(a)}</dt><dd${a === "임금" ? ' class="amount"' : ""}>${esc(b)}</dd>`).join("");
   $("#terms").innerHTML = `<p>${esc(PREAMBLE)}</p>` + terms(C).map(([h, ps]) => `<h3>${esc(h)}</h3>` + ps.map(p => `<p>${esc(p)}</p>`).join("")).join("");
@@ -264,7 +288,7 @@ function buildPaper(w, sigUrl, signedAt, hash){
     <tr><th style="width:120px">근로일</th><td>${esc(k.dates.map(s => fmtDay(s)).join(", "))}</td></tr>
     <tr><th>근로시간</th><td>${esc(C.start)} ~ ${esc(C.end)}${Number(C.breakMin) ? ` (휴게 ${esc(C.breakMin)}분)` : " (휴게 없음)"} · 1일 ${hText(k.hours)}</td></tr>
     <tr><th>근무 장소</th><td>${esc(C.place)}</td></tr><tr><th>업무 내용</th><td>${esc(C.job)}</td></tr>
-    <tr><th>임금</th><td>시급 ${won(C.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)</td></tr>
+    <tr><th>임금</th><td>${esc(payText(C))}</td></tr>
     <tr><th>지급</th><td>${esc(C.payDay || "근로일 당일")}, 근로자 명의 예금 계좌</td></tr></table>`;
   const body = terms(C).map(([h, ps]) => `<div class="avoid"><h3>${esc(h)}</h3>${ps.map(p => `<p>${esc(p)}</p>`).join("")}</div>`).join("");
   return `<h1>근로계약서</h1><div class="subt">단시간 · 일용</div><p>${esc(PREAMBLE)}</p>${cond}${body}
