@@ -152,6 +152,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest(".payq");
   if(b){
     if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "한 번 더"; setTimeout(() => { if(b.isConnected){ b.dataset.armed = ""; b.classList.remove("armed"); b.textContent = "입금 확인"; } }, 3000); return; }
+    if(b.disabled) return; b.disabled = true;   // 빠르게 여러 번 눌러도 한 번만 처리 (사라지는 0.2초 사이에 또 눌리던 문제)
     const id = b.dataset.pay, it = D.all.find(x => x.id === id);
     const before = D.extras ? JSON.stringify(D.extras[id] || null) : null;
     if(D.extras) D.extras[id] = Object.assign({}, D.extras[id] || {}, { paid:true, paidDate: UI.seoulKey() }); else it.paid = UI.seoulKey();
