@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=10" data-page="home"></script>
-<script src="/admin/ui.js?v=9"></script>
+<script src="/admin/auth.js?v=11" data-page="home"></script>
+<script src="/admin/ui.js?v=10"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>트리랜드 관리</title>
@@ -160,6 +160,8 @@ function stats(G){
   S.push({ f:"week", l:"이번 주 설치", n:G.week.length, s: G.late.length ? `완료 처리 안 됨 ${G.late.length}` : "오늘부터 7일", warn: !!G.late.length });
   if(OWNER) S.push({ f:"pay", l:"입금 대기", n:G.pay.length, s: G.over.length ? `기한 지남 ${G.over.length}` : "설치 후 3일 안", bad: !!G.over.length });
   S.push({ f:"ret", l:"회수 예정", n:G.ret2w.length, s:"2주 안" });
+  if(OWNER && G.taxTodo.length){ const none = G.taxTodo.filter(x => UI.taxState(x, D.extras).k !== "ready").length;
+    S.push({ f:"tax", l:"세금계산서", n:G.taxTodo.length, s: none ? `미등록 ${none}` : "발행 대기", warn: !!none }); }
   if(G.halt.length) S.push({ f:"halt", l:"설치 중단", n:G.halt.length, s:"분쟁 등 미해결", bad:true });
   return S;
 }

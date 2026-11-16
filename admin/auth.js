@@ -95,6 +95,14 @@
   }
   const todayKST = () => new Intl.DateTimeFormat("sv-SE", { timeZone:"Asia/Seoul", year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
   // extras: ledgerExtras() 결과(없으면 장부는 건드리지 않음 — 세금계산서·메모를 덮어쓰지 않으려고)
+  async function setTax(id, on, extras){
+    if(!extras) return { ok:false, error:"장부를 불러오지 못했습니다. 새로고침해 주세요." };
+    const x = extras[id] || {}, d = { id, taxInvoice: !!on, memo: x.memo || "", paid: !!x.paid, paidDate: x.paidDate || "" };
+    const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
+    const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
+    extras[id] = Object.assign({}, x, { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate });
+    return { ok:true };
+  }
   async function setPaid(id, paid, extras){
     if(extras){
       const x = extras[id] || {}, d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!paid, paidDate: paid ? (x.paidDate || todayKST()) : "" };
@@ -137,7 +145,7 @@
     d.innerHTML = `<div class="tl-sh-in"><span class="tl-grab" aria-hidden="true"></span>${opts && opts.title ? `<div class="tl-sh-t">${esc(opts.title)}</div>` : ""}${html}</div>`;
     d.showModal(); return { el: d, close };
   }
-  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, isPaid, paidDate, toast, sheet, esc, memo };
+  window.TL = { user, staff, page, ENDPOINT, MENU, save, logout, call, LS, ledgerExtras, setPaid, setTax, isPaid, paidDate, toast, sheet, esc, memo };
 
   /* 역할이 바뀌었거나 사용 중지됐는지 10분에 한 번 확인 */
   // 대표 기기는 관리자 비밀번호가 바뀌면(PIN_V) 바로 확인해서 새 값을 받음

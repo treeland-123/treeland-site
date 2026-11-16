@@ -118,6 +118,11 @@
     G.ret2w = G.ret.filter(x => dayDiff(parts(x.retrieve).key) <= 13);
     G.done = all.filter(x => x.doneOut && !x.archived).sort(byOut);
     G.halt = all.filter(x => x.halt && !x.archived);
+    // 세금계산서: 설치 끝난 계좌이체·현금 건 (카드 결제는 카드 영수증이 증빙이라 제외). 할 일 = 미등록·요청함·발행 대기
+    const TORD = { none:0, req:1, ready:2, done:3 };
+    G.tax = owner ? live.filter(x => SIGNED(x) && x.doneIn && x.pay !== "카드 결제")
+      .map(x => ({ x, s: taxState(x, d.extras) })).sort((a, b) => TORD[a.s.k] - TORD[b.s.k] || (b.s.days || 0) - (a.s.days || 0)).map(o => o.x) : [];
+    G.taxTodo = G.tax.filter(x => taxState(x, d.extras).k !== "done");
     G.archived = all.filter(x => x.archived);
     G.mine = live.filter(x => me && x.crew === me && !x.doneOut).sort(byIn);
     G.live = all.filter(x => !x.archived);
@@ -129,6 +134,36 @@
     return G;
   }
   const jobUrl = it => `/admin/job.html?id=${encodeURIComponent(it.id)}`;
+  /* 세금계산서 상태: 발행 완료(장부 체크) > 발행 대기(정보 있음) > 요청함 n일째 > 미등록 */
+  function taxState(it, extras){
+    const t = it.tax || {}, ex = extras && extras[it.id];
+    if(ex && ex.taxInvoice) return { k:"done", label:"발행 완료", cls:"ok" };
+    if(t.kind === "person" && t.phone) return { k:"ready", label:"현금영수증 발행 대기", cls:"ret", person:true };
+    const biz = String(t.biz || it.biz || "").replace(/\D/g, "");
+    if(biz.length === 10) return { k:"ready", label:"발행 대기", cls:"ret" };
+    if(t.req){ const n = Math.max(0, -dayDiff(String(t.req).slice(0, 10))); return { k:"req", label: n ? `요청 ${n}일째` : "오늘 요청함", cls: n >= 3 ? "bad" : "wait", days:n }; }
+    return { k:"none", label:"미등록", cls:"bad" };
+  }
+  // 홈택스에 옮겨 적을 발행 정보 (공급가액 = 계약 임대료, 운임 포함)
+  function taxInfoText(it){
+    const t = it.tax || {}, n = Number(it.price) || 0, v = Math.round(n * 0.1), p = parts(it.install), day = p ? p.key : "";
+    if(t.kind === "person") return [`[현금영수증 발행 정보] ${it.name || ""}`, `휴대폰: ${t.phone}`, `거래일: ${day}`, `금액: ${won(n + v)}원 (공급가액 ${won(n)} + 부가세 ${won(v)})`].join("\n");
+    return [`[세금계산서 발행 정보] ${it.name || ""}`, `상호: ${t.name || it.name || ""}`, `사업자등록번호: ${t.biz || it.biz || ""}`, `대표자: ${t.rep || it.rep || ""}`,
+      `이메일: ${t.email || it.email || ""}`, `주소: ${t.addr || ""}`, `업태/종목: ${[t.type, t.item].filter(Boolean).join(" / ") || ""}`,
+      `작성일자: ${day}`, `품목: 크리스마스트리 대여·설치`, `공급가액: ${won(n)}원`, `세액: ${won(v)}원`, `합계: ${won(n + v)}원`].join("\n");
+  }
+  function taxReqText(it, url){
+    return ["안녕하세요, 트리랜드입니다.", `${it.name ? it.name + " " : ""}트리 설치 건 세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요.`, "사업자가 아니시면 같은 링크에서 현금영수증 받을 번호를 넣어 주시면 됩니다.", "", url].join("\n");
+  }
+  // 복사: 휴대폰이 막으면 글 상자를 띄워 길게 눌러 복사
+  async function copyText(text, title, okMsg){
+    try{ await navigator.clipboard.writeText(text); TL.toast(okMsg || "복사했습니다"); return true; }
+    catch(e){
+      const sh = TL.sheet(`<textarea readonly style="width:100%;min-height:220px;font:inherit;font-size:15px;line-height:1.5;border:0;background:var(--fill);border-radius:12px;padding:12px">${esc(text)}</textarea><p class="hint" style="margin-top:8px">길게 눌러 전체 선택 → 복사</p>`, { title: title || "복사" });
+      const ta = sh.el.querySelector("textarea"); ta.focus(); ta.select(); return false;
+    }
+  }
+
   /* 목록 한 줄. mode: in(설치일 기준) / out(회수일 기준) / pay */
   function rowHtml(it, mode, d){
     const st = stage(it), crew = (d && d.staff || []).find(s => s.email === it.crew);
@@ -226,5 +261,5 @@
     return { rows, check, addons: [...addons.values()] };
   }
 
-  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, BOX, parseTrees, materials, matTotals };
+  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, BOX, parseTrees, materials, matTotals };
 })();

@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=10" data-page="job"></script>
-<script src="/admin/ui.js?v=9"></script>
+<script src="/admin/auth.js?v=11" data-page="job"></script>
+<script src="/admin/ui.js?v=10"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 상세 · 트리랜드 관리</title>
@@ -82,7 +82,7 @@ const { esc, won, man, parts, rel, short, telHref, telShow } = UI;
 const U = TL.user, OWNER = !U || U.role === "대표";
 const ID = new URLSearchParams(location.search).get("id") || "";
 let D = null, PHOTO_CACHE = {}, PREP_PENDING = false, EXTRAS = undefined, FULL = false;
-let PAYINFO = { bank:"", storeLink:"" };   // 결제 안내 문구용, 서버(대표 응답)에서만 받음
+let PAYINFO = { bank:"", storeLink:"" }, TAXURL = "";   // 결제 안내 문구용, 서버(대표 응답)에서만 받음
 
 /* 필요 자재 계산은 ui.js(UI.materials) — 자재 합계 화면과 같은 기준 */
 const materials = UI.materials;
@@ -100,7 +100,7 @@ async function load(){
     $("#app").innerHTML = `<a class="back" href="/admin/jobs.html">건 목록</a><p class="notice bad">${esc(j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다."))}</p>`;
     return;
   }
-  D = j; FULL = true; payInfo(j); render(); keepCache();
+  D = j; FULL = true; payInfo(j); render(); keepCache(); loadTaxUrl();
 }
 function payInfo(j){ if(j && j.bank !== undefined) PAYINFO = { bank: j.bank || "", storeLink: j.storeLink || "" }; }
 /* 설치 끝난 날 보내는 결제 안내 (계약 화면의 「결제 안내 복사」와 같은 문구): 부가세 포함 금액, 기한 = 설치일 + 3일 */
@@ -112,16 +112,48 @@ function payMsg(it){
     `결제 금액: ${won(total)}원 (부가세 포함)`,
     card ? `결제 링크: ${PAYINFO.storeLink || "(결제 링크)"}` : `입금 계좌: ${PAYINFO.bank || "(계좌)"}`,
     due ? `${card ? "결제" : "입금"} 기한: ${due}` : "",
-    "", card ? "링크에서 위 금액으로 결제해 주시면 됩니다." : "세금계산서나 현금영수증이 필요하시면 말씀해 주세요."].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+    "", card ? "링크에서 위 금액으로 결제해 주시면 됩니다." : taxLine(it)].filter((l, i, a) => !(l === "" && a[i - 1] === "")).join("\n");
+}
+function taxLine(it){   // 세금계산서는 필수: 정보가 없으면 등록 링크, 있으면 그 정보로 발행한다고 안내
+  const s = UI.taxState(it, EXTRAS);
+  if(s.k === "ready" || s.k === "done") return s.person ? "현금영수증은 등록해 주신 번호로 발행해 드립니다." : "세금계산서는 등록해 주신 사업자 정보로 발행해 드립니다.";
+  return "세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요. 사업자가 아니시면 현금영수증 받을 번호를 넣어 주시면 됩니다.\n" + (TAXURL || "(링크 준비 중)");
 }
 async function copyPayMsg(){
   if(!FULL){ TL.toast("불러오는 중입니다. 잠시 후 다시 눌러 주세요."); return; }
-  const text = payMsg(D.item);
+  const it = D.item, needLink = it.pay !== "카드 결제" && !["ready", "done"].includes(UI.taxState(it, EXTRAS).k);
+  if(needLink && !TAXURL){ TL.toast("등록 링크를 만드는 중입니다. 잠시 후 다시 눌러 주세요."); loadTaxUrl(); return; }
+  const text = payMsg(it);
+  if(needLink) markTaxReq();
   try{ await navigator.clipboard.writeText(text); TL.toast("결제 안내를 복사했습니다. 카톡에 붙여 넣으세요."); }
   catch(e){   // 휴대폰이 복사를 막으면 글 상자를 띄워 길게 눌러 복사
     const sh = TL.sheet(`<textarea readonly style="width:100%;min-height:220px;font:inherit;font-size:15px;line-height:1.5;border:0;background:var(--fill);border-radius:12px;padding:12px">${esc(text)}</textarea><p class="hint" style="margin-top:8px">길게 눌러 전체 선택 → 복사</p>`, { title:"결제 안내" });
     const ta = sh.el.querySelector("textarea"); ta.focus(); ta.select();
   }
+}
+/* 세금계산서 등록 링크: 화면을 열 때 미리 받아 둠 (복사 버튼이 서버를 기다리지 않게 → 휴대폰 복사 허용) */
+function loadTaxUrl(){
+  const it = D && D.item; if(!OWNER || !it || it.status !== "서명완료" || it.pay === "카드 결제" || TAXURL) return;
+  TL.call({ action:"taxLink", id: ID }).then(j => { if(j && j.ok) TAXURL = j.url; }).catch(() => {});
+}
+function markTaxReq(){   // 요청 시각 기록 (목록 「요청 n일째」)
+  TL.call({ action:"taxLink", id: ID, mark:true }).then(j => { if(j && j.ok){ D.item.tax = Object.assign({}, D.item.tax || {}, { req: j.req }); render(); keepCache(); } }).catch(() => {});
+}
+async function taxAct(e){
+  const it = D.item;
+  if(e.target.closest("[data-jtaxreq]")){
+    if(!TAXURL){ TL.toast("등록 링크를 만드는 중입니다. 잠시 후 다시 눌러 주세요."); loadTaxUrl(); return true; }
+    UI.copyText(UI.taxReqText(it, TAXURL), "세금계산서 정보 요청", "요청 문구를 복사했습니다. 카톡에 붙여 넣으세요."); markTaxReq(); return true;
+  }
+  if(e.target.closest("[data-jtaxinfo]")){ UI.copyText(UI.taxInfoText(it), "발행 정보", "발행 정보를 복사했습니다. 홈택스에 옮겨 적으세요."); return true; }
+  const b = e.target.closest("[data-jtaxdone],[data-jtaxundo]"); if(!b) return false;
+  const on = b.hasAttribute("data-jtaxdone");
+  if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 " + (on ? "완료" : "취소"); setTimeout(() => { if(b.isConnected){ b.dataset.armed = ""; b.textContent = on ? "발행 완료" : "발행 완료 취소"; } }, 3000); return true; }
+  b.disabled = true;
+  const j = await TL.setTax(ID, on, EXTRAS).catch(() => null);
+  if(!j || !j.ok){ b.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return true; }
+  render(); keepCache(); TL.toast(on ? "세금계산서 발행 완료 · 장부에 체크했습니다" : "발행 완료를 취소했습니다");
+  return true;
 }
 function keepCache(){   // 바뀐 내용을 목록 캐시에도 반영 → 뒤로 가면 바로 맞게 보임
   const c = UI.cache.get("all"); if(!c || !D) return;
@@ -154,12 +186,25 @@ async function update(field, value, okMsg){
 // 계약 때 고객이 적은 세금계산서 받을 정보 (비운 칸은 계약 정보로 대신)
 function taxHtml(it){
   const t = it.tax || {};
+  if(t.kind === "person") return `현금영수증 · 휴대폰 ${esc(t.phone || "")}${t.at ? `<br><span class="sub small">${esc(t.at)} 고객 등록</span>` : ""}`;
   const lines = [
+    t.name || t.rep || t.biz || it.biz ? `${esc(t.name || it.name || "")} · ${esc(t.biz || it.biz || "")} · 대표 ${esc(t.rep || it.rep || "")}` : "",
     `이메일 ${esc(t.email || it.email || "—")}${!t.email && it.email ? ` <span class="sub small">(계약 이메일과 같음)</span>` : ""}`,
     `주소 ${esc(t.addr || it.place || "—")}${!t.addr && it.place ? ` <span class="sub small">(설치 주소와 같음)</span>` : ""}`,
     t.type || t.item ? `업태 ${esc(t.type || "—")} · 종목 ${esc(t.item || "—")}` : ""
   ].filter(Boolean);
-  return lines.join("<br>") + (t.doc ? `<br><a href="${esc(t.doc)}" target="_blank" rel="noopener">사업자등록증 보기</a>` : "");
+  return lines.join("<br>") + (t.doc ? `<br><a href="${esc(t.doc)}" target="_blank" rel="noopener">사업자등록증 보기</a>` : "") + (t.at ? `<br><span class="sub small">${esc(t.at)} 고객 등록</span>` : "");
+}
+/* 세금계산서 칸 (대표, 서명 완료, 카드 결제 아님): 상태 + 할 일 버튼 */
+function taxCard(it){
+  if(!OWNER || it.status !== "서명완료" || it.pay === "카드 결제") return "";
+  const s = UI.taxState(it, EXTRAS), t = it.tax || {}, has = s.k === "ready" || s.k === "done";
+  const body = has && (it.tax || it.biz) ? `<p style="margin:0;font-size:15px;line-height:1.6">${it.tax ? taxHtml(it) : `${esc(it.name || "")} · ${esc(it.biz)} · 대표 ${esc(it.rep || "")}<br>이메일 ${esc(it.email || "")}`}</p>`
+    : `<p class="hint">${s.k === "req" ? `${esc(String(t.req).slice(5, 16).replace("-", "/"))}에 요청했고 아직 등록 전입니다.` : "고객이 아직 세금계산서 정보를 넣지 않았습니다."} 아래 버튼으로 등록 링크를 보내세요.</p>`;
+  const btns = s.k === "done" ? `<button type="button" class="btn sub sm" data-jtaxundo>발행 완료 취소</button>`
+    : s.k === "ready" ? `<button type="button" class="btn sub sm" data-jtaxinfo>발행 정보 복사</button><button type="button" class="btn sm" data-jtaxdone>발행 완료</button><button type="button" class="btn sub sm" data-jtaxreq>정보 고쳐 달라고 요청</button>`
+    : `<button type="button" class="btn sm" data-jtaxreq>${s.k === "req" ? "다시 요청 복사" : "등록 요청 복사"}</button>`;
+  return `<section class="card"><div class="ch"><h2>세금계산서</h2><span class="chip ${s.cls}">${esc(s.label)}</span></div>${body}<div class="btns" style="flex-wrap:wrap">${btns}</div></section>`;
 }
 // 큰 글씨: 오늘·내일·목요일 또는 12월 24일 (목) / 작은 글씨: 시각 (가까운 날이면 날짜도)
 function dayBig(p){ const d = UI.dayDiff(p.key); return d === 0 ? "오늘" : d === 1 ? "내일" : d > 1 && d < 7 ? `${p.wd}요일` : `${p.m}월 ${p.d}일 (${p.wd})`; }
@@ -197,7 +242,7 @@ function render(){
     OWNER && it.price != null ? ["임대료", `<span class="num">${won(it.price)}원</span> <span class="sub small">부가세 별도${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}</span>`] : null,
     OWNER && it.email ? ["이메일", esc(it.email)] : null,
     OWNER && it.biz ? ["사업자번호", `${esc(it.biz)}${it.rep ? ` <span class="sub small">대표 ${esc(it.rep)}</span>` : ""}`] : null,
-    OWNER && it.tax ? ["세금계산서", taxHtml(it)] : null,
+    OWNER && it.tax && (it.status !== "서명완료" || it.pay === "카드 결제") ? ["세금계산서", taxHtml(it)] : null,
     OWNER && it.qno ? ["견적 번호", `<a href="/quote/">${esc(it.qno)}</a>`] : null,
     OWNER && it.pdf ? ["서명본", `<a href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF 열기</a>`] : null,
   ].filter(Boolean);
@@ -221,6 +266,7 @@ function render(){
   </div>
   ${tel || map ? `<div class="contact">${tel}${map}</div>` : ""}
   <section class="card"><h2>계약 내용</h2><dl class="info">${info.map(r => `<dt>${r[0]}</dt><dd>${r[1]}</dd>`).join("")}</dl></section>
+  ${taxCard(it)}
   <section class="card">
     <div class="ch"><h2>필요 자재</h2><span class="prog" id="prog">${done} / ${keys.length}</span></div>
     <div class="bar"><i id="barI" style="width:${keys.length ? Math.round(done / keys.length * 100) : 0}%"></i></div>
@@ -325,6 +371,7 @@ document.addEventListener("change", async e => {
 const LABEL = { doneIn:"설치 완료", doneOut:"회수 완료", paid:"입금 확인" };
 document.addEventListener("click", async e => {
   if(e.target.closest("[data-paymsg]")){ copyPayMsg(); return; }
+  if(D && await taxAct(e)) return;
   const a = e.target.closest("[data-act]");
   if(a){
     const f = a.dataset.act;

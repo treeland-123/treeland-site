@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=10" data-page="jobs"></script>
-<script src="/admin/ui.js?v=9"></script>
+<script src="/admin/auth.js?v=11" data-page="jobs"></script>
+<script src="/admin/ui.js?v=10"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 · 트리랜드 관리</title>
@@ -23,6 +23,11 @@
 .rowwrap + .rowwrap::before{content:"";position:absolute;left:20px;right:20px;top:0;height:1px;background:var(--line)}
 .rowwrap .row::before{display:none}
 .count{font-size:14px;color:var(--sub);padding:0 4px}
+.taxbtns{display:flex;gap:6px;margin-right:16px;flex:none}
+.taxb{min-height:36px;padding:0 12px;border-radius:10px;border:0;background:var(--acc);color:var(--acc-ink);font-weight:600;font-size:14px;cursor:pointer;white-space:nowrap}
+.taxb.sub{background:var(--fill);color:var(--ink)}
+.taxb.armed{background:var(--bad);color:#fff}
+@media (max-width:520px){.rowwrap:has(.taxbtns){flex-wrap:wrap}.rowwrap .taxbtns{width:100%;margin:-6px 16px 12px 80px}.taxbtns .taxb{flex:1}}
 </style>
 </head>
 <body>
@@ -50,6 +55,7 @@ const FILTERS = [
   ["week", "이번 주 설치", "오늘부터 7일 · 완료 처리 안 된 지난 설치 포함"],
   ["install", "설치 예정", "설치 완료 처리 전 전체"],
   ["pay", "입금 대기", "설치 후 3일 안 결제 · 장부 기준", "owner"],
+  ["tax", "세금계산서", "설치 끝난 계좌이체·현금 건 · 카드 결제는 제외", "owner"],
   ["ret", "회수 예정", "회수 완료 처리 전"],
   ["done", "회수 완료", "끝난 곳"],
   ["halt", "설치 중단", "분쟁 등 미해결"],
@@ -66,6 +72,7 @@ function list(G){
     case "week": return { items: G.week, mode:"in" };
     case "install": return { items: G.install, mode:"in" };
     case "pay": return { items: G.pay, mode:"pay" };
+    case "tax": return { items: G.tax, mode:"tax" };
     case "ret": return { items: G.ret, mode:"out" };
     case "done": return { items: G.done, mode:"out" };
     case "halt": return { items: G.halt, mode:"in" };
@@ -88,7 +95,7 @@ function matches(it){
 }
 function render(animate){
   const G = UI.groups(D);
-  const cnt = { "": G.live.length, mine:G.mine.length, sign:G.sign.length, week:G.week.length, install:G.install.length, pay:G.pay.length, ret:G.ret.length, done:G.done.length, halt:G.halt.length, quote:G.quote.length, archived:G.archived.length };
+  const cnt = { "": G.live.length, mine:G.mine.length, sign:G.sign.length, week:G.week.length, install:G.install.length, pay:G.pay.length, tax:G.taxTodo.length, ret:G.ret.length, done:G.done.length, halt:G.halt.length, quote:G.quote.length, archived:G.archived.length };
   const shown = FILTERS.filter(f => f[0] === "" || f[0] === F || cnt[f[0]] || f[0] === "pay");
   $("#filters").innerHTML = shown.map(f => `<button type="button" data-f="${f[0]}" aria-pressed="${f[0] === F}">${esc(f[1])} <b>${cnt[f[0]] ?? 0}</b></button>`).join("");
   const cur = FILTERS.find(f => f[0] === F);
@@ -105,7 +112,8 @@ function render(animate){
     const items = L.items.filter(matches);
     html = items.length ? items.map(it => {
       const mode = L.mode === "auto" ? (it.doneIn ? "out" : "in") : L.mode;
-      const row = UI.rowHtml(it, mode, D);
+      const row = UI.rowHtml(it, mode === "tax" ? "in" : mode, D);
+      if(L.mode === "tax" && !Q) return taxRow(it, row);
       return L.mode === "pay" && OWNER && !Q ? `<div class="rowwrap">${row}<button type="button" class="payq" data-pay="${esc(it.id)}">입금 확인</button></div>` : row;
     }).join("") : (L.quotes2 && L.quotes2.filter(matches).length ? "" : `<p class="empty">${Q ? "찾는 곳이 없습니다." : "해당하는 곳이 없습니다."}</p>`);
     if(L.quotes2) html += L.quotes2.filter(matches).map(UI.quoteRow).join("");
@@ -114,6 +122,15 @@ function render(animate){
   $("#bulkBox").innerHTML = OWNER && (F === "week" || F === "install") && G.late.length
     ? `<div class="bulk"><span>지난 설치 <b>${G.late.length}곳</b>이 아직 완료 처리 전입니다.</span><button type="button" class="btn sm" id="bulkIn">모두 설치 완료로</button></div>` : "";
   if(animate) UI.rise($("#list"));
+}
+/* 세금계산서 줄: 상태 칩 + 할 일 버튼 (미등록·요청함 → 요청 복사 / 발행 대기 → 정보 복사·발행 완료) */
+function taxRow(it, row){
+  const s = UI.taxState(it, D.extras);
+  const r = row.replace(/<span class="end">[\s\S]*?<\/span><\/a>$/, `<span class="end"><span class="chip ${s.cls}">${esc(s.label)}</span></span></a>`);
+  const id = esc(it.id);
+  const btns = s.k === "ready" ? `<button type="button" class="taxb sub" data-taxinfo="${id}">정보 복사</button><button type="button" class="taxb" data-taxdone="${id}">발행 완료</button>`
+    : s.k === "done" ? "" : `<button type="button" class="taxb ${s.k === "req" ? "sub" : ""}" data-taxreq="${id}">${s.k === "req" ? "다시 요청" : "요청 복사"}</button>`;
+  return btns ? `<div class="rowwrap">${r}<span class="taxbtns">${btns}</span></div>` : r;
 }
 $("#filters").addEventListener("click", e => {
   const b = e.target.closest("[data-f]"); if(!b) return;
@@ -142,6 +159,24 @@ document.addEventListener("click", async e => {
     if(ex && D.extras) D.extras[id] = ex[id];
     UI.cache.set("all", D);
     return;
+  }
+  const tq = e.target.closest("[data-taxreq]");
+  if(tq){
+    const it = D.all.find(x => x.id === tq.dataset.taxreq); tq.disabled = true;
+    const j = await TL.call({ action:"taxLink", id: it.id, mark:true }).catch(() => null); tq.disabled = false;
+    if(!j || !j.ok){ TL.toast("링크를 만들지 못했습니다. " + ((j && j.error) || ""), "bad"); return; }
+    it.tax = Object.assign({}, it.tax || {}, { req: j.req }); UI.cache.set("all", D); render(false);
+    UI.copyText(UI.taxReqText(it, j.url), "세금계산서 정보 요청", "요청 문구를 복사했습니다. 카톡에 붙여 넣으세요."); return;
+  }
+  const ti = e.target.closest("[data-taxinfo]");
+  if(ti){ const it = D.all.find(x => x.id === ti.dataset.taxinfo); UI.copyText(UI.taxInfoText(it), "발행 정보", "발행 정보를 복사했습니다"); return; }
+  const td = e.target.closest("[data-taxdone]");
+  if(td){
+    if(td.dataset.armed !== "1"){ td.dataset.armed = "1"; td.classList.add("armed"); td.textContent = "한 번 더"; setTimeout(() => { if(td.isConnected){ td.dataset.armed = ""; td.classList.remove("armed"); td.textContent = "발행 완료"; } }, 3000); return; }
+    const it = D.all.find(x => x.id === td.dataset.taxdone); td.disabled = true;
+    const j = await TL.setTax(it.id, true, D.extras).catch(() => null);
+    if(!j || !j.ok){ td.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return; }
+    UI.cache.set("all", D); render(false); TL.toast(`${it.name || ""} 세금계산서 발행 완료 · 장부에 체크했습니다`); return;
   }
   const bk = e.target.closest("#bulkIn");
   if(bk){
