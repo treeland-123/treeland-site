@@ -75,6 +75,11 @@ button{font:inherit;cursor:pointer}
 .ed .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .ed .row2 input[type=date]{width:auto;padding:7px 8px}
 @media (max-width:480px){.ed .d{grid-template-columns:62px 1fr 1fr 56px}.ed .d .ck{grid-column:2/-1}}
+/* 건별 수당 */
+.ed .al{display:grid;grid-template-columns:130px 1fr 110px auto;gap:6px;align-items:center}
+.ed .al input{padding:7px 8px;font-size:14px;min-width:0}
+.ed .al input.amt{text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:480px){.ed .al{grid-template-columns:1fr 110px auto}.ed .al .t{grid-column:1/-1;order:-1}}
 .item dt{color:var(--sub)}.item dd{margin:0;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
 .badge{font-size:12px;border-radius:999px;padding:1px 9px;border:1px solid currentColor;white-space:nowrap}
 .b-ok{color:var(--ok)}.b-wait{color:var(--wait)}.b-stop{color:var(--sub)}
@@ -150,7 +155,7 @@ td.n,th.n{text-align:right}
   </section>
 </div>
 
-<script src="/staff/shared.js?v=3"></script>
+<script src="/staff/shared.js?v=4"></script>
 <script>
 if(!STAFF_ENDPOINT) $("#demoNote").hidden = false;
 let ITEMS = [], DATES = [];
@@ -247,13 +252,14 @@ function renderList(){
     const done = it.status === "서명완료", A = done ? calcActual(it) : null;
     const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}</dl>` : (it.memo ? `<div class="m" style="grid-column:1/-1">메모 ${esc(it.memo)}</div>` : "");
     const acts = done
-      ? `${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무시간 수정</button>`
+      ? `${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무시간 수정</button><button type="button" class="ghost" data-allow="${esc(it.id)}">건별 수당${A.allow.length ? ` (${A.allow.length})` : ""}</button>`
       : it.status === "서명대기"
         ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
         : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
     return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}</div>
       <div class="m">${esc(it.start)}~${esc(it.end)} · 시급 ${won(it.wage)}원 · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
-      ${A && A.edited ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span></div>` : ""}
+      ${A && (A.edited || A.allow.length) ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">${A.allow.length ? `지급 <b>${won(A.total)}원</b> = 시급분 ${won(A.wageSum)}원${A.edited ? ` (실근무 ${A.worked.length}일 · ${hText(A.hours)})` : ""} + 수당 ${won(A.allowSum)}원 (${A.allow.length}건)` : `실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span>`}</div>` : ""}
+      ${A && A.allow.length ? `<div class="m" style="grid-column:1/-1">${A.allow.map(x => `${fmtDay(x.d, true)} ${esc(x.t || "수당")} ${won(x.amt)}원`).join(" · ")}</div>` : ""}
       ${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
       <div class="acts">${acts}<button type="button" class="ghost" data-act="delete" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--sub)">삭제</button></div></div>`;
   }).join("");
@@ -262,6 +268,7 @@ $("#list").addEventListener("click", async e => {
   const b = e.target.closest("button"); if(!b) return;
   if(b.dataset.copy != null){ try{ await navigator.clipboard.writeText(b.dataset.copy); const t = b.textContent; b.textContent = "복사됨"; setTimeout(() => b.textContent = t, 1500); }catch(x){} return; }
   if(b.dataset.edit){ openEditor(b.dataset.edit, b.closest(".item")); return; }
+  if(b.dataset.allow){ openAllow(b.dataset.allow, b.closest(".item")); return; }
   const act = b.dataset.act; if(!act) return;
   if(act === "delete"){
     if(b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제 (서명본 포함)"; b.style.color = "var(--err)"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "삭제"; b.style.color = "var(--sub)"; }, 4000); return; }
@@ -337,6 +344,56 @@ $("#list").addEventListener("click", async e => {
   }
 });
 
+/* ---------- 건별 수당 (내부 기록) — 트리 장식 등 건마다 금액이 다른 수당. 지급액 = 시급분 + 수당 합계 ---------- */
+let AL = null;   // { it, rows:[{d,t,amt}] }
+function openAllow(id, host){
+  const it = ITEMS.find(x => x.id === id); if(!it) return;
+  document.querySelectorAll(".ed").forEach(x => x.remove()); ED = null;
+  const rows = allowList(it); if(!rows.length) rows.push({ d: dateList(it.dates)[0] || "", t:"", amt:0 });
+  AL = { it, rows };
+  const box = document.createElement("div"); box.className = "ed"; box.id = "alBox"; host.appendChild(box); renderAllow();
+  const first = box.querySelector(".al .t"); if(first && !first.value) first.focus();
+}
+function renderAllow(){
+  const box = document.getElementById("alBox"); if(!box || !AL) return;
+  box.innerHTML = `<b style="font-size:14px">건별 수당 <span class="hint" style="font-weight:400">· 내부 기록용, 서명한 계약서는 그대로입니다</span></b>`
+    + AL.rows.map((r, i) => `<div class="al" data-i="${i}"><input type="date" data-k="d" value="${esc(r.d)}" aria-label="날짜"><input type="text" class="t" data-k="t" value="${esc(r.t)}" placeholder="내용 (예: 2.3m 트리 장식 3그루)"><input type="text" class="amt" data-k="amt" inputmode="numeric" value="${r.amt ? won(r.amt) : ""}" placeholder="금액" aria-label="금액(원)"><button type="button" class="ghost" data-alrm="${i}" style="padding:3px 8px">빼기</button></div>`).join("")
+    + `<div class="row2"><button type="button" class="ghost" id="alAdd">+ 한 건 더</button></div><div class="sum" id="alSum"></div>`
+    + `<div class="row2"><button type="button" class="primary" id="alSave" style="flex:1;padding:10px">저장</button><button type="button" class="ghost" id="alClose">닫기</button></div><p class="error" id="alErr" hidden></p>`;
+  sumAllow();
+}
+function sumAllow(){
+  const el = document.getElementById("alSum"); if(!el || !AL) return;
+  const A = calcActual(AL.it), add = AL.rows.reduce((s, r) => s + (Number(r.amt) || 0), 0);
+  el.innerHTML = `시급분 ${won(A.wageSum)}원 + 수당 ${won(add)}원 = <b>지급 ${won(A.wageSum + add)}원</b>`;
+}
+$("#list").addEventListener("input", e => {
+  const d = e.target.closest(".al"); if(!d || !AL) return;
+  const r = AL.rows[+d.dataset.i], k = e.target.dataset.k; if(!k) return;
+  if(k === "amt"){ const n = Number(e.target.value.replace(/[^\d]/g, "")) || 0; r.amt = n; e.target.value = n ? won(n) : ""; }
+  else r[k] = e.target.value;
+  sumAllow();
+});
+$("#list").addEventListener("click", async e => {
+  if(!AL || !e.target.closest("#alBox")) return;
+  const t = e.target;
+  if(t.dataset.alrm != null){ AL.rows.splice(+t.dataset.alrm, 1); renderAllow(); return; }
+  if(t.id === "alAdd"){ const last = AL.rows[AL.rows.length - 1]; AL.rows.push({ d: last ? last.d : (dateList(AL.it.dates)[0] || ""), t:"", amt:0 }); renderAllow(); return; }
+  if(t.id === "alClose"){ document.getElementById("alBox").remove(); AL = null; return; }
+  if(t.id === "alSave"){
+    const err = m => { const x = document.getElementById("alErr"); x.textContent = m; x.hidden = false; };
+    const rows = AL.rows.filter(r => r.t.trim() || r.amt);
+    for(const r of rows){
+      if(!/^\d{4}-\d{2}-\d{2}$/.test(r.d)) return err("날짜를 골라 주세요.");
+      if(!(r.amt > 0)) return err(`${r.t || "수당"} 금액을 넣어 주세요.`);
+    }
+    t.disabled = true; t.textContent = "저장하는 중…";
+    const j = await api({ action:"allow", pin:pin(), id:AL.it.id, allow: rows.map(r => ({ d:r.d, t:r.t.trim(), amt:r.amt })) }).catch(() => ({}));
+    if(!j.ok){ t.disabled = false; t.textContent = "저장"; return err(j.error === "pin" ? "비밀번호가 틀렸습니다." : j.error === "bad_action" ? "서버가 아직 바뀌지 않았습니다. 잠시 뒤 다시 눌러 주세요." : "저장하지 못했습니다. 다시 눌러 주세요."); }
+    AL = null; loadList();
+  }
+});
+
 /* ---------- 월별 신고 정리 ---------- */
 const now = new Date(); $("#r-month").value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 $("#r-month").addEventListener("change", renderReport);
@@ -344,9 +401,10 @@ let REP = [];
 function renderReport(){
   const m = $("#r-month").value, by = {};
   ITEMS.filter(it => it.status === "서명완료").forEach(it => {
-    const ws = calcActual(it).worked.filter(d => d.date.startsWith(m)); if(!ws.length) return;   // 근무시간 수정 기록 반영
+    const A = calcActual(it), ws = A.worked.filter(d => d.date.startsWith(m)), al = A.allow.filter(x => x.d.startsWith(m)); if(!ws.length && !al.length) return;   // 근무시간 수정·건별 수당 반영
     const key = it.rrn || it.name, p = by[key] || (by[key] = { name:it.name, rrn:it.rrn, days:[], pay:0, hours:0 });
     ws.forEach(d => { p.days.push(d.date); p.pay += d.pay; p.hours += d.hours; });
+    al.forEach(x => { p.pay += x.amt; });
   });
   REP = Object.values(by).map(p => ({ ...p, days:[...new Set(p.days)].sort() }));
   if(!REP.length){ $("#report").innerHTML = `<p class="lead">${m.replace("-", "년 ")}월 서명완료 계약이 없습니다.</p>`; return; }

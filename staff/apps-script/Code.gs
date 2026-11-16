@@ -11,7 +11,7 @@
  */
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const COLS = ['id', 'created', 'status', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'memo',
-  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual'];
+  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual', 'allow'];
 const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay'];
 
 function doGet(e) {
@@ -37,6 +37,7 @@ function doPost(e) {
       case 'resume': return out(setStatus(b.id, '서명대기'));
       case 'delete': return out(remove(b.id));
       case 'actual': return out(saveActual(b.id, b.actual));
+      case 'allow': return out(saveAllow(b.id, b.allow));
       default: return out({ error: 'bad_action' });
     }
   } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); }
@@ -195,6 +196,19 @@ function saveActual(id, a) {
   if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
   setCells(r, { actual: Object.keys(out).length ? JSON.stringify(out) : '' });
   return { ok: true, actual: out };
+}
+
+// 건별 수당(내부용, 2026-11-16): 트리 장식 등 건마다 금액이 다른 수당. [{ d:'yyyy-MM-dd', t:'내용', amt:원 }] — 지급액 = 시급×근로시간 + 수당 합계
+function saveAllow(id, list) {
+  const r = findRow(id);
+  if (!r) return { error: 'not_found' };
+  if (rowObj(r).status !== '서명완료') return { error: 'not_signed' };
+  const out = (Array.isArray(list) ? list : []).slice(0, 100).map((x) => ({ d: String(x && x.d || ''), t: String(x && x.t || '').trim().slice(0, 100), amt: Math.round(Number(x && x.amt) || 0) }))
+    .filter((x) => /^\d{4}-\d{2}-\d{2}$/.test(x.d) && x.amt > 0 && x.amt <= 10000000);
+  const sh = sheet();
+  if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
+  setCells(r, { allow: out.length ? JSON.stringify(out) : '' });
+  return { ok: true, allow: out };
 }
 
 /** 처음 한 번 편집기에서 실행: 시트·폴더를 만들고 권한을 승인받음 */

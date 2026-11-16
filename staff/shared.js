@@ -41,9 +41,14 @@ function actualDays(c){
     return v;
   });
 }
+// 건별 수당(내부 기록): [{ d, t, amt }]
+function allowList(c){
+  let a = []; try{ a = c.allow ? JSON.parse(c.allow) : []; }catch(e){ a = []; }
+  return (Array.isArray(a) ? a : []).filter(x => x && /^\d{4}-\d{2}-\d{2}$/.test(x.d) && Number(x.amt) > 0).map(x => ({ d:x.d, t:String(x.t || ""), amt:Math.round(Number(x.amt)) })).sort((a, b) => a.d.localeCompare(b.d));
+}
 function calcActual(c){
-  const days = actualDays(c), worked = days.filter(d => !d.off);
-  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), total: worked.reduce((s, d) => s + d.pay, 0), edited: days.some(d => d.edited) };
+  const days = actualDays(c), worked = days.filter(d => !d.off), allow = allowList(c), wageSum = worked.reduce((s, d) => s + d.pay, 0), allowSum = allow.reduce((s, x) => s + x.amt, 0);
+  return { days, worked, hours: worked.reduce((s, d) => s + d.hours, 0), wageSum, allow, allowSum, total: wageSum + allowSum, edited: days.some(d => d.edited) };
 }
 const hText = h => (Math.round(h * 100) / 100).toString().replace(/\.0+$/, "") + "시간";
 
