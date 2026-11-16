@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script src="/admin/auth.js?v=11" data-page="job"></script>
-<script src="/admin/ui.js?v=11"></script>
+<script src="/admin/ui.js?v=12"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 상세 · 트리랜드 관리</title>
@@ -137,6 +137,15 @@ async function copyPayMsg(){
     const sh = TL.sheet(`<textarea readonly style="width:100%;min-height:220px;font:inherit;font-size:15px;line-height:1.5;border:0;background:var(--fill);border-radius:12px;padding:12px">${esc(text)}</textarea><p class="hint" style="margin-top:8px">길게 눌러 전체 선택 → 복사</p>`, { title:"결제 안내" });
     const ta = sh.el.querySelector("textarea"); ta.focus(); ta.select();
   }
+}
+async function copyRemind(){
+  if(!FULL){ TL.toast("불러오는 중입니다. 잠시 후 다시 눌러 주세요."); return; }
+  const it = D.item, od = UI.overdue(it); if(!od) return;
+  const needLink = it.pay !== "카드 결제" && !["ready", "done"].includes(UI.taxState(it, EXTRAS).k);
+  if(needLink && !TAXURL){ TL.toast("등록 링크를 만드는 중입니다. 잠시 후 다시 눌러 주세요."); loadTaxUrl(); return; }
+  UI.copyText(UI.remindText(it, { bank: PAYINFO.bank, storeLink: PAYINFO.storeLink, taxUrl: TAXURL, extras: EXTRAS }), `미결제 재안내 ${od.level}차`, `재안내 ${od.level}차 문구를 복사했습니다. 카톡에 붙여 넣으세요.`);
+  // 보낸 기록 (재안내 n회)
+  TL.call({ action:"remind", id: ID, level: od.level }).then(j => { if(j && j.ok){ D.item.remind = j.remind; render(); keepCache(); } }).catch(() => {});
 }
 /* 세금계산서 등록 링크: 화면을 열 때 미리 받아 둠 (복사 버튼이 서버를 기다리지 않게 → 휴대폰 복사 허용) */
 function loadTaxUrl(){
@@ -280,7 +289,8 @@ function payState(it){
   const p = parts(it.install), t = UI.seoulKey();
   if(!it.doneIn && (!p || p.key >= t)) return null;
   const due = p ? UI.dueKey(p.key) : "";
-  return due && due < t ? [`입금 기한 지남 · ${short(due)}`, "bad"] : [`입금 대기${due ? " · 기한 " + short(due) : ""}`, "wait"];
+  const rm = it.remind && it.remind.n ? ` · 재안내 ${it.remind.n}회 (${short(String(it.remind.at).slice(0, 10))})` : "";
+  return due && due < t ? [`입금 기한 지남 · ${short(due)}${rm}`, "bad"] : [`입금 대기${due ? " · 기한 " + short(due) : ""}`, "wait"];
 }
 function render(){
   const it = D.item, st = UI.stage(it), ps = payState(it), H = !!it.halt;
@@ -290,7 +300,10 @@ function render(){
   // 지금 해야 할 일 — 하나만 크게
   let cta = "";
   if(!H && it.status === "서명완료" && !it.doneIn) cta = `<button type="button" class="btn" data-act="doneIn">설치 완료</button>`;
-  else if(!H && it.doneIn && !PAID && OWNER) cta = `<button type="button" class="btn sub" data-paymsg>결제 안내 복사</button><button type="button" class="btn" data-act="paid">입금 확인</button>`;
+  else if(!H && it.doneIn && !PAID && OWNER){
+    const od = UI.overdue(it);   // 입금 기한이 지나면 결제 안내 대신 재안내(7일 이상이면 2차)
+    cta = (od ? `<button type="button" class="btn sub" data-remind>미결제 재안내 ${od.level}차 복사</button>` : `<button type="button" class="btn sub" data-paymsg>결제 안내 복사</button>`) + `<button type="button" class="btn" data-act="paid">입금 확인</button>`;
+  }
   else if(!H && it.doneIn && !it.doneOut) cta = `<button type="button" class="btn" data-act="doneOut">회수 완료</button>`;
   const pIn = parts(it.install), pOut = parts(it.retrieve);
   const tel = it.tel ? `<a class="btn sub" href="tel:${esc(telHref(it.tel))}">전화 ${esc(telShow(it.tel))}</a>` : "";
@@ -435,6 +448,7 @@ document.addEventListener("change", async e => {
 const LABEL = { doneIn:"설치 완료", doneOut:"회수 완료", paid:"입금 확인" };
 document.addEventListener("click", async e => {
   if(e.target.closest("[data-paymsg]")){ copyPayMsg(); return; }
+  if(e.target.closest("[data-remind]")){ copyRemind(); return; }
   if(D && await taxAct(e)) return;
   const a = e.target.closest("[data-act]");
   if(a){

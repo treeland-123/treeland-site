@@ -88,7 +88,7 @@
     ]);
     if(!j.ok){ const e = new Error(j.error === "bad_action" ? "서버가 아직 예전 버전입니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다.")); e.code = j.error; throw e; }
     const prev = cache.get("all") || {};
-    const d = { all: j.items || [], staff: j.staff || [], quotes: opt.quotes ? q : (prev.quotes || []), extras: x, log: a && a.ok ? (a.log || []) : (prev.log || []) };
+    const d = { all: j.items || [], staff: j.staff || [], quotes: opt.quotes ? q : (prev.quotes || []), extras: x, log: a && a.ok ? (a.log || []) : (prev.log || []), bank: j.bank || "", storeLink: j.storeLink || "" };
     cache.set("all", d); return d;
   }
   function events(list){   // 아직 끝나지 않은 설치·회수를 날짜순으로
@@ -157,6 +157,27 @@
   function taxReqText(it, url){
     return ["안녕하세요, 트리랜드입니다.", `${it.name ? it.name + " " : ""}트리 설치 건 세금계산서 발행을 위해 아래 링크에서 사업자등록증을 올리거나 사업자 정보를 넣어 주세요.`, "사업자가 아니시면 같은 링크에서 현금영수증 받을 번호를 넣어 주시면 됩니다.", "", url].join("\n");
   }
+  /* 미결제 재안내: 입금 기한(설치일+3일)이 지난 날 수와 1차/2차(기한 후 7일 이상) */
+  function overdue(it){
+    const p = parts(it.install); if(!p) return null;
+    const due = dueKey(p.key), over = -dayDiff(due);
+    return over >= 1 ? { due, over, level: over >= 7 ? 2 : 1 } : null;
+  }
+  function remindText(it, o){   // o: { bank, storeLink, taxUrl, extras }
+    const od = overdue(it) || { due:"", level:1 }, n = Number(it.price) || 0, total = n + Math.round(n * 0.1);
+    const dp = parts(od.due), dueTxt = dp ? `${dp.m}월 ${dp.d}일` : "";
+    const card = it.pay === "카드 결제", nm = it.name ? it.name + " " : "";
+    const pay = [`결제 금액: ${won(total)}원 (부가세 포함)`, card ? `결제 링크: ${o.storeLink || "(결제 링크)"}` : `입금 계좌: ${o.bank || "(계좌)"}`];
+    const s = taxState(it, o.extras);
+    const tax = !card && o.taxUrl && s.k !== "ready" && s.k !== "done" ? ["", "세금계산서 발행을 위해 아래 링크에서 사업자등록증을 올리거나 사업자 정보도 함께 넣어 주세요.", o.taxUrl] : [];
+    const head = od.level === 2
+      ? ["안녕하세요, 트리랜드입니다.", `${nm}트리 설치 건 대금이 기한(${dueTxt})에서 7일이 지나도록 확인되지 않아 다시 안내드립니다.`]
+      : ["안녕하세요, 트리랜드입니다.", `${nm}트리 설치 건 결제 관련해 다시 연락드립니다.`, `${dueTxt}까지로 안내드린 금액이 아직 확인되지 않아 한 번 더 안내드립니다.`];
+    const tail = od.level === 2
+      ? ["계약서 제6조에 따라 설치 완료일로부터 3일 이내 결제 조건이며, 처리 일정이 따로 있으시면 회신 부탁드립니다."]
+      : [`이미 ${card ? "결제" : "입금"}하셨다면 ${card ? "결제일" : "입금일과 입금자명"}을 알려 주세요. 바로 확인하겠습니다.`];
+    return [...head, "", ...pay, "", ...tail, ...tax].join("\n");
+  }
   // 복사: 휴대폰이 막으면 글 상자를 띄워 길게 눌러 복사
   async function copyText(text, title, okMsg){
     try{ await navigator.clipboard.writeText(text); TL.toast(okMsg || "복사했습니다"); return true; }
@@ -175,7 +196,7 @@
     else when = whenCell(it.install, mode === "pay" ? "설치" : "");
     if(mode === "pay"){
       const p = parts(it.install), od = p && dueKey(p.key) < seoulKey();
-      chip = [od ? "기한 지남" : "입금 대기", od ? "bad" : "wait"];
+      chip = [od ? "기한 지남" + (it.remind && it.remind.n ? ` · 재안내 ${it.remind.n}회` : "") : "입금 대기", od ? "bad" : "wait"];
     }
     if(mode === "out" && !it.doneOut) chip = ["회수 예정", "ret"];
     const line = [it.place, mode === "pay" ? (it.pay || "결제 방법 미정") : it.size, crew ? "담당 " + (crew.name || crew.email) : ""].filter(Boolean).join(" · ");
@@ -263,5 +284,5 @@
     return { rows, check, addons: [...addons.values()] };
   }
 
-  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, BOX, parseTrees, materials, matTotals };
+  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, overdue, remindText, BOX, parseTrees, materials, matTotals };
 })();
