@@ -235,7 +235,7 @@
       const rows = [[`${tag}트리 본체`, `${t.size}${t.tier ? " " + t.tier : ""} ${q}대`]];
       const prem = t.tier === "프리미엄", std = t.tier === "스탠다드";
       if(t.size === "1.35m"){
-        rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, ""]);
+        rows.push([`${tag}오너먼트`, "단일 구성(프리미엄 장식)"], [`${tag}상단 별`, "기본 별"]);
       }else{
         const col = colorOf(it, i, trees.length), st = setsOf(t);
         if(t.size.startsWith("2.3m") && (prem || std)) rows.push([`${tag}오너먼트 ${x(prem ? 120 : 80)}개`, `${col} ${setTxt(st)}세트`]);

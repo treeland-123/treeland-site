@@ -389,7 +389,7 @@ $("#newForm").addEventListener("submit", async e => {
 // 트리 구성: 줄마다 크기·수량·색상
 const COLORS = [["레드 & 골드","#9e2330"],["네이비 & 골드","#1d2d45"],["세이지 그린 & 골드","#93a68a"],["화이트 & 샴페인","#f1eee7"]];
 const TIERS = ["스탠다드","프리미엄"];
-const ONE = "1.35m";   // 1.35m는 단일 구성(프리미엄 장식, LED 별·상자 제외)
+const ONE = "1.35m";   // 1.35m는 단일 구성(프리미엄 장식, 기본 별, 하단 상자 없음)
 let trees = [];   // [{size, tier, qty, color, place}]
 const tierOf = t => t.size === ONE ? "" : (t.tier || "프리미엄");
 const treeName = t => `${t.size}${tierOf(t) ? " " + tierOf(t) : ""}`;
