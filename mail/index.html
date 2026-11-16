@@ -174,6 +174,7 @@ function renderCustomers(){
   sel.value = keep;
   const emails = [...new Set([...cs.map(c => c.email), ...QUOTES.map(q => q.email || (q.state && q.state.email))].filter(Boolean))];
   $("#emails").innerHTML = emails.map(e => `<option value="${esc(e)}">`).join("");
+  applyPreset();
 }
 function ctxOf(v){
   if(!v) return null;
@@ -181,7 +182,7 @@ function ctxOf(v){
     const c = CTX.items.find(i => i.id === v.slice(2)); if(!c) return null;
     const q = c.qno ? QUOTES.find(h => h.no === c.qno) : null;
     return { kind:"c", id:c.id, name:c.customer, email:c.email || (q && (q.email || (q.state && q.state.email))) || "", install:c.install, retrieve:c.retrieve,
-      price:c.price, ship:c.ship, pay:c.pay, hasPdf:c.hasPdf, hasQuote:c.hasQuote, noVat:false, signed:c.signed || c.created || "" };
+      price:c.price, ship:c.ship, pay:c.pay, status:c.status, hasPdf:c.hasPdf, hasQuote:c.hasQuote, noVat:false, signed:c.signed || c.created || "" };
   }
   const q = QUOTES.find(h => h.no === v.slice(2)); if(!q) return null;
   const st = q.state || {}, noVat = !!st.noVat, total = Number(q.total) || 0;
@@ -207,7 +208,7 @@ const TPLS = [
         + `결제 금액: ${total ? won(total) + "원" : "[결제 금액]"}${c && c.noVat ? "" : " (부가세 포함)"}\n`
         + (card ? `결제 링크: ${CTX.storeLink || "[결제 링크]"}\n` : `입금 계좌: ${CTX.bank || "신한은행 110-635-611292 (예금주 트리랜드)"}\n`)
         + `${card ? "결제" : "입금"} 기한: ${v(c && dueText(c.install), "기한")}까지\n\n`
-        + (card ? "" : "세금계산서나 현금영수증이 필요하시면 말씀해 주세요.\n\n") + SIGN_OFF;
+        + (card ? "" : `세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요. 사업자가 아니시면 현금영수증 받을 번호를 넣어 주시면 됩니다.\n${v(c && c.taxUrl, "등록 링크")}\n\n`) + SIGN_OFF;
     } },
   { k:"tax", t:"세금계산서 발행 안내", subj: c => `[트리랜드] ${nm(c)}세금계산서 발행 안내`,
     body: c => {
@@ -238,7 +239,24 @@ $("#cust").addEventListener("change", e => {
   $("#attQuoteW").hidden = !(CUR && CUR.hasQuote); $("#attQuote").checked = false;
   const body = $("#body").value;
   if(!body.trim() || body === FILLED) applyTpl(TPL, true);
+  loadTaxUrl(CUR);
 });
+/* 세금계산서 등록 링크 (계좌이체 계약): 받아 오면 본문을 아직 안 고쳤을 때만 다시 채움 */
+async function loadTaxUrl(c){
+  if(!c || c.kind !== "c" || c.pay === "카드 결제" || c.taxUrl || c.status !== "서명완료") return;
+  try{
+    const j = await post(ENDPOINT, { action:"taxLink", id:c.id, pin:pin() });
+    if(j && j.ok && CUR === c){ c.taxUrl = j.url; if($("#body").value === FILLED) applyTpl(TPL, true); }
+  }catch(e){}
+}
+/* 현장 상세에서 넘어온 경우: /mail/?id=계약id&t=pay → 고객·문구를 골라 둠 (한 번만) */
+let PRESET = (() => { const q = new URLSearchParams(location.search), id = q.get("id"); return id ? { id, t: q.get("t") || "" } : null; })();
+function applyPreset(){
+  if(!PRESET) return; const o = $("#cust").querySelector(`option[value="c:${CSS.escape(PRESET.id)}"]`); if(!o) return;
+  const t = PRESET.t; PRESET = null;
+  if(TPLS.some(x => x.k === t)) TPL = t;
+  $("#cust").value = o.value; $("#cust").dispatchEvent(new Event("change"));
+}
 
 /* ── 첨부 파일 ── */
 let FILES = [];   // { name, type, size, b64 }

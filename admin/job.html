@@ -372,7 +372,7 @@ function render(){
     ${OWNER && PAID ? `<button type="button" data-undo="paid">입금 확인 취소</button>` : ""}
     ${OWNER ? (H ? `<button type="button" id="haltOff">설치 중단 해제</button>` : `<button type="button" id="haltOn" class="warn">설치 중단 (분쟁 등)</button>`) : ""}
     <button type="button" data-act="archived">${it.archived ? "보관 해제" : "보관 (목록에서 숨김)"}</button>
-    ${OWNER ? `<a href="/mail/">메일 보내기</a><a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a>` : ""}
+    ${OWNER ? `<a href="/mail/?id=${encodeURIComponent(ID)}${it.doneIn && !PAID ? "&t=pay" : ""}">이 고객에게 메일 보내기${it.doneIn && !PAID ? " (결제 안내)" : ""}</a><a href="/contract/admin.html">계약 관리 (삭제는 여기서)</a>` : ""}
   </div></section>
   ${cta ? `<div class="cta">${cta}</div>` : ""}`;
   if(FULL) loadThumbs();
