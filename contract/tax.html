@@ -122,20 +122,24 @@ footer{font-size:12px;color:var(--sub);text-align:center}
         </div>
       </fieldset>
       <div id="bizBox" hidden style="display:flex;flex-direction:column;gap:12px">
-        <div class="grid2">
-          <div class="field"><label for="t-biz">사업자등록번호 <span class="req">*</span></label><input type="text" id="t-biz" inputmode="numeric" placeholder="000-00-00000"></div>
-          <div class="field"><label for="t-name">상호 <span class="req">*</span></label><input type="text" id="t-name" autocomplete="organization"></div>
-          <div class="field"><label for="t-rep">대표자 <span class="req">*</span></label><input type="text" id="t-rep"></div>
-          <div class="field"><label for="t-email">세금계산서 받을 이메일 <span class="req">*</span></label><input type="email" id="t-email" autocomplete="email"></div>
+        <div class="kind" id="modeBox">
+          <label><input type="radio" name="mode" value="doc"><span>사업자등록증 올리기<small>사진 또는 PDF</small></span></label>
+          <label><input type="radio" name="mode" value="text"><span>직접 입력<small>상호·업종·사업자번호</small></span></label>
         </div>
-        <div class="field"><label for="t-addr">사업장 주소 (사업자등록증 기준) <span class="req">*</span></label><input type="text" id="t-addr"></div>
-        <div class="grid2">
-          <div class="field"><label for="t-type">업태 <span class="req">*</span></label><input type="text" id="t-type" placeholder="예: 서비스, 도소매"></div>
-          <div class="field"><label for="t-item">종목 <span class="req">*</span></label><input type="text" id="t-item" placeholder="예: 의원, 커피전문점"></div>
+        <div id="docBox" hidden>
+          <div class="field"><label>사업자등록증 사진 또는 PDF <span class="req">*</span></label>
+            <div class="filebtn"><label class="ghost" for="t-file">파일 고르기</label><input type="file" id="t-file" accept="image/*,application/pdf" hidden><span id="t-fileName">휴대폰으로 찍은 사진도 됩니다.</span></div>
+          </div>
         </div>
-        <div class="field"><label>사업자등록증 사진 또는 PDF (선택)</label>
-          <div class="filebtn"><label class="ghost" for="t-file">파일 고르기</label><input type="file" id="t-file" accept="image/*,application/pdf" hidden><span id="t-fileName">올려 주시면 정보가 틀리지 않게 확인하고 발행합니다.</span></div>
+        <div id="textBox" hidden style="display:flex;flex-direction:column;gap:12px">
+          <div class="grid2">
+            <div class="field"><label for="t-name">상호 <span class="req">*</span></label><input type="text" id="t-name" autocomplete="organization"></div>
+            <div class="field"><label for="t-item">업종 <span class="req">*</span></label><input type="text" id="t-item" placeholder="예: 의원, 카페, 학원"></div>
+            <div class="field"><label for="t-biz">사업자등록번호 <span class="req">*</span></label><input type="text" id="t-biz" inputmode="numeric" placeholder="000-00-00000"></div>
+            <div class="field" id="repField" hidden><label for="t-rep">대표자 <span class="req">*</span></label><input type="text" id="t-rep"></div>
+          </div>
         </div>
+        <div class="field"><label for="t-email">세금계산서 받을 이메일 <span class="req">*</span></label><input type="email" id="t-email" autocomplete="email"></div>
       </div>
       <div id="personBox" hidden>
         <div class="field"><label for="t-phone">현금영수증 받을 휴대폰 번호 <span class="req">*</span></label><input type="tel" id="t-phone" inputmode="tel" autocomplete="tel" placeholder="010-0000-0000"></div>
@@ -166,8 +170,11 @@ function fmtTel(v){ const d = String(v || "").replace(/\D/g, "").slice(0, 11); r
 $("#t-biz").addEventListener("input", e => e.target.value = fmtBiz(e.target.value));
 $("#t-phone").addEventListener("input", e => e.target.value = fmtTel(e.target.value));
 function setKind(k){ $("#bizBox").hidden = k !== "biz"; $("#personBox").hidden = k !== "person"; }
+function setMode(m){ $("#docBox").hidden = m !== "doc"; $("#textBox").hidden = m !== "text"; }
 document.querySelectorAll("input[name=kind]").forEach(r => r.addEventListener("change", () => setKind(r.value)));
+document.querySelectorAll("input[name=mode]").forEach(r => r.addEventListener("change", () => setMode(r.value)));
 const kind = () => (document.querySelector("input[name=kind]:checked") || {}).value || "";
+const mode = () => (document.querySelector("input[name=mode]:checked") || {}).value || "";
 
 /* 사업자등록증: 사진이면 줄여서 보냄 (계약서 화면과 같은 방식) */
 let DOC = null;
@@ -199,14 +206,17 @@ let C = null;
   $("#wait").hidden = true; $("#app").hidden = false;
   $("#lead").textContent = j.pay === "카드 결제"
     ? "카드로 결제하시면 카드 영수증이 증빙이 되어 세금계산서는 따로 발행하지 않습니다. 계좌이체로 바꾸신 경우에만 등록해 주세요."
-    : "세금계산서 발행을 위해 사업자 정보를 등록해 주세요. 사업자가 아니시면 현금영수증 번호를 넣어 주세요.";
+    : "세금계산서 발행을 위해 사업자등록증을 올리거나 사업자 정보를 넣어 주세요. 사업자가 아니시면 현금영수증 번호를 넣어 주세요.";
   $("#sum").innerHTML = `<dt>상호</dt><dd>${esc(j.name)}</dd><dt>결제 금액</dt><dd class="amount">${won(j.total)}원 (부가세 포함)</dd>`;
   if(t.at){ $("#prev").hidden = false; $("#prev").textContent = `${t.at}에 등록한 내용입니다. 바뀐 내용이 있으면 고쳐서 다시 저장해 주세요.`; }
   $("#t-biz").value = fmtBiz(t.biz || j.biz); $("#t-name").value = t.name || j.name; $("#t-rep").value = t.rep || j.rep;
-  $("#t-email").value = t.email || j.email; $("#t-addr").value = t.addr; $("#t-type").value = t.type; $("#t-item").value = t.item; $("#t-phone").value = fmtTel(t.phone);
+  $("#t-email").value = t.email || j.email; $("#t-item").value = t.item; $("#t-phone").value = fmtTel(t.phone);
+  $("#repField").hidden = !!j.rep;   // 대표자는 계약서에 적힌 값을 씀, 없을 때만 받음
   if(t.hasDoc) $("#t-fileName").textContent = "이미 올린 사업자등록증이 있습니다. 바뀐 경우에만 다시 올려 주세요.";
   const k = t.kind || (j.biz ? "biz" : "");
   if(k){ const r = document.querySelector(`input[name=kind][value=${k}]`); if(r){ r.checked = true; setKind(k); } }
+  const m = t.hasDoc ? "doc" : (t.item ? "text" : "");
+  if(m){ const r = document.querySelector(`input[name=mode][value=${m}]`); if(r){ r.checked = true; setMode(m); } }
 })();
 
 function err(m, el){ $("#err").textContent = m; $("#err").hidden = false; if(el){ el.focus(); el.scrollIntoView({ block:"center" }); } }
@@ -215,11 +225,17 @@ $("#save").addEventListener("click", async () => {
   if(!k) return err("사업자인지 먼저 골라 주세요.");
   let data;
   if(k === "biz"){
-    const req = [["#t-biz","사업자등록번호"],["#t-name","상호"],["#t-rep","대표자"],["#t-email","이메일"],["#t-addr","사업장 주소"],["#t-type","업태"],["#t-item","종목"]];
-    for(const [id, l] of req) if(!val(id)) return err(`${l}을(를) 입력해 주세요.`, $(id));
-    if(val("#t-biz").replace(/\D/g, "").length !== 10) return err("사업자등록번호 10자리를 확인해 주세요.", $("#t-biz"));
-    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#t-email"))) return err("이메일 주소를 확인해 주세요.", $("#t-email"));
-    data = { kind:"biz", biz:val("#t-biz"), name:val("#t-name"), rep:val("#t-rep"), email:val("#t-email"), addr:val("#t-addr"), type:val("#t-type"), item:val("#t-item"), doc: DOC };
+    const m = mode();
+    if(!m) return err("사업자등록증을 올릴지, 직접 입력할지 골라 주세요.");
+    if(m === "doc" && !DOC && !(C.tax && C.tax.hasDoc)) return err("사업자등록증 사진이나 PDF를 골라 주세요.", $("#t-file").previousElementSibling);
+    if(m === "text"){
+      const req = [["#t-name","상호"],["#t-item","업종"],["#t-biz","사업자등록번호"]].concat($("#repField").hidden ? [] : [["#t-rep","대표자"]]);
+      for(const [id, l] of req) if(!val(id)) return err(`${l}을(를) 입력해 주세요.`, $(id));
+      if(val("#t-biz").replace(/\D/g, "").length !== 10) return err("사업자등록번호 10자리를 확인해 주세요.", $("#t-biz"));
+    }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#t-email"))) return err("세금계산서 받을 이메일을 확인해 주세요.", $("#t-email"));
+    data = m === "doc" ? { kind:"biz", mode:"doc", email:val("#t-email"), doc: DOC }
+      : { kind:"biz", mode:"text", biz:val("#t-biz"), name:val("#t-name"), item:val("#t-item"), rep: $("#repField").hidden ? "" : val("#t-rep"), email:val("#t-email") };
   }else{
     const d = val("#t-phone").replace(/\D/g, ""); if(d.length < 10 || d.length > 11) return err("휴대폰 번호를 확인해 주세요.", $("#t-phone"));
     data = { kind:"person", phone:val("#t-phone") };

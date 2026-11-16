@@ -139,8 +139,9 @@
     const t = it.tax || {}, ex = extras && extras[it.id];
     if(ex && ex.taxInvoice) return { k:"done", label:"발행 완료", cls:"ok" };
     if(t.kind === "person" && t.phone) return { k:"ready", label:"현금영수증 발행 대기", cls:"ret", person:true };
-    const biz = String(t.biz || it.biz || "").replace(/\D/g, "");
-    if(biz.length === 10) return { k:"ready", label:"발행 대기", cls:"ret" };
+    // 발행 대기 = 사업자등록증을 받았거나, 상호·업종·사업자번호를 다 받았고 받을 이메일이 있음
+    const biz = String(t.biz || it.biz || "").replace(/\D/g, ""), email = t.email || it.email;
+    if(email && (t.doc || (biz.length === 10 && (t.name || it.name) && t.item))) return { k:"ready", label:"발행 대기", cls:"ret" };
     if(t.req){ const n = Math.max(0, -dayDiff(String(t.req).slice(0, 10))); return { k:"req", label: n ? `요청 ${n}일째` : "오늘 요청함", cls: n >= 3 ? "bad" : "wait", days:n }; }
     return { k:"none", label:"미등록", cls:"bad" };
   }
@@ -148,12 +149,13 @@
   function taxInfoText(it){
     const t = it.tax || {}, n = Number(it.price) || 0, v = Math.round(n * 0.1), p = parts(it.install), day = p ? p.key : "";
     if(t.kind === "person") return [`[현금영수증 발행 정보] ${it.name || ""}`, `휴대폰: ${t.phone}`, `거래일: ${day}`, `금액: ${won(n + v)}원 (공급가액 ${won(n)} + 부가세 ${won(v)})`].join("\n");
-    return [`[세금계산서 발행 정보] ${it.name || ""}`, `상호: ${t.name || it.name || ""}`, `사업자등록번호: ${t.biz || it.biz || ""}`, `대표자: ${t.rep || it.rep || ""}`,
-      `이메일: ${t.email || it.email || ""}`, `주소: ${t.addr || ""}`, `업태/종목: ${[t.type, t.item].filter(Boolean).join(" / ") || ""}`,
-      `작성일자: ${day}`, `품목: 크리스마스트리 대여·설치`, `공급가액: ${won(n)}원`, `세액: ${won(v)}원`, `합계: ${won(n + v)}원`].join("\n");
+    return [`[세금계산서 발행 정보] ${it.name || ""}`, t.doc ? `사업자등록증: ${t.doc}` : "",
+      `상호: ${t.name || it.name || ""}`, `사업자등록번호: ${t.biz || it.biz || ""}`, `대표자: ${t.rep || it.rep || ""}`, t.item ? `업종: ${t.item}` : "",
+      `이메일: ${t.email || it.email || ""}`, t.addr ? `주소: ${t.addr}` : "",
+      `작성일자: ${day}`, `품목: 크리스마스트리 대여·설치`, `공급가액: ${won(n)}원`, `세액: ${won(v)}원`, `합계: ${won(n + v)}원`].filter(Boolean).join("\n");
   }
   function taxReqText(it, url){
-    return ["안녕하세요, 트리랜드입니다.", `${it.name ? it.name + " " : ""}트리 설치 건 세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요.`, "사업자가 아니시면 같은 링크에서 현금영수증 받을 번호를 넣어 주시면 됩니다.", "", url].join("\n");
+    return ["안녕하세요, 트리랜드입니다.", `${it.name ? it.name + " " : ""}트리 설치 건 세금계산서 발행을 위해 아래 링크에서 사업자등록증을 올리거나 사업자 정보를 넣어 주세요.`, "사업자가 아니시면 같은 링크에서 현금영수증 받을 번호를 넣어 주시면 됩니다.", "", url].join("\n");
   }
   // 복사: 휴대폰이 막으면 글 상자를 띄워 길게 눌러 복사
   async function copyText(text, title, okMsg){

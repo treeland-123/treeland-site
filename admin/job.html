@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <script src="/admin/auth.js?v=11" data-page="job"></script>
-<script src="/admin/ui.js?v=10"></script>
+<script src="/admin/ui.js?v=11"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
 <title>건 상세 · 트리랜드 관리</title>
@@ -62,6 +62,13 @@ dialog.viewer::backdrop{background:rgba(0,0,0,.7)}
 .more button:hover,.more a:hover{background:var(--fill)}
 .more .warn{color:var(--bad)}
 .haltbox{display:flex;flex-direction:column;gap:8px;padding:8px 4px}
+.tform{display:flex;flex-direction:column;gap:12px}
+.tform label{display:flex;flex-direction:column;gap:6px;font-size:14px;color:var(--sub)}
+.tform input:not([type=radio]):not([type=file]){font:inherit;font-size:16px;color:var(--ink);background:var(--fill);border:1.5px solid transparent;border-radius:12px;padding:12px 14px}
+.tform .seg{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tform .seg label{flex-direction:row;align-items:center;gap:8px;background:var(--fill);border-radius:12px;padding:12px;color:var(--ink);font-size:14px}
+.tform .up{display:flex;flex-direction:column;gap:4px}
+.tform #tBiz{display:flex;flex-direction:column;gap:12px}
 .cta{position:sticky;bottom:12px;z-index:4;display:flex;gap:8px}
 @media (max-width:760px){.cta{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
 .cta .btn{flex:1;box-shadow:0 8px 24px rgba(0,0,0,.12)}
@@ -145,6 +152,7 @@ async function taxAct(e){
     if(!TAXURL){ TL.toast("등록 링크를 만드는 중입니다. 잠시 후 다시 눌러 주세요."); loadTaxUrl(); return true; }
     UI.copyText(UI.taxReqText(it, TAXURL), "세금계산서 정보 요청", "요청 문구를 복사했습니다. 카톡에 붙여 넣으세요."); markTaxReq(); return true;
   }
+  if(e.target.closest("[data-jtaxedit]")){ taxEdit(it); return true; }
   if(e.target.closest("[data-jtaxinfo]")){ UI.copyText(UI.taxInfoText(it), "발행 정보", "발행 정보를 복사했습니다. 홈택스에 옮겨 적으세요."); return true; }
   const b = e.target.closest("[data-jtaxdone],[data-jtaxundo]"); if(!b) return false;
   const on = b.hasAttribute("data-jtaxdone");
@@ -154,6 +162,60 @@ async function taxAct(e){
   if(!j || !j.ok){ b.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return true; }
   render(); keepCache(); TL.toast(on ? "세금계산서 발행 완료 · 장부에 체크했습니다" : "발행 완료를 취소했습니다");
   return true;
+}
+/* 대표 직접 입력: 고객이 카톡으로 보낸 정보·사업자등록증 사진. 빈 칸이 있어도 저장(발행 대기는 등록증 또는 상호·업종·사업자번호 + 이메일) */
+function taxEdit(it){
+  const t = it.tax || {}, v = x => esc(x || "");
+  const sh = TL.sheet(`
+    <div class="tform">
+      <div class="seg"><label><input type="radio" name="tk" value="biz"${t.kind !== "person" ? " checked" : ""}>사업자 (세금계산서)</label><label><input type="radio" name="tk" value="person"${t.kind === "person" ? " checked" : ""}>사업자 아님 (현금영수증)</label></div>
+      <div id="tBiz">
+        <label>사업자등록증 사진·PDF<span class="up"><input type="file" id="tDoc" accept="image/*,application/pdf"><small id="tDocMsg">${t.doc ? "이미 있음 · 바꿀 때만 고르세요" : "없음"}</small></span></label>
+        <label>상호<input id="tName" value="${v(t.name || it.name)}"></label>
+        <label>사업자등록번호<input id="tBizNo" inputmode="numeric" value="${v(t.biz || it.biz)}"></label>
+        <label>대표자<input id="tRep" value="${v(t.rep || it.rep)}"></label>
+        <label>업종<input id="tItem" value="${v(t.item || t.type)}"></label>
+        <label>받을 이메일<input id="tEmail" type="email" value="${v(t.email || it.email)}"></label>
+      </div>
+      <div id="tPer" hidden><label>현금영수증 휴대폰<input id="tPhone" inputmode="tel" value="${v(t.phone)}"></label></div>
+      <p class="hint" id="tErr" hidden style="color:var(--bad)"></p>
+      <button type="button" class="btn full" id="tSave">저장</button>
+    </div>`, { title:"세금계산서 정보 직접 입력" });
+  const q = s => sh.el.querySelector(s);
+  const sync = () => { const per = q("input[name=tk]:checked").value === "person"; q("#tBiz").hidden = per; q("#tPer").hidden = !per; };
+  sh.el.querySelectorAll("input[name=tk]").forEach(r => r.addEventListener("change", sync)); sync();
+  let DOC = null;
+  q("#tDoc").addEventListener("change", async e => {
+    const f = e.target.files[0]; if(!f) return; q("#tDocMsg").textContent = "읽는 중…";
+    try{
+      if(f.type === "application/pdf"){
+        const b64 = await new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(f); });
+        DOC = { b64, mime:"application/pdf" };
+      }else{ DOC = { b64: await shrinkDoc(f), mime:"image/jpeg" }; }
+      q("#tDocMsg").textContent = "올림: " + f.name;
+    }catch(err){ DOC = null; q("#tDocMsg").textContent = "파일을 읽지 못했습니다"; }
+  });
+  q("#tSave").addEventListener("click", async () => {
+    const per = q("input[name=tk]:checked").value === "person", b = q("#tSave");
+    const data = per ? { kind:"person", phone: q("#tPhone").value.trim() }
+      : { kind:"biz", name: q("#tName").value.trim(), biz: q("#tBizNo").value.trim(), rep: q("#tRep").value.trim(), item: q("#tItem").value.trim(), email: q("#tEmail").value.trim(), doc: DOC };
+    b.disabled = true; b.textContent = "저장하는 중…"; q("#tErr").hidden = true;
+    const j = await TL.call({ action:"taxSave", id: ID, data }).catch(() => null);
+    b.disabled = false; b.textContent = "저장";
+    if(!j || !j.ok){ q("#tErr").textContent = (j && j.error) || "저장하지 못했습니다."; q("#tErr").hidden = false; return; }
+    D = j; FULL = true; payInfo(j); sh.close(); render(); keepCache();
+    TL.toast(UI.taxState(D.item, EXTRAS).k === "ready" ? "저장했습니다 · 발행 대기" : "저장했습니다 · 아직 빠진 정보가 있습니다");
+  });
+}
+function shrinkDoc(f){   // 사업자등록증 사진: 긴 변 1800px JPEG
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(f), img = new Image();
+    img.onload = () => { const k = Math.min(1, 1800 / Math.max(img.width, img.height)), c = document.createElement("canvas");
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+      const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      res(c.toDataURL("image/jpeg", 0.82).split(",")[1]); };
+    img.onerror = rej; img.src = url;
+  });
 }
 function keepCache(){   // 바뀐 내용을 목록 캐시에도 반영 → 뒤로 가면 바로 맞게 보임
   const c = UI.cache.get("all"); if(!c || !D) return;
@@ -185,25 +247,27 @@ async function update(field, value, okMsg){
 /* ---------- 화면 ---------- */
 // 계약 때 고객이 적은 세금계산서 받을 정보 (비운 칸은 계약 정보로 대신)
 function taxHtml(it){
-  const t = it.tax || {};
-  if(t.kind === "person") return `현금영수증 · 휴대폰 ${esc(t.phone || "")}${t.at ? `<br><span class="sub small">${esc(t.at)} 고객 등록</span>` : ""}`;
+  const t = it.tax || {}, at = t.at ? `<br><span class="sub small">${esc(t.at)} ${esc(t.by || "고객")} 등록</span>` : "";
+  if(t.kind === "person") return `현금영수증 · 휴대폰 ${esc(t.phone || "")}${at}`;
   const lines = [
-    t.name || t.rep || t.biz || it.biz ? `${esc(t.name || it.name || "")} · ${esc(t.biz || it.biz || "")} · 대표 ${esc(t.rep || it.rep || "")}` : "",
-    `이메일 ${esc(t.email || it.email || "—")}${!t.email && it.email ? ` <span class="sub small">(계약 이메일과 같음)</span>` : ""}`,
-    `주소 ${esc(t.addr || it.place || "—")}${!t.addr && it.place ? ` <span class="sub small">(설치 주소와 같음)</span>` : ""}`,
-    t.type || t.item ? `업태 ${esc(t.type || "—")} · 종목 ${esc(t.item || "—")}` : ""
+    `${esc(t.name || it.name || "")} · ${esc(t.biz || it.biz || "사업자번호 없음")} · 대표 ${esc(t.rep || it.rep || "")}`,
+    t.item || t.type ? `업종 ${esc(t.item || t.type)}` : "",
+    `이메일 ${esc(t.email || it.email || "—")}${!t.email && it.email ? ` <span class="sub small">(계약 이메일)</span>` : ""}`,
+    t.addr ? `주소 ${esc(t.addr)}` : ""
   ].filter(Boolean);
-  return lines.join("<br>") + (t.doc ? `<br><a href="${esc(t.doc)}" target="_blank" rel="noopener">사업자등록증 보기</a>` : "") + (t.at ? `<br><span class="sub small">${esc(t.at)} 고객 등록</span>` : "");
+  return lines.join("<br>") + (t.doc ? `<br><a href="${esc(t.doc)}" target="_blank" rel="noopener">사업자등록증 보기</a>` : `<br><span class="sub small">사업자등록증 없음</span>`) + at;
 }
 /* 세금계산서 칸 (대표, 서명 완료, 카드 결제 아님): 상태 + 할 일 버튼 */
 function taxCard(it){
   if(!OWNER || it.status !== "서명완료" || it.pay === "카드 결제") return "";
   const s = UI.taxState(it, EXTRAS), t = it.tax || {}, has = s.k === "ready" || s.k === "done";
-  const body = has && (it.tax || it.biz) ? `<p style="margin:0;font-size:15px;line-height:1.6">${it.tax ? taxHtml(it) : `${esc(it.name || "")} · ${esc(it.biz)} · 대표 ${esc(it.rep || "")}<br>이메일 ${esc(it.email || "")}`}</p>`
-    : `<p class="hint">${s.k === "req" ? `${esc(String(t.req).slice(5, 16).replace("-", "/"))}에 요청했고 아직 등록 전입니다.` : "고객이 아직 세금계산서 정보를 넣지 않았습니다."} 아래 버튼으로 등록 링크를 보내세요.</p>`;
-  const btns = s.k === "done" ? `<button type="button" class="btn sub sm" data-jtaxundo>발행 완료 취소</button>`
-    : s.k === "ready" ? `<button type="button" class="btn sub sm" data-jtaxinfo>발행 정보 복사</button><button type="button" class="btn sm" data-jtaxdone>발행 완료</button><button type="button" class="btn sub sm" data-jtaxreq>정보 고쳐 달라고 요청</button>`
-    : `<button type="button" class="btn sm" data-jtaxreq>${s.k === "req" ? "다시 요청 복사" : "등록 요청 복사"}</button>`;
+  const known = it.tax || it.biz ? `<p style="margin:0;font-size:15px;line-height:1.6">${taxHtml(it)}</p>` : "";
+  const hint = has ? "" : `<p class="hint">${s.k === "req" ? `${esc(String(t.req).slice(5, 16).replace("-", "/"))}에 요청했고 아직 다 받지 못했습니다.` : "사업자등록증이나 사업자 정보를 아직 받지 못했습니다."} 등록 링크를 보내거나, 카톡으로 받은 내용을 직접 입력하세요.</p>`;
+  const req = `<button type="button" class="btn ${has ? "sub " : ""}sm" data-jtaxreq>${s.k === "req" || has ? "다시 요청 복사" : "등록 요청 복사"}</button>`;
+  const btns = (s.k === "done" ? `<button type="button" class="btn sub sm" data-jtaxundo>발행 완료 취소</button>`
+    : s.k === "ready" ? `<button type="button" class="btn sub sm" data-jtaxinfo>발행 정보 복사</button><button type="button" class="btn sm" data-jtaxdone>발행 완료</button>` : "")
+    + (s.k === "done" ? "" : req) + `<button type="button" class="btn sub sm" data-jtaxedit>직접 입력</button>`;
+  const body = known + hint;
   return `<section class="card"><div class="ch"><h2>세금계산서</h2><span class="chip ${s.cls}">${esc(s.label)}</span></div>${body}<div class="btns" style="flex-wrap:wrap">${btns}</div></section>`;
 }
 // 큰 글씨: 오늘·내일·목요일 또는 12월 24일 (목) / 작은 글씨: 시각 (가까운 날이면 날짜도)
@@ -242,7 +306,7 @@ function render(){
     OWNER && it.price != null ? ["임대료", `<span class="num">${won(it.price)}원</span> <span class="sub small">부가세 별도${it.ship ? ` · 운임 ${won(it.ship)}원 포함` : ""}</span>`] : null,
     OWNER && it.email ? ["이메일", esc(it.email)] : null,
     OWNER && it.biz ? ["사업자번호", `${esc(it.biz)}${it.rep ? ` <span class="sub small">대표 ${esc(it.rep)}</span>` : ""}`] : null,
-    OWNER && it.tax && (it.status !== "서명완료" || it.pay === "카드 결제") ? ["세금계산서", taxHtml(it)] : null,
+    OWNER && it.tax && it.status !== "서명완료" && it.pay !== "카드 결제" ? ["세금계산서", taxHtml(it)] : null,
     OWNER && it.qno ? ["견적 번호", `<a href="/quote/">${esc(it.qno)}</a>`] : null,
     OWNER && it.pdf ? ["서명본", `<a href="${esc(it.pdf)}" target="_blank" rel="noopener">PDF 열기</a>`] : null,
   ].filter(Boolean);
