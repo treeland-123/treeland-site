@@ -84,6 +84,15 @@ th,td{border-bottom:1px solid var(--line);padding:7px 6px;text-align:left;vertic
 th{color:var(--sub);font-weight:500;font-size:12.5px}
 td.n,th.n{text-align:right}
 .tbl{overflow-x:auto}
+/* 건당 작업 내역 줄 */
+.prows{display:flex;flex-direction:column;gap:8px}
+.prow{display:grid;grid-template-columns:1fr 120px 70px 96px auto;gap:6px;align-items:center}
+.prow input{min-width:0}
+.prow .ps{text-align:right;font-variant-numeric:tabular-nums;font-size:14px;font-weight:600;white-space:nowrap}
+.prow .rm{padding:6px 10px}
+.prow-h{display:grid;grid-template-columns:1fr 120px 70px 96px auto;gap:6px;font-size:12.5px;color:var(--sub);padding:0 2px}
+.prow-h span:nth-child(4){text-align:right}
+@media (max-width:560px){.prow,.prow-h{grid-template-columns:1fr 1fr 64px auto}.prow .pt{grid-column:1/-1}.prow-h span:first-child{display:none}}
 </style>
 </head>
 <body>
@@ -122,12 +131,12 @@ td.n,th.n{text-align:right}
           <div class="chips" id="payType"><button type="button" class="pick" data-v="hour" aria-pressed="true">시급</button><button type="button" class="pick" data-v="piece" aria-pressed="false">건당</button></div>
         </div>
         <div class="field" id="hourBox"><label for="n-wage">시급 (원)</label><input type="text" id="n-wage" inputmode="numeric" placeholder="예: 12,000" autocomplete="off"></div>
-        <div id="pieceBox" class="wrap" style="gap:12px" hidden>
-          <div class="field"><label for="n-unit">1건 기준</label><input type="text" id="n-unit" value="트리 1그루 오너먼트 장식" maxlength="60"></div>
-          <div class="grid3" style="grid-template-columns:1fr 1fr">
-            <div class="field"><label for="n-rate">건당 금액 (원)</label><input type="text" id="n-rate" inputmode="numeric" placeholder="예: 30,000" autocomplete="off"></div>
-            <div class="field"><label for="n-qty">건수</label><input type="number" id="n-qty" min="1" step="1" value="1" inputmode="numeric"></div>
-          </div>
+        <div id="pieceBox" class="field" hidden>
+          <span class="flabel">작업 내역 <span class="hint" style="font-weight:400">· 버튼을 누르면 줄이 생기고, 금액은 같은 내용에 마지막으로 쓴 값이 미리 들어갑니다</span></span>
+          <div class="chips" id="pieceQuick"></div>
+          <div class="prow-h"><span>작업 내용</span><span>건당 금액</span><span>건수</span><span>소계</span><span></span></div>
+          <div class="prows" id="pieceRows"></div>
+          <div class="row"><button type="button" class="ghost" id="pieceAdd">+ 줄 추가 (직접 입력)</button></div>
         </div>
         <div class="calc" id="calcBox">근무일과 시급을 넣으면 임금이 계산됩니다.</div>
         <div class="field"><span class="flabel">지급일</span>
@@ -160,7 +169,7 @@ td.n,th.n{text-align:right}
   </section>
 </div>
 
-<script src="/staff/shared.js?v=3"></script>
+<script src="/staff/shared.js?v=6"></script>
 <script>
 if(!STAFF_ENDPOINT) $("#demoNote").hidden = false;
 let ITEMS = [], DATES = [];
@@ -188,12 +197,38 @@ try{ const p = localStorage.getItem("tl_pin"); if(p) $("#pin").value = p; }catch
 /* ---------- 새 계약 ---------- */
 const num = s => Number(String(s).replace(/[^\d]/g, "")) || 0;
 let PAYTYPE = "hour";   // hour(시급) · piece(건당)
-function form(){ const piece = PAYTYPE === "piece"; return { dates: DATES.join(","), start: $("#n-start").value, end: $("#n-end").value, breakMin: num($("#n-break").value), payType: PAYTYPE, wage: piece ? 0 : num($("#n-wage").value), unit: piece ? $("#n-unit").value.trim() : "", rate: piece ? num($("#n-rate").value) : 0, qty: piece ? num($("#n-qty").value) : 0, payDay: $("#n-pay").value.trim(), place: $("#n-place").value.trim(), job: $("#n-job").value.trim(), memo: $("#n-memo").value.trim() }; }
+let PIECES = [{ t:"", rate:0, qty:1 }];   // 건당 작업 내역 줄
+const PIECE_PRESETS = ["1.95m 스탠다드", "1.95m 프리미엄", "2.3m 스탠다드", "2.3m 프리미엄", "2.9m 스탠다드", "2.9m 프리미엄"];
+function form(){ const piece = PAYTYPE === "piece"; return { dates: DATES.join(","), start: $("#n-start").value, end: $("#n-end").value, breakMin: num($("#n-break").value), payType: PAYTYPE, wage: piece ? 0 : num($("#n-wage").value), items: piece ? PIECES.filter(x => x.t.trim() || x.rate).map(x => ({ t:x.t.trim(), rate:x.rate, qty:x.qty })) : [], payDay: $("#n-pay").value.trim(), place: $("#n-place").value.trim(), job: $("#n-job").value.trim(), memo: $("#n-memo").value.trim() }; }
+// 내용별 마지막 금액 기억 (이 기기)
+const lastRates = () => { try{ return JSON.parse(localStorage.getItem("tl_piece_rates") || "{}"); }catch(e){ return {}; } };
+function keepRates(items){ try{ const m = lastRates(); items.forEach(x => { if(x.t && x.rate) m[x.t] = x.rate; }); localStorage.setItem("tl_piece_rates", JSON.stringify(m)); }catch(e){} }
+function renderPieces(){
+  $("#pieceQuick").innerHTML = PIECE_PRESETS.map(t => `<button type="button" class="pick" data-t="${esc(t)}" aria-pressed="false">${esc(t)}</button>`).join("");
+  $("#pieceRows").innerHTML = PIECES.map((x, i) => `<div class="prow" data-i="${i}"><input type="text" class="pt" data-k="t" value="${esc(x.t)}" placeholder="작업 내용 (예: 2.3m 스탠다드)" maxlength="40" aria-label="작업 내용"><input type="text" class="pr" data-k="rate" inputmode="numeric" value="${x.rate ? won(x.rate) : ""}" placeholder="건당 금액" aria-label="건당 금액"><input type="number" class="pq" data-k="qty" min="1" step="1" value="${x.qty || ""}" inputmode="numeric" aria-label="건수"><span class="ps">${x.rate && x.qty ? won(x.rate * x.qty) + "원" : "-"}</span><button type="button" class="ghost rm" data-prm="${i}" aria-label="이 줄 빼기">빼기</button></div>`).join("");
+  updateCalc();
+}
+$("#pieceQuick").addEventListener("click", e => {
+  const b = e.target.closest("[data-t]"); if(!b) return;
+  const t = b.dataset.t, rate = lastRates()[t] || 0, same = PIECES.find(x => x.t === t);
+  if(same) same.qty = (same.qty || 0) + 1;   // 이미 있는 줄이면 건수만 +1
+  else { const empty = PIECES.find(x => !x.t.trim() && !x.rate); if(empty) Object.assign(empty, { t, rate, qty: empty.qty || 1 }); else PIECES.push({ t, rate, qty:1 }); }
+  renderPieces();
+  const row = [...document.querySelectorAll("#pieceRows .prow")].find(r => r.querySelector(".pt").value === t); if(row && !rate) row.querySelector(".pr").focus();
+});
+$("#pieceAdd").onclick = () => { PIECES.push({ t:"", rate:0, qty:1 }); renderPieces(); const r = $("#pieceRows").lastElementChild; if(r) r.querySelector(".pt").focus(); };
+$("#pieceRows").addEventListener("click", e => { const b = e.target.closest("[data-prm]"); if(!b) return; PIECES.splice(+b.dataset.prm, 1); if(!PIECES.length) PIECES.push({ t:"", rate:0, qty:1 }); renderPieces(); });
+$("#pieceRows").addEventListener("input", e => {
+  const row = e.target.closest(".prow"); if(!row) return; const x = PIECES[+row.dataset.i], k = e.target.dataset.k;
+  if(k === "rate"){ x.rate = num(e.target.value); e.target.value = x.rate ? won(x.rate) : ""; }
+  else if(k === "qty") x.qty = num(e.target.value);
+  else if(k === "t"){ x.t = e.target.value; const r = lastRates()[x.t.trim()]; if(!x.rate && r){ x.rate = r; row.querySelector(".pr").value = won(r); } }
+  row.querySelector(".ps").textContent = x.rate && x.qty ? won(x.rate * x.qty) + "원" : "-";
+  updateCalc();
+});
 $("#payType").addEventListener("click", e => { const b = e.target.closest(".pick"); if(!b) return; PAYTYPE = b.dataset.v;
   document.querySelectorAll("#payType .pick").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
-  $("#hourBox").hidden = PAYTYPE === "piece"; $("#pieceBox").hidden = PAYTYPE !== "piece"; updateCalc(); });
-$("#n-rate").addEventListener("input", e => { const n = num(e.target.value); e.target.value = n ? won(n) : ""; updateCalc(); });
-["#n-qty","#n-unit"].forEach(id => $(id).addEventListener("input", updateCalc));
+  $("#hourBox").hidden = PAYTYPE === "piece"; $("#pieceBox").hidden = PAYTYPE !== "piece"; if(PAYTYPE === "piece") renderPieces(); else updateCalc(); });
 function renderDates(){
   $("#dates").innerHTML = DATES.map(d => `<span class="chip">${fmtDay(d, true)}<button type="button" data-rm="${d}" aria-label="${d} 빼기">×</button></span>`).join("");
   updateCalc();
@@ -212,10 +247,12 @@ function updateCalc(){
   $("#breakHint").textContent = span >= 480 && c.breakMin < 60 ? "8시간 이상이면 휴게 1시간 이상이 필요합니다." : span >= 240 && c.breakMin < 30 ? "4시간 이상이면 휴게 30분 이상이 필요합니다." : "";
   $("#breakHint").style.color = $("#breakHint").textContent ? "var(--err)" : "";
   if(k.piece){
-    if(!k.dates.length || !k.rate || !k.qty){ $("#calcBox").textContent = "근무일과 건당 금액·건수를 넣으면 임금이 계산됩니다."; return; }
-    $("#calcBox").innerHTML = `건당 ${won(k.rate)}원 × ${k.qty}건 = <b>${won(k.total)}원</b>`
-      + `<br><span class="hint">근무시간 ${hText(k.hours * k.dates.length)} 기준 최저임금 ${won(k.minPay)}원</span>`
-      + (k.minShort ? `<br><span class="flag">최저임금보다 ${won(k.minShort)}원 적습니다. 건당 금액이나 건수를 올리거나 근무시간을 줄여 주세요.</span>` : "");
+    const ok = k.items.filter(x => x.rate && x.qty);
+    if(!ok.length){ $("#calcBox").textContent = "작업 내용·건당 금액·건수를 넣으면 합계가 바로 계산됩니다."; return; }
+    $("#calcBox").innerHTML = `합계 <b>${won(k.total)}원</b> <span class="hint">(${ok.length}줄 · ${k.count}건)</span>`
+      + (k.dates.length && c.start && c.end
+        ? `<br><span class="hint">근무시간 ${hText(k.hours * k.dates.length)} 기준 최저임금 ${won(k.minPay)}원</span>` + (k.minShort ? `<br><span class="flag">최저임금보다 ${won(k.minShort)}원 적습니다. 금액·건수를 올리거나 근무시간을 줄여 주세요.</span>` : "")
+        : `<br><span class="hint">근무일을 넣으면 최저임금과 비교해 드립니다.</span>`);
     return;
   }
   if(!k.dates.length || !c.wage){ $("#calcBox").textContent = "근무일과 시급을 넣으면 임금이 계산됩니다."; return; }
@@ -229,8 +266,8 @@ $("#newForm").addEventListener("submit", async e => {
   if(!k.dates.length) return newErr("근무일을 추가해 주세요.");
   if(!c.start || !c.end) return newErr("시작·종료 시각을 넣어 주세요.");
   if(k.piece){
-    if(!c.unit) return newErr("1건 기준을 넣어 주세요. 예: 트리 1그루 오너먼트 장식");
-    if(!k.rate || !k.qty) return newErr("건당 금액과 건수를 넣어 주세요.");
+    if(!k.items.length) return newErr("작업 내역을 한 줄 이상 넣어 주세요.");
+    const bad = k.items.find(x => !x.t || !x.rate || !x.qty); if(bad) return newErr(`${bad.t || "작업 내용이 빈 줄"}: 작업 내용·건당 금액·건수를 모두 넣어 주세요.`);
     if(k.minShort) return newErr(`근무시간 기준 최저임금(${won(k.minPay)}원)보다 ${won(k.minShort)}원 적습니다. 금액·건수나 근무시간을 고쳐 주세요.`);
   } else if(c.wage < MIN_WAGE) return newErr(`시급은 최저시급 ${won(MIN_WAGE)}원 이상이어야 합니다.`);
   if($("#breakHint").textContent) return newErr($("#breakHint").textContent);
@@ -240,6 +277,7 @@ $("#newForm").addEventListener("submit", async e => {
     const j = await api({ action:"create", pin:pin(), contract:c });
     if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); return newErr("비밀번호를 확인해 주세요."); }
     if(!j.ok) return newErr("만들지 못했습니다. 입력값을 확인해 주세요.");
+    if(c.payType === "piece") keepRates(c.items);
     pinState(true, "확인되었습니다.");
     const days = k.dates.map(d => fmtDay(d, true)).join(", ");
     $("#r-msg").value = `안녕하세요.\n${days} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요. 서명하면 계약서 PDF를 바로 받으실 수 있어요.\n\n${j.url}`;
@@ -279,7 +317,7 @@ function renderList(){
         ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
         : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
     return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}</div>
-      <div class="m">${esc(it.start)}~${esc(it.end)} · ${k.piece ? `건당 ${won(k.rate)}원 × ${k.qty}건` : `시급 ${won(it.wage)}원`} · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
+      <div class="m">${esc(it.start)}~${esc(it.end)} · ${k.piece ? `건당 ${k.items.map(x => `${esc(x.t)} ${won(x.rate)}원×${x.qty}`).join(", ")}` : `시급 ${won(it.wage)}원`} · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
       ${A && A.edited ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span></div>` : ""}
       ${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
       <div class="acts">${acts}<button type="button" class="ghost" data-act="delete" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--sub)">삭제</button></div></div>`;

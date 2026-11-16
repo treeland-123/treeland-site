@@ -11,8 +11,8 @@
  */
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const COLS = ['id', 'created', 'status', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'memo',
-  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual', 'allow', 'payType', 'unit', 'rate', 'qty'];   // allow: 예전 내부 수당(안 씀). payType: hour(시급)·piece(건당)
-const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'payType', 'unit', 'rate', 'qty'];
+  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual', 'allow', 'payType', 'unit', 'rate', 'qty', 'items'];   // allow: 예전 내부 수당(안 씀). payType: hour(시급)·piece(건당)
+const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'payType', 'unit', 'rate', 'qty', 'items'];
 
 function doGet(e) {
   const p = (e && e.parameter) || {};
@@ -120,16 +120,17 @@ function create(c) {
   const dates = String(c.dates || '').split(',').map((s) => s.trim()).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)).sort();
   if (!dates.length) return { error: 'dates' };
   if (!/^\d{2}:\d{2}$/.test(c.start || '') || !/^\d{2}:\d{2}$/.test(c.end || '')) return { error: 'time' };
-  // 임금: 시급(hour) 또는 건당(piece, 2026-11-16). 건당은 1건 금액 × 건수, 최저임금 미달 차액 지급 조항이 계약서에 들어감
+  // 임금: 시급(hour) 또는 건당(piece, 2026-11-16). 건당은 작업 내역 줄마다 건당 금액 × 건수(items JSON), 최저임금 미달 차액 지급 조항이 계약서에 들어감
   const piece = c.payType === 'piece';
   const wage = piece ? 0 : Math.round(Number(c.wage) || 0);
-  const rate = piece ? Math.round(Number(c.rate) || 0) : 0, qty = piece ? Math.round(Number(c.qty) || 0) : 0;
+  const items = piece ? (Array.isArray(c.items) ? c.items : []).slice(0, 20).map((x) => ({ t: String(x && x.t || '').trim().slice(0, 40), rate: Math.round(Number(x && x.rate) || 0), qty: Math.round(Number(x && x.qty) || 0) })) : [];
   if (!piece && wage < 10320) return { error: 'wage' }; // 2026년 최저시급
-  if (piece && (!(rate > 0) || !(qty > 0) || !String(c.unit || '').trim())) return { error: 'piece' };
+  if (piece && (!items.length || items.some((x) => !x.t || !(x.rate > 0) || !(x.qty > 0)))) return { error: 'piece' };
+  const total = items.reduce((s, x) => s + x.rate * x.qty, 0);
   const id = newId();
   const row = { id: id, created: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm'), status: '서명대기', dates: dates.join(','), start: c.start, end: c.end,
     breakMin: Math.max(0, Math.round(Number(c.breakMin) || 0)), place: c.place || '', job: c.job || '', wage: wage, payDay: c.payDay || '', memo: c.memo || '',
-    payType: piece ? 'piece' : 'hour', unit: piece ? String(c.unit).trim().slice(0, 60) : '', rate: piece ? rate : '', qty: piece ? qty : '' };
+    payType: piece ? 'piece' : 'hour', unit: '', rate: piece ? total : '', qty: piece ? 1 : '', items: piece ? JSON.stringify(items) : '' };   // rate×qty = 합계 (예전 방식과 같은 계산)
   const sh = sheet();
   sh.appendRow(COLS.map((k) => String(row[k] == null ? '' : row[k])));
   return { ok: true, id: id, url: signUrl(id) };

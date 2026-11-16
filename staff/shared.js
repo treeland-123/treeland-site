@@ -27,15 +27,22 @@ function calc(c){
   const weeks = {};
   dates.forEach(s => { const d = new Date(s + "T00:00:00"); const mon = new Date(d); mon.setDate(d.getDate() - ((d.getDay() + 6) % 7)); const k = mon.toDateString(); weeks[k] = (weeks[k] || 0) + hours; });
   const maxWeek = Math.max(0, ...Object.values(weeks));
-  // 건당(piece): 1건 금액 × 건수. 최저임금(근로시간 합계 × 최저시급)에 못 미치면 minShort > 0
-  const piece = c.payType === "piece", rate = Number(c.rate) || 0, qty = Number(c.qty) || 0;
-  const total = piece ? rate * qty : dayPay * dates.length, minPay = Math.round(MIN_WAGE * hours * dates.length);
-  return { dates, work, hours, dayPay: piece ? Math.round(total / Math.max(1, dates.length)) : dayPay, total, piece, rate, qty, minPay, minShort: Math.max(0, minPay - total), maxWeek, under15: maxWeek < 15 };
+  // 건당(piece): 작업 내역 줄마다 건당 금액 × 건수, 합계 = 총 임금. 최저임금(근로시간 합계 × 최저시급)에 못 미치면 minShort > 0
+  const piece = c.payType === "piece", items = piece ? pieceItems(c) : [];
+  const total = piece ? items.reduce((s, x) => s + x.rate * x.qty, 0) : dayPay * dates.length, minPay = Math.round(MIN_WAGE * hours * dates.length);
+  return { dates, work, hours, dayPay: piece ? Math.round(total / Math.max(1, dates.length)) : dayPay, total, piece, items, count: items.reduce((s, x) => s + x.qty, 0), minPay, minShort: Math.max(0, minPay - total), maxWeek, under15: maxWeek < 15 };
 }
+// 건당 작업 내역: items(JSON 문자열 또는 배열) [{ t:"2.3m 스탠다드", rate:25000, qty:2 }]. 예전 한 줄 방식(unit·rate·qty)도 읽음
+function pieceItems(c){
+  let a = c.items; if(typeof a === "string"){ try{ a = a ? JSON.parse(a) : []; }catch(e){ a = []; } }
+  if(!Array.isArray(a) || !a.length) a = Number(c.rate) ? [{ t: c.unit || "작업", rate: c.rate, qty: c.qty }] : [];
+  return a.map(x => ({ t: String(x.t || "").trim(), rate: Math.round(Number(x.rate) || 0), qty: Math.round(Number(x.qty) || 0) })).filter(x => x.t || x.rate || x.qty);
+}
+const itemLine = x => `${x.t} ${won(x.rate)}원 × ${x.qty}건 = ${won(x.rate * x.qty)}원`;
 // 임금 한 줄 (서명 화면·계약서·관리 목록 공통)
 function payText(c){
   const k = calc(c);
-  return k.piece ? `건당 ${won(k.rate)}원 × ${k.qty}건 (${c.unit || "1건"}) · 총 ${won(k.total)}원` : `시급 ${won(c.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)`;
+  return k.piece ? `건당 · ${k.items.map(itemLine).join(", ")} · 합계 ${won(k.total)}원` : `시급 ${won(c.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)`;
 }
 // 실근무 기록(관리 화면에서 사후 수정, 내부용). 기록 없는 날은 계약 시간 그대로
 function actualDays(c){
@@ -65,7 +72,7 @@ function terms(c){
     ["제3조 (업무 내용)", [c.job || "-"]],
     ["제4조 (근로시간 및 휴게시간)", [`① 근로시간은 ${c.start}부터 ${c.end}까지로 하며, ` + (Number(c.breakMin) ? `휴게시간 ${c.breakMin}분을 제외한 실근로시간은 1일 ${hText(k.hours)}으로 한다. 휴게시간은 근로자가 자유롭게 이용한다.` : `실근로시간은 1일 ${hText(k.hours)}으로 한다.`), "② 사업주와 근로자는 합의하여 근로일과 근로시간을 변경할 수 있다."]],
     ["제5조 (임금)", [k.piece
-      ? `① 임금은 건당으로 정하며, 1건(${c.unit || "작업 1건"})당 금 ${won(k.rate)}원, ${k.qty}건 총 금 ${won(k.total)}원으로 한다. 다만 임금 총액이 실근로시간에 최저임금을 곱한 금액보다 적은 경우에는 그 차액을 더하여 지급한다.`
+      ? `① 임금은 건당으로 정하며, 작업 내역(${k.items.map(x => `${x.t} 1건당 금 ${won(x.rate)}원 × ${x.qty}건`).join(", ")})에 따라 총 금 ${won(k.total)}원으로 한다. 다만 임금 총액이 실근로시간에 최저임금을 곱한 금액보다 적은 경우에는 그 차액을 더하여 지급한다.`
       : `① 시급은 금 ${won(c.wage)}원으로 하며, 1일 임금은 금 ${won(k.dayPay)}원, 총 임금은 금 ${won(k.total)}원(${k.dates.length}일분)으로 한다.`,
       `② 임금은 ${c.payDay || "근로일 당일"}에 근로자 명의의 예금 계좌로 지급한다.`,
       "③ 임금은 소득세 등 관계 법령에 따라 공제할 금액을 공제한 후 지급한다.",
