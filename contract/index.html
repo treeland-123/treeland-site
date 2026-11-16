@@ -156,6 +156,7 @@ html.loading #app{display:none}
       <input type="text" id="f-addr2" placeholder="상세 주소 (층·호수)" style="margin-top:6px">
     </div>
     <div class="field" style="margin-top:12px"><label for="f-outlet">콘센트 위치 <span class="req">*</span></label><input type="text" id="f-outlet" placeholder="예: 입구 왼쪽 벽, 트리 놓을 자리에서 2m"></div>
+    <div class="field" style="margin-top:12px"><label for="f-parking">주차 방법 <span class="req">*</span></label><input type="text" id="f-parking" maxlength="200" placeholder="예: 건물 지하 주차장(경비실에 차량번호 말씀) / 건물 뒤 공영주차장"></div>
     <fieldset>
       <legend>결제 방법 <span class="req" style="color:var(--err)">*</span></legend>
       <div class="opts">
@@ -295,7 +296,7 @@ const TERMS = [
 let C = null;   // 계약 데이터 (트리랜드가 미리 입력)
 const shipText = v => v === "" || v == null ? "운임 포함" : Number(v) > 0 ? `운임 ${won(v)}원 포함` : "운임 없음";
 const contentRows = c => [
-  ["설치 장소", c.place], ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", c.addons || "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
+  ["설치 장소", c.place], ...(c.parking ? [["주차 방법", c.parking]] : []), ["임대물 크기·구성·수량", c.size], ["장식 색상", c.color], ["추가 장식·소품", c.addons || "견적서와 같습니다"], ...(c.extra ? [["비고", c.extra]] : []),
   ["설치 예정일", fmtDate(c.install)], ["회수 예정일", fmtDate(c.retrieve)],
   ["임대료", `금 ${hangulAmount(c.price)}원정 (₩${won(c.price)}) · 부가가치세 별도, ${shipText(c.ship)}`],
 ];
@@ -374,7 +375,7 @@ function radio(n){ return document.querySelector(`input[name=${n}]:checked`)?.va
 function showErr(m, focusEl){ const e = $("#err"); e.textContent = m; e.hidden = false; if(focusEl) focusEl.focus(); }
 
 function collect(){
-  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"],["#f-addr","설치 주소를"],["#f-outlet","콘센트 위치를"]];
+  const req = [["#f-name","상호 또는 성명을"],["#f-rep","대표자를"],["#f-contact","담당자를"],["#f-tel","연락처를"],["#f-email","이메일을"],["#f-addr","설치 주소를"],["#f-outlet","콘센트 위치를"],["#f-parking","주차 방법을"]];
   for(const [id,label] of req) if(!val(id)) return showErr(`${label} 입력해 주세요.`, $(id));
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val("#f-email"))) return showErr("이메일 주소 형식을 확인해 주세요.", $("#f-email"));
   if(!radio("pay")) return showErr("결제 방법을 골라 주세요.", $("#pay-1"));
@@ -389,7 +390,7 @@ function collect(){
   $("#err").hidden = true;
   return {
     name: val("#f-name"), rep: val("#f-rep"), biz: val("#f-biz"), contact: val("#f-contact"), tel: val("#f-tel"),
-    email: val("#f-email"), addr: [val("#f-addr"), val("#f-addr2")].filter(Boolean).join(" "), outlet: val("#f-outlet"), pay: radio("pay"), photo: photoChoice()[0],
+    email: val("#f-email"), addr: [val("#f-addr"), val("#f-addr2")].filter(Boolean).join(" "), outlet: val("#f-outlet"), parking: val("#f-parking"), pay: radio("pay"), photo: photoChoice()[0],
     tag: photoChoice()[1], ig: radio("q1") === "y" && radio("q2") === "y" ? val("#f-ig") : "",
     tax: isBiz() ? { email: val("#t-email"), addr: val("#t-addr"), type: val("#t-type"), item: val("#t-item") } : null,
     taxDoc: isBiz() ? TAXDOC : null
@@ -506,6 +507,7 @@ $("#form").addEventListener("submit", async e => {
   try{
     const signedAt = new Date().toISOString();
     C.place = g.addr;   // 계약서 제2조 '설치 장소'는 고객이 입력한 설치 주소
+    C.parking = g.parking;
     const sigUrl = cv.toDataURL("image/png");
     const hash = await sha256(JSON.stringify({contract:C, customer:g, signedAt, terms:TERMS}));
     const pdf = await makePdf(buildPaper(g, sigUrl, signedAt, hash));

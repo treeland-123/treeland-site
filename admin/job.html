@@ -72,6 +72,7 @@ dialog.viewer::backdrop{background:rgba(0,0,0,.7)}
 .cta{position:sticky;bottom:12px;z-index:4;display:flex;gap:8px}
 @media (max-width:760px){.cta{bottom:calc(84px + env(safe-area-inset-bottom,0px))}}
 .cta .btn{flex:1;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.linkbtn{border:0;background:none;color:var(--acc);font:inherit;font-size:14px;font-weight:600;padding:4px 2px;margin-left:4px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 </style>
 </head>
 <body>
@@ -216,6 +217,12 @@ function taxEdit(it){
     TL.toast(UI.taxState(D.item, EXTRAS).k === "ready" ? "저장했습니다 · 발행 대기" : "저장했습니다 · 아직 빠진 정보가 있습니다");
   });
 }
+/* 주차 방법: 서명 때 고객이 적음. 예전 계약은 대표가 직접 입력 */
+function parkEdit(){
+  const sh = TL.sheet(`<div class="tform"><label>주차 방법<input id="pkV" maxlength="200" value="${esc(D.item.parking || "")}" placeholder="예: 건물 지하 주차장 / 건물 뒤 공영주차장"></label><button type="button" class="btn full" id="pkSave">저장</button></div>`, { title:"주차 방법" });
+  const q = s => sh.el.querySelector(s); q("#pkV").focus();
+  q("#pkSave").addEventListener("click", async () => { const v = q("#pkV").value.trim(); sh.close(); await update("parking", v, v ? "주차 방법을 저장했습니다" : "주차 방법을 지웠습니다"); });
+}
 function shrinkDoc(f){   // 사업자등록증 사진: 긴 변 1800px JPEG
   return new Promise((res, rej) => {
     const url = URL.createObjectURL(f), img = new Image();
@@ -239,7 +246,7 @@ async function update(field, value, okMsg){
   const nowS = UI.seoulKey() + " " + new Date().toTimeString().slice(0, 5);
   if(field === "paid"){ if(EXTRAS) EXTRAS[ID] = Object.assign({}, EXTRAS[ID] || {}, { paid: !!value, paidDate: value ? UI.seoulKey() : "" }); D.item.paid = value ? nowS : ""; }
   else if(field === "halt") D.item.halt = value ? nowS + " · " + value : "";
-  else if(field === "crew") D.item.crew = value;
+  else if(field === "crew" || field === "parking") D.item[field] = value;
   else D.item[field] = value ? nowS : "";
   render(); if(okMsg) TL.toast(okMsg);
   try{
@@ -311,6 +318,7 @@ function render(){
   const info = [
     ["장소", esc(it.place || "—")],
     it.outlet ? ["콘센트", esc(it.outlet)] : null,
+    it.parking || (OWNER && it.status === "서명완료") ? ["주차", `${it.parking ? esc(it.parking) : `<span class="sub small">미입력</span>`}${OWNER ? ` <button type="button" class="linkbtn" data-park>${it.parking ? "고치기" : "입력"}</button>` : ""}`] : null,
     ["담당자", esc(it.contact || "서명 전")],
     ["트리", esc(it.size || "—")],
     ["장식 색상", esc(it.color || "—")],
@@ -449,6 +457,7 @@ const LABEL = { doneIn:"설치 완료", doneOut:"회수 완료", paid:"입금 �
 document.addEventListener("click", async e => {
   if(e.target.closest("[data-paymsg]")){ copyPayMsg(); return; }
   if(e.target.closest("[data-remind]")){ copyRemind(); return; }
+  if(e.target.closest("[data-park]")){ parkEdit(); return; }
   if(D && await taxAct(e)) return;
   const a = e.target.closest("[data-act]");
   if(a){
