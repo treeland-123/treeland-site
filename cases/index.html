@@ -1372,6 +1372,12 @@ button.sl-d:active{transform:scale(.94)}
 .past-cases:not(.open){display:none}.past-cases.open{padding-top:22px}
 .past-hint{margin:0 0 14px;font-size:14px;color:var(--muted)}
 @media (max-width:640px){.past-open{padding:14px 14px}.past-open b{font-size:15px}.past-hint{font-size:13px}}
+/* 채팅 견적 색상 카드: 설치 사례 작은 사진 + 사례 보기 */
+.qcard .qreal{position:absolute;right:5px;bottom:5px;width:38%;aspect-ratio:3/4;padding:0;border:2px solid #fff;border-radius:5px;overflow:hidden;box-shadow:0 3px 10px rgba(20,30,24,.3);cursor:zoom-in}
+.qcard .qreal img{width:100%;height:100%;aspect-ratio:auto!important;object-fit:cover;border-radius:0;filter:none!important;opacity:1!important}
+.qcard .qsee{justify-self:start;font-size:11.5px;font-weight:700;color:var(--berry);text-decoration:underline;text-underline-offset:2px;cursor:zoom-in}
+.qcard.is-out .qsee{color:var(--muted)}
+.qcard.is-out .qsoon{left:8px;top:8px;transform:none;background:#3a3a36;border-color:#3a3a36;color:#fff}
 /* 품절 색상 */
 .color.is-out .img>img{filter:grayscale(.55);opacity:.55}
 .color.is-out h3,.color.is-out p{color:var(--muted)}
@@ -2513,8 +2519,16 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     items.forEach(it => {
       const b = document.createElement('button'); b.type = 'button'; b.className = 'qcard' + (it.k ? ' ' + it.k : '');
       b.innerHTML = (it.soon ? '<span class="qimg"><img src="img/' + it.img + '.webp" alt="" loading="lazy"><span class="qsoon">' + it.soon + '</span></span>' : '<img src="img/' + it.img + '.webp" alt="" loading="lazy">') + (it.tag ? '<span class="qt">' + it.tag + '</span>' : '') + '<b>' + it.b + '</b>' + (it.s ? '<span>' + it.s + '</span>' : '') + (it.p ? '<span class="qp">' + it.p + '</span>' : '');
-      if (it.out) { b.disabled = true; b.classList.add('is-out'); b.setAttribute('aria-label', it.b + ' 품절'); const im = b.querySelector('img'); if (im) { const sp = document.createElement('span'); sp.className = 'qimg'; im.replaceWith(sp); sp.appendChild(im); sp.insertAdjacentHTML('beforeend', '<span class="qsoon">품절</span>'); } }
-      else b.onclick = () => on(it.v, b);
+      const wrapImg = () => { const im = b.querySelector(':scope > img'); if (!im) return b.querySelector('.qimg'); const sp = document.createElement('span'); sp.className = 'qimg'; im.replaceWith(sp); sp.appendChild(im); return sp; };
+      if (it.out) { b.classList.add('is-out'); b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-label', it.b + ' 품절'); wrapImg().insertAdjacentHTML('beforeend', '<span class="qsoon">품절</span>'); }
+      // 설치 사례 사진: 이미지 오른쪽 아래 작은 사진 + 이름 아래 '사례 보기' (누르면 크게, 색상 선택은 안 됨)
+      if (it.real) {
+        const view = e => { e.stopPropagation(); e.preventDefault(); track('color_case_view', { color: it.v }); if (window.__openLb) window.__openLb(it.real[0], it.b + ' 오너먼트로 설치한 트리', b); };
+        wrapImg().insertAdjacentHTML('beforeend', '<span class="qreal" role="button" tabindex="0" aria-label="' + it.b + ' 설치 사례 보기"><img src="' + it.real[1] + '" alt="" loading="lazy"></span>');
+        b.querySelector('b').insertAdjacentHTML('afterend', '<span class="qsee" role="button" tabindex="0">사례 보기 ›</span>');
+        b.querySelectorAll('.qreal, .qsee').forEach(x => { x.addEventListener('click', view); x.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') view(e); }); });
+      }
+      if (!it.out) b.onclick = () => on(it.v, b);
       g.appendChild(b);
     });
     if (opts.extra) { const c = chips(opts.extra.map(e => e[1]), t => on(opts.extra.find(e => e[1] === t)[0])); c.style.marginTop = '10px'; w.appendChild(c); }
@@ -2614,7 +2628,9 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     },
     color: () => {
       const list = units();
-      const w = cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag, out: c.out })), v => { answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v, null, { colorPer: null }); }, { cls: 'sq', extra: [['추천', '사진 보고 추천받을게요']] });
+      const real = {};   // 설치 사례 사진은 홈페이지 '장식 색상' 칸의 설치 모습 사진을 그대로 씀 (한 곳만 바꾸면 같이 바뀜)
+      document.querySelectorAll('#colorList .color').forEach(f => { const h = f.querySelector('h3'), r = f.querySelector('.col-real'); if (h && r) real[h.textContent.trim()] = [r.dataset.zoom, r.querySelector('img').getAttribute('src')]; });
+      const w = cards(COLORS.map(c => ({ v: c.name, b: c.name, img: c.img, tag: c.tag, out: c.out, real: real[c.name] })), v => { answer('color', v, v === '추천' ? '사진 보고 추천받을게요' : v, null, { colorPer: null }); }, { cls: 'sq two', extra: [['추천', '사진 보고 추천받을게요']] });
       if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
         bubble('me', '트리마다 다르게 고를게요');
         say('트리마다 색상을 골라 주세요.', () => {
