@@ -39,6 +39,7 @@
   <div class="head"><div><p class="eyebrow" id="sub">설치 완료 처리 전 · 서명 완료 계약</p><h1>자재</h1></div></div>
   <div class="top">
     <div class="filters" id="range" role="group" aria-label="기간">
+      <button type="button" data-r="today" aria-pressed="false">오늘</button>
       <button type="button" data-r="tomorrow" aria-pressed="false">내일</button>
       <button type="button" data-r="week" aria-pressed="true">이번 주</button>
       <button type="button" data-r="all" aria-pressed="false">앞으로 전체</button>
@@ -64,7 +65,7 @@
 const $ = s => document.querySelector(s);
 const { esc } = UI;
 const P = new URLSearchParams(location.search);
-const RANGES = ["tomorrow", "week", "all", "used", "season"];
+const RANGES = ["today", "tomorrow", "week", "all", "used", "season"];
 let D = null, R = RANGES.includes(P.get("r")) ? P.get("r") : "week";
 const opt = k => { try{ return localStorage.getItem("tl_prep_" + k) === "1"; }catch(e){ return false; } };
 const setOpt = (k, v) => { try{ localStorage.setItem("tl_prep_" + k, v ? "1" : "0"); }catch(e){} };
@@ -87,13 +88,14 @@ function pick(){
     if(R === "season") return used(it) || upcoming(it);
     if(!upcoming(it)) return false;
     const k = keyOf(it); if(R === "all") return true;
+    if(R === "today") return k && UI.dayDiff(k) === 0;   // 오늘 설치분만 (설치 완료 처리 전)
     if(R === "tomorrow") return k && UI.dayDiff(k) === 1;   // 내일 설치분만
     return k && UI.dayDiff(k) <= 6;   // 이번 주 = 오늘부터 7일 + 완료 처리 안 된 지난 설치
   });
-  const readyOut = (R === "tomorrow" || R === "week" || R === "all") && $("#optReady").checked ? list.filter(it => prepState(it).ready) : [];
+  const readyOut = (R === "today" || R === "tomorrow" || R === "week" || R === "all") && $("#optReady").checked ? list.filter(it => prepState(it).ready) : [];
   list = list.filter(it => !readyOut.includes(it));
   list.sort((a, b) => (keyOf(a) || "9").localeCompare(keyOf(b) || "9") * (R === "used" ? -1 : 1));   // 사용: 최근 설치부터
-  const signWait = R === "used" ? [] : (D.all || []).filter(it => !it.archived && !it.halt && it.status === "서명대기" && (R === "tomorrow" ? keyOf(it) && UI.dayDiff(keyOf(it)) === 1 : R !== "week" || (keyOf(it) && UI.dayDiff(keyOf(it)) <= 6)));
+  const signWait = R === "used" ? [] : (D.all || []).filter(it => !it.archived && !it.halt && it.status === "서명대기" && (R === "today" || R === "tomorrow" ? keyOf(it) && UI.dayDiff(keyOf(it)) === (R === "today" ? 0 : 1) : R !== "week" || (keyOf(it) && UI.dayDiff(keyOf(it)) <= 6)));
   return { list, readyOut, signWait };
 }
 function render(animate){
@@ -101,16 +103,17 @@ function render(animate){
   const { list, readyOut, signWait } = pick(), M = UI.matTotals(list);
   const late = R === "week" || R === "all" ? list.filter(it => keyOf(it) && UI.dayDiff(keyOf(it)) < 0).length : 0;
   const ssK = seasonStart(), season = `${ssK.slice(0, 4)} 시즌`;
-  const tm = (() => { const t = UI.seoulKey(), d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10) + 1); return `${d.getMonth() + 1}/${d.getDate()}(${UI.WD[d.getDay()]})`; })();
-  $("#sub").textContent = { tomorrow:`내일 ${tm} 설치분`, week:"오늘부터 7일 설치분 · 설치 완료 처리 전", all:"설치 완료 처리 전 전부", used:`${season} 설치 완료한 곳 (회수 완료·보관 포함)`, season:`${season} 설치 완료 + 앞으로 설치` }[R];
-  $("#lbReady").hidden = !(R === "tomorrow" || R === "week" || R === "all"); $("#lbSign").hidden = R === "used";
+  const dayLabel = add => { const t = UI.seoulKey(), d = new Date(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10) + add); return `${d.getMonth() + 1}/${d.getDate()}(${UI.WD[d.getDay()]})`; };
+  const tm = dayLabel(1), td = dayLabel(0);
+  $("#sub").textContent = { today:`오늘 ${td} 설치분 · 설치 완료 처리 전`, tomorrow:`내일 ${tm} 설치분`, week:"오늘부터 7일 설치분 · 설치 완료 처리 전", all:"설치 완료 처리 전 전부", used:`${season} 설치 완료한 곳 (회수 완료·보관 포함)`, season:`${season} 설치 완료 + 앞으로 설치` }[R];
+  $("#lbReady").hidden = !(R === "today" || R === "tomorrow" || R === "week" || R === "all"); $("#lbSign").hidden = R === "used";
   const nDone = list.filter(it => it.doneIn).length;
   const trees = M.rows.filter(r => r.sub === "대").reduce((a, r) => a + r.n, 0);
   $("#sumline").innerHTML = list.length
     ? `<b>${list.length}곳</b> · 트리 <b>${trees}대</b>${R === "season" ? ` · 설치 완료 ${nDone}곳 + 앞으로 ${list.length - nDone}곳` : ""}${late ? ` · 지난 설치 ${late}곳 포함(완료 처리 전)` : ""}${readyOut.length ? ` · 준비 끝난 ${readyOut.length}곳 뺌` : ""}${!$("#optSign").checked && signWait.length ? ` · 서명 대기 ${signWait.length}곳 빠짐` : ""}`
     : "";
   $("#tot").innerHTML = M.rows.length ? M.rows.map(r => `<div class="mat"><b>${esc(r.k)}</b><span class="n">${r.n.toLocaleString("ko-KR")}<small>${esc(r.sub)}</small>${/^오너먼트 /.test(r.k) ? `<small class="pcs">${(r.n * 80).toLocaleString("ko-KR")}개</small>` : ""}</span><span class="who">${esc(r.who.join(" · "))}</span></div>`).join("")
-    : `<p class="hint">${R === "tomorrow" ? `내일(${tm}) 설치할 곳이 없습니다.` : R === "week" ? "이번 주 설치할 곳이 없습니다." : R === "used" ? "이번 시즌에 설치 완료한 곳이 없습니다." : "설치 예정인 곳이 없습니다."}</p>`;
+    : `<p class="hint">${R === "today" ? `오늘(${td}) 설치할 곳이 없습니다.` : R === "tomorrow" ? `내일(${tm}) 설치할 곳이 없습니다.` : R === "week" ? "이번 주 설치할 곳이 없습니다." : R === "used" ? "이번 시즌에 설치 완료한 곳이 없습니다." : "설치 예정인 곳이 없습니다."}</p>`;
   $("#chkBox").hidden = !M.check.length;
   $("#chk").innerHTML = M.check.map(c => `<li><b>${esc(c[0])}</b> — ${esc(c[1])}</li>`).join("");
   $("#addBox").hidden = !M.addons.length;
