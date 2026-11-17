@@ -729,7 +729,7 @@ html.intro,html.intro body{overflow:hidden;overscroll-behavior:none}
 .pc-grid.c3 figcaption b,.pc-grid.wrapcap figcaption b{white-space:normal;word-break:keep-all}
 @media (max-width:640px){.pc-grid.c3 figcaption b{font-size:14px}}
 .pc-ph{position:relative;display:block;aspect-ratio:var(--r,1/1);overflow:hidden;background:#fff;border-radius:2px}
-/* 품절 소품: 사진은 흐리게, 왼쪽 위 '품절' 표시 */
+/* 예약 마감 소품: 사진은 흐리게, 왼쪽 위 '2026 예약 마감' 표시 */
 .pc-out .pc-ph img{filter:grayscale(.55);opacity:.55}
 .pc-sold{position:absolute;left:8px;top:8px;z-index:2;padding:3px 9px;border-radius:2px;background:#3a3a36;color:#fff;font-size:12px;font-weight:700;letter-spacing:.02em;pointer-events:none}
 .pc-out figcaption b{color:var(--muted)}
@@ -757,6 +757,19 @@ dialog.lb{z-index:50}
 .pop-ltd{background:#B8862E!important}
 .ic-title small.ltd{color:#B8862E}
 .sheet-row[data-size-card="230s"]{background:color-mix(in srgb,#B8862E 7%,transparent)}
+/* 예약 마감 크기 (11/17 2.3m 스노우) */
+.sheet-row.is-out{background:transparent}
+.sheet-row.is-out>img{filter:grayscale(.55);opacity:.55}
+.sheet-row.is-out .sz>span,.sheet-row.is-out .tp b,.sheet-row.is-out .tp s,.sheet-row.is-out .tp-k{color:var(--muted)!important}
+.sheet-row.is-out .tp-off{display:none}
+.pop-out{background:#3a3a36!important}
+.ic-title small.out{color:#3a3a36}
+.ic-out{margin:0 0 4px;padding:10px 12px;border-radius:6px;background:color-mix(in srgb,#3a3a36 7%,transparent);font-size:14px;line-height:1.5}
+.qsz-c.is-out .qsz-hit{cursor:not-allowed}
+.qsz-c.is-out .qsz-hit img{filter:grayscale(.6);opacity:.5}
+.qsz-c.is-out .qsz-hit b{color:var(--muted)}
+.qsz-c.is-out .qx-st{visibility:hidden}
+.qsz-c.is-out .qsoon{left:6px;top:6px;transform:none;background:#3a3a36;border-color:#3a3a36;color:#fff}
 /* per-tree colour rows */
 #toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:60;transform:translate(-50%,12px);max-width:calc(100vw - 32px);padding:10px 16px;border-radius:4px;background:rgba(21,33,27,.92);color:#F4F1EA;font-size:13.5px;line-height:1.45;text-align:center;opacity:0;pointer-events:none;transition:opacity .25s,transform .25s}
 #toast.on{opacity:1;transform:translate(-50%,0)}
@@ -1357,7 +1370,7 @@ button.sl-d:active{transform:scale(.94)}
 .qcard .qsee{justify-self:start;font-size:11.5px;font-weight:700;color:var(--berry);text-decoration:underline;text-underline-offset:2px;cursor:zoom-in}
 .qcard.is-out .qsee{color:var(--muted)}
 .qcard.is-out .qsoon{left:8px;top:8px;transform:none;background:#3a3a36;border-color:#3a3a36;color:#fff}
-/* 품절 색상 */
+/* 예약 마감 색상 */
 .color.is-out .img>img{filter:grayscale(.55);opacity:.55}
 .color.is-out h3,.color.is-out p{color:var(--muted)}
 .col-out{background:#3a3a36!important}
@@ -1651,7 +1664,7 @@ button.sl-d:active{transform:scale(.94)}
           <p>세이지 그린과 옅은 금빛. 아이보리 벽, 밝은 나무색 공간에 차분하게 어울립니다.</p>
         </figure>
         <figure class="color is-out">
-          <div class="img"><span class="new-b col-new col-out">품절</span><img src="img/ornament-navy-set.webp" width="900" height="900" loading="lazy" alt="네이비 & 골드 오너먼트 구성"><button type="button" class="col-real" data-zoom="img/col-navy.webp" aria-label="네이비 & 골드 오너먼트로 설치한 트리 크게 보기"><img src="img/col-navy-300.webp" width="300" height="400" loading="lazy" alt="네이비 & 골드 오너먼트로 설치한 트리"><span>설치 모습</span></button></div>
+          <div class="img"><span class="new-b col-new col-out">2026 예약 마감</span><img src="img/ornament-navy-set.webp" width="900" height="900" loading="lazy" alt="네이비 & 골드 오너먼트 구성"><button type="button" class="col-real" data-zoom="img/col-navy.webp" aria-label="네이비 & 골드 오너먼트로 설치한 트리 크게 보기"><img src="img/col-navy-300.webp" width="300" height="400" loading="lazy" alt="네이비 & 골드 오너먼트로 설치한 트리"><span>설치 모습</span></button></div>
           <div class="dots" aria-hidden="true"><i style="background:#1d2d45"></i><i style="background:#c7a463"></i><i style="background:#f4f0e8"></i></div>
           <h3>네이비 &amp; 골드</h3>
           <p>짙은 남색과 금빛. 흰 벽이나 크림색 벽 앞에서 또렷하게 보입니다.</p>
@@ -1737,7 +1750,7 @@ button.sl-d:active{transform:scale(.94)}
         <div class="sheet-row" role="row" data-size-card="135" tabindex="0" aria-label="1.35m 자세히 보기"><img role="cell" src="img/size-135.webp" width="600" height="800" loading="lazy" alt="1.35m 설치 예"><div class="sz" role="cell"><b class="num">1.35m</b><span>하단 지름 81cm · 작은 공간, 입구 옆</span><span class="sz-box">기본 별 · 하단 상자 미포함</span></div><span class="tp pre tp-one" role="cell" data-p1="289000" data-o1="15%"><em class="tp-k">단일 구성 · 프리미엄 장식</em><b class="num"><i class="tp-off">10%</i>306,000원</b><s class="num">340,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row" role="row" data-size-card="195" tabindex="0" aria-label="1.95m 슬림 자세히 보기"><img role="cell" src="img/size-195.webp" width="600" height="800" loading="lazy" alt="1.95m 슬림 설치 예"><div class="sz" role="cell"><b class="num">1.95m 슬림</b><span>하단 지름 100cm · 폭이 좁은 자리</span><span class="sz-box">하단 상자 3개</span></div><span class="tp" role="cell" data-p1="470000" data-o1="10%"><em class="tp-k">스탠다드</em><b class="num"><i class="tp-off">5%</i>498,000원</b><s class="num">525,000원</s></span><span class="tp pre" role="cell" data-p1="550000" data-o1="15%"><em class="tp-k">프리미엄</em><b class="num"><i class="tp-off">10%</i>585,000원</b><s class="num">650,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row is-pop" role="row" data-size-card="230" tabindex="0" aria-label="2.3m 자세히 보기"><img role="cell" src="img/size-230.webp" width="600" height="801" loading="lazy" alt="2.3m 설치 예"><div class="sz" role="cell"><b class="num">2.3m<span class="pop">인기</span></b><span>하단 지름 140cm · 카페, 사무실, 가정</span><span class="sz-box">하단 상자 5개</span></div><span class="tp" role="cell" data-p1="580000" data-o1="10%"><em class="tp-k">스탠다드</em><b class="num"><i class="tp-off">5%</i>612,000원</b><s class="num">645,000원</s></span><span class="tp pre" role="cell" data-p1="680000" data-o1="15%"><em class="tp-k">프리미엄</em><b class="num"><i class="tp-off">10%</i>720,000원</b><s class="num">800,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
-        <div class="sheet-row" role="row" data-size-card="230s" tabindex="0" aria-label="2.3m 스노우 자세히 보기"><img role="cell" src="img/size-230s.webp" width="600" height="800" loading="lazy" alt="2.3m 스노우 설치 예"><div class="sz" role="cell"><b class="num">2.3m 스노우<span class="pop pop-ltd">한정 수량</span></b><span>잎 끝에 눈이 덮인 트리 · 하단 지름 140cm</span><span class="sz-box">하단 상자 5개</span></div><span class="tp" role="cell" data-p1="652000" data-o1="10%"><em class="tp-k">스탠다드</em><b class="num"><i class="tp-off">5%</i>688,000원</b><s class="num">725,000원</s></span><span class="tp pre" role="cell" data-p1="765000" data-o1="15%"><em class="tp-k">프리미엄</em><b class="num"><i class="tp-off">10%</i>810,000원</b><s class="num">900,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
+        <div class="sheet-row is-out" role="row" data-size-card="230s" tabindex="0" aria-label="2.3m 스노우 자세히 보기, 2026 예약 마감"><img role="cell" src="img/size-230s.webp" width="600" height="800" loading="lazy" alt="2.3m 스노우 설치 예"><div class="sz" role="cell"><b class="num">2.3m 스노우<span class="pop pop-out">2026 예약 마감</span></b><span>잎 끝에 눈이 덮인 트리 · 하단 지름 140cm</span><span class="sz-box">하단 상자 5개</span></div><span class="tp" role="cell" data-p1="652000" data-o1="10%"><em class="tp-k">스탠다드</em><b class="num"><i class="tp-off">5%</i>688,000원</b><s class="num">725,000원</s></span><span class="tp pre" role="cell" data-p1="765000" data-o1="15%"><em class="tp-k">프리미엄</em><b class="num"><i class="tp-off">10%</i>810,000원</b><s class="num">900,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
         <div class="sheet-row" role="row" data-size-card="290" tabindex="0" aria-label="2.9m 자세히 보기"><img role="cell" src="img/size-290.webp" width="600" height="800" loading="lazy" alt="2.9m 설치 예"><div class="sz" role="cell"><b class="num">2.9m</b><span>하단 지름 155cm · 천장이 높은 로비</span><span class="sz-box">하단 상자 8개</span></div><span class="tp" role="cell" data-p1="1300000" data-o1="10%"><em class="tp-k">스탠다드</em><b class="num"><i class="tp-off">5%</i>1,377,000원</b><s class="num">1,450,000원</s></span><span class="tp pre" role="cell" data-p1="1400000" data-o1="15%"><em class="tp-k">프리미엄</em><b class="num"><i class="tp-off">10%</i>1,485,000원</b><s class="num">1,650,000원</s></span><span class="row-more" aria-hidden="true">›</span></div>
       </div>
       <p class="sheet-note">부가세 별도 · <strong>계약금 없이 설치 후 결제</strong> · 세금계산서 발행, 카드·현금 결제 가능</p>
@@ -2185,7 +2198,7 @@ button.sl-d:active{transform:scale(.94)}
       '135': { box: 0, t: '1.35m', d: '81cm', img: 'img/size-135.webp', fit: '매장 입구, 카운터 옆, 작은 스터디카페처럼 자리가 넉넉하지 않은 곳', cases: ['study'], chip: 's135' },
       '195': { box: 3, t: '1.95m 슬림', d: '100cm', img: 'img/size-195.webp', fit: '병원 대기실이나 복도처럼 폭은 좁고 높이를 살리고 싶은 자리', cases: ['guro'], chip: 's195' },
       '230': { box: 5, t: '2.3m', d: '140cm', img: 'img/size-230.webp', fit: '카페, 미용실, 사무실 로비 등 가장 많이 고르시는 크기', cases: ['hmgreen', 'petit', 'salon'], chip: 's230', pop: true },
-      '230s': { box: 5, ltd: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 눈 쌓인 표현은 잎이 촘촘해야 자연스럽게 나옵니다. 그래서 스노우 트리는 일반 트리(PE 잎)와 달리, 잎이 가늘고 빽빽한 고밀도 PVC를 사용했습니다. 구성과 장식 색상은 2.3m와 같습니다.', cases: ['hmsnow', 'bath'], chip: 's230s' },
+      '230s': { box: 5, out: true, t: '2.3m 스노우', d: '140cm', img: 'img/size-230s.webp', fit: '잎 끝에 하얀 눈이 덮인 트리입니다. 눈 쌓인 표현은 잎이 촘촘해야 자연스럽게 나옵니다. 그래서 스노우 트리는 일반 트리(PE 잎)와 달리, 잎이 가늘고 빽빽한 고밀도 PVC를 사용했습니다. 구성과 장식 색상은 2.3m와 같습니다.', cases: ['hmsnow', 'bath'], chip: 's230s' },
       '290': { box: 8, t: '2.9m', d: '155cm', img: 'img/size-290.webp', fit: '천장이 높은 로비, 대형 카페, 극장처럼 멀리서도 보여야 하는 곳', cases: ['asan', 'biz', 'arko'], chip: 's290' }
     };
     const COLORS = {
@@ -2212,7 +2225,7 @@ button.sl-d:active{transform:scale(.94)}
         const ph = o.imgs.map(x => '<button type="button" class="pc-z" data-zoom-dyn aria-label="' + x[1] + ' 크게 보기"><img src="' + x[0] + '" alt="' + x[1] + '" loading="lazy"' + (x[2] ? ' data-tag="' + x[2] + '"' : '') + '></button>').join('');
         const multi = o.imgs.length > 1;
         return '<figure class="pc' + (o.wide ? ' pc-wide' : '') + (o.fit ? ' pc-fit' : '') + (o.out ? ' pc-out' : '') + '" style="--r:' + (o.r || '1/1') + '">' +
-          '<span class="pc-ph' + (multi ? ' xo-car' : '') + '">' + (o.out ? '<span class="pc-sold">품절</span>' : '') + '<span class="xc-track">' + ph + '</span>' +
+          '<span class="pc-ph' + (multi ? ' xo-car' : '') + '">' + (o.out ? '<span class="pc-sold">2026 예약 마감</span>' : '') + '<span class="xc-track">' + ph + '</span>' +
           (multi ? ARW('prev', 'M7.5 2.5 4 6l3.5 3.5', '이전 사진') + ARW('next', 'M4.5 2.5 8 6 4.5 9.5', '다음 사진') : '') + '</span>' +
           (multi ? '<span class="xc-dots">' + o.imgs.map((x, k) => '<button type="button"' + (k ? '' : ' class="on"') + ' aria-label="' + (x[2] || (k + 1) + '번 사진') + '"></button>').join('') + '</span>' : '') +
           '<figcaption><b>' + o.t + '</b>' + (o.s ? '<small>' + o.s + '</small>' : '') + '</figcaption></figure>';
@@ -2244,12 +2257,12 @@ button.sl-d:active{transform:scale(.94)}
     });
     function openSize(key, from) {
       const z = SIZES[key], pr = priceOf(z.chip), PH = window.TL_PH || 0;
-      show('<p class="cc-k">크기 · 하단 지름 ' + z.d + '</p><p class="ic-title">' + esc(z.t) + (z.pop ? '<small>인기</small>' : '') + (z.ltd ? '<small class="ltd">한정 수량</small>' : '') + '</p>' +
+      show('<p class="cc-k">크기 · 하단 지름 ' + z.d + '</p><p class="ic-title">' + esc(z.t) + (z.pop ? '<small>인기</small>' : '') + (z.ltd ? '<small class="ltd">한정 수량</small>' : '') + (z.out ? '<small class="out">2026 예약 마감</small>' : '') + '</p>' + (z.out ? '<p class="ic-out">올해 2.3m 스노우 트리는 예약이 모두 마감되었습니다. 같은 높이의 2.3m 트리는 예약할 수 있어요.</p>' : '') +
         '<img class="ic-img tall" src="' + z.img + '" alt="' + esc(z.t) + ' 설치 예">' +
         '<p class="ic-meta"><span>' + (z.box ? '하단 상자 ' + z.box + '개' : '기본 별 · 하단 상자 미포함') + '</span>' + (pr && z.chip === 's135' ? '<span>단일 구성 <b style="color:var(--berry)">' + won(pr.pre[PH]) + '</b>' + (PH ? ' <s>' + won(pr.pre[0]) + '</s>' : '') + '</span><span>' + (PH ? '2차 얼리버드가' : '정가') + '</span>' : pr ? (PH ? '<span>스탠다드 <b>' + won(pr.std[PH]) + '</b> <s>' + won(pr.std[0]) + '</s></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[PH]) + '</b> <s>' + won(pr.pre[0]) + '</s></span><span>2차 얼리버드가</span>' : '<span>스탠다드 <b>' + won(pr.std[0]) + '</b></span><span><b style="color:var(--berry)">프리미엄 ' + won(pr.pre[0]) + '</b></span><span>정가</span>') : '') + '</p>' +
         '<p class="cc-d">' + esc(z.fit) + '</p>' + caseRow(z.cases) +
-        '<div class="cc-b"><button type="button" class="cc-main" data-go>이 크기로 견적 내기</button></div>', from);
-      body.querySelector('[data-go]').addEventListener('click', () => goEstimate(pre => pick(z.chip, pre)));
+        '<div class="cc-b"><button type="button" class="cc-main" data-go>' + (z.out ? '2.3m로 견적 내기' : '이 크기로 견적 내기') + '</button></div>', from);
+      body.querySelector('[data-go]').addEventListener('click', () => goEstimate(pre => pick(z.out ? 's230' : z.chip, pre)));
     }
     document.querySelectorAll('[data-size-card]').forEach(r => {
       r.addEventListener('click', () => openSize(r.dataset.sizeCard, r));
@@ -2272,7 +2285,7 @@ button.sl-d:active{transform:scale(.94)}
     }, true);
     document.getElementById('lbEst').addEventListener('click', () => {
       lbx.close();
-      const map = { '1.35m': 's135', '1.95m': 's195', '2.3m': 's230', '2.3m 스노우': 's230s', '2.9m': 's290' };
+      const map = { '1.35m': 's135', '1.95m': 's195', '2.3m': 's230', '2.9m': 's290' };   // 2.3m 스노우: 2026 예약 마감(11/17) → 크기 미리 선택 안 함
       if (window.openQuote) window.openQuote(map[lbSize] ? { size: map[lbSize] } : {}, 'photo');
     });
   })();
@@ -2735,12 +2748,12 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     { id: 's135', name: '1.35m', img: 'q-size-135', sub: '작은 공간, 입구 옆' },
     { id: 's195', name: '1.95m 슬림', img: 'size-195', sub: '폭이 좁은 자리' },
     { id: 's230', name: '2.3m', img: 'q-size-230', sub: '카페·사무실·가정', tag: '인기' },
-    { id: 's230s', name: '2.3m 스노우', img: 'size-230s', sub: '눈 덮인 잎 · 한정' },
+    { id: 's230s', name: '2.3m 스노우', img: 'size-230s', sub: '눈 덮인 잎', out: 1 },   // out: 2026 예약 마감 (고를 수 없게, 11/17)
     { id: 's290', name: '2.9m', img: 'q-size-290', sub: '천장이 높은 로비' },
   ];
   const COLORS = [
     { name: '레드 & 골드', img: 'ornament-red-set' }, { name: '화이트 & 샴페인', img: 'ornament-champagne-set', tag: 'NEW' },
-    { name: '세이지 그린 & 골드', img: 'ornament-green-set-sq' }, { name: '네이비 & 골드', img: 'ornament-navy-set', out: 1 },   // out: 품절 (고를 수 없게)
+    { name: '세이지 그린 & 골드', img: 'ornament-green-set-sq' }, { name: '네이비 & 골드', img: 'ornament-navy-set', out: 1 },   // out: 2026 예약 마감 (고를 수 없게)
   ];
   // 추가 장식: 사이트 기존 견적 계산기와 같은 품목·종류
   const EXTRAS = [
@@ -2812,7 +2825,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const b = document.createElement('button'); b.type = 'button'; b.className = 'qcard' + (it.k ? ' ' + it.k : '');
       b.innerHTML = (it.soon ? '<span class="qimg"><img src="img/' + it.img + '.webp" alt="" loading="lazy"><span class="qsoon">' + it.soon + '</span></span>' : '<img src="img/' + it.img + '.webp" alt="" loading="lazy">') + (it.tag ? '<span class="qt">' + it.tag + '</span>' : '') + '<b>' + it.b + '</b>' + (it.s ? '<span>' + it.s + '</span>' : '') + (it.p ? '<span class="qp">' + it.p + '</span>' : '');
       const wrapImg = () => { const im = b.querySelector(':scope > img'); if (!im) return b.querySelector('.qimg'); const sp = document.createElement('span'); sp.className = 'qimg'; im.replaceWith(sp); sp.appendChild(im); return sp; };
-      if (it.out) { b.classList.add('is-out'); b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-label', it.b + ' 품절'); wrapImg().insertAdjacentHTML('beforeend', '<span class="qsoon">품절</span>'); }
+      if (it.out) { b.classList.add('is-out'); b.setAttribute('aria-disabled', 'true'); b.setAttribute('aria-label', it.b + ' 2026 예약 마감'); wrapImg().insertAdjacentHTML('beforeend', '<span class="qsoon">예약 마감</span>'); }
       // 설치 사례 사진: 이미지 오른쪽 아래 작은 사진 + 이름 아래 '사례 보기' (누르면 크게, 색상 선택은 안 됨)
       if (it.real) {
         const view = e => { e.stopPropagation(); e.preventDefault(); track('color_case_view', { color: it.v }); if (window.__openLb) window.__openLb(it.real[0], it.b + ' 오너먼트로 설치한 트리', b); };
@@ -2868,6 +2881,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       c.innerHTML = '<button type="button" class="qsz-hit" aria-pressed="false"><img src="img/' + s.img + '.webp" alt="" loading="lazy">' + (s.tag ? '<span class="qt">' + s.tag + '</span>' : '') + '<b>' + s.name + '</b><span>' + s.sub + '</span></button>' +
         '<div class="qx-st"><button type="button" aria-label="' + s.name + ' 한 그루 빼기">−</button><output aria-live="polite">0</output><button type="button" aria-label="' + s.name + ' 한 그루 더하기">+</button></div>';
       const hit = c.querySelector('.qsz-hit'), [m, p] = c.querySelectorAll('.qx-st button'), o = c.querySelector('output');
+      if (s.out) { c.classList.add('is-out'); hit.setAttribute('aria-disabled', 'true'); hit.setAttribute('aria-label', s.name + ' 2026 예약 마감'); hit.insertAdjacentHTML('beforeend', '<span class="qsoon">예약 마감</span>'); qty[s.id] = 0; g.appendChild(c); return; }
       const set = n => { qty[s.id] = Math.max(0, Math.min(10, n)); o.textContent = qty[s.id]; m.disabled = !qty[s.id]; p.disabled = qty[s.id] >= 10; c.classList.toggle('on', qty[s.id] > 0); hit.setAttribute('aria-pressed', String(qty[s.id] > 0)); label(); };
       hit.onclick = () => set(qty[s.id] ? 0 : 1); m.onclick = () => set(qty[s.id] - 1); p.onclick = () => set(qty[s.id] + 1);
       set(qty[s.id]); g.appendChild(c);
@@ -3272,7 +3286,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
 (function(){
   var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
   // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
-  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-09': { am: 1, pm: 1 }, '2026-11-10': { am: 1, pm: 1 }, '2026-11-11': { am: 1, pm: 1 }, '2026-11-12': { am: 1, pm: 1 }, '2026-11-13': { am: 1, pm: 1 }, '2026-11-16': { am: 1, pm: 1 }, '2026-11-17': { am: 1, pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-23': { am: 1, pm: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·9·10·12·13·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
+  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-09': { am: 1, pm: 1 }, '2026-11-10': { am: 1, pm: 1 }, '2026-11-11': { am: 1, pm: 1 }, '2026-11-12': { am: 1, pm: 1 }, '2026-11-13': { am: 1, pm: 1 }, '2026-11-16': { am: 1, pm: 1 }, '2026-11-17': { am: 1, pm: 1 }, '2026-11-18': { am: 1, pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-23': { am: 1, pm: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·9·10·12·13·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
   var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
   var closed = {}, at = '', live = false, subs = [];
   var pad = function(n){ return (n < 10 ? '0' : '') + n; };
