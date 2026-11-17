@@ -1354,8 +1354,12 @@ button.sl-d:active{transform:scale(.94)}
 .hc-item figcaption b{font-family:var(--display);font-size:16px;font-weight:600}
 .hc-item figcaption span{color:var(--muted);font-size:13px}
 @media (max-width:640px){.hero-case{padding:16px 14px 14px;margin-inline:calc(var(--gutter)*-.5)}.hc-head h3{font-size:20px}.hc-head p:last-child{font-size:13px}.hc-pair{gap:8px}.hc-play{left:6px;bottom:6px;font-size:11px;padding:3px 8px 3px 3px}.hc-play svg{width:18px;height:18px}.hc-item figcaption b{font-size:14px}.hc-item figcaption span{font-size:12px}}
-.hc-more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:860px;margin-top:18px;padding-top:18px;border-top:1px solid #E3D6B8}
+.hc-more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:860px;margin-top:18px;padding-top:18px;border-top:1px solid #E3D6B8}
 .hc-more .hc-item,.hc-more .hc-item figcaption{align-content:start}
+.hc-more .hc-wide{grid-column:span 2}
+.hc-more .hc-wide .hc-ph{aspect-ratio:3/2}
+.hc-moreb{display:block;width:100%;margin-top:14px;padding:12px;border:1px solid #C9B489;border-radius:2px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+@media (max-width:640px){.hc-more .hc-wide .hc-ph{aspect-ratio:4/3}.hc-more.folded .hc-item.hc-x{display:none}}
 .hc-more .hc-item figcaption b{font-size:15px}
 .hc-more .oc{margin-top:3px}
 .hc-note{margin-top:2px;color:var(--berry);font-size:12px}
@@ -2056,7 +2060,16 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
     document.querySelectorAll('#cases [data-cat]').forEach(el => { el.hidden = !all && el.dataset.cat !== curF; });
     feat.classList.toggle('is-empty', ![...feat.children].some(el => !el.hidden));
     const hcase = document.querySelector('#cases .hero-case');   // 2026 칸: 현장별 분류, 보일 카드가 없으면 칸째 숨김
-    if (hcase) { const pair = hcase.querySelector('.hc-pair'); hcase.hidden = !hcase.querySelector('[data-cat]:not([hidden])'); hcase.classList.toggle('only-more', !!pair && pair.hidden); }
+    if (hcase) { const pair = hcase.querySelector('.hc-pair'); hcase.hidden = !hcase.querySelector('[data-cat]:not([hidden])'); hcase.classList.toggle('only-more', !!pair && pair.hidden);
+      // 2026 새 현장: 휴대폰에서는 6칸(넓은 카드는 2칸)만 먼저 보여 주고 나머지는 '2026 사례 더 보기'
+      const hm = hcase.querySelector('.hc-more'), hb = document.getElementById('hcMoreBtn');
+      if (hm && hb) {
+        let used = 0, extra = 0;
+        hm.querySelectorAll('.hc-item').forEach(it => { const w = it.classList.contains('hc-wide') ? 2 : 1; const x = all && (used + w > 6); it.classList.toggle('hc-x', x); if (x) extra++; used += w; });
+        const fold = all && phone.matches && !hcase.dataset.open && extra > 0;
+        hm.classList.toggle('folded', fold); hb.hidden = !fold; hb.textContent = '2026 사례 더 보기 (' + extra + '곳)';
+        if (!hb.dataset.on) { hb.dataset.on = 1; hb.addEventListener('click', () => { hcase.dataset.open = 1; applyCases(); }); }
+      } }
     grid.classList.toggle('is-filtered', !all);
     smallCases.forEach((el, i) => el.classList.toggle('is-extra', i >= 6));
     if (applyCases.ran) document.querySelectorAll('#cases [data-cat]:not([hidden]), #cases .case-cta').forEach(el => { el.classList.add('in'); el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); });

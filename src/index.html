@@ -1312,8 +1312,12 @@ button.sl-d:active{transform:scale(.94)}
 .hc-item figcaption b{font-family:var(--display);font-size:16px;font-weight:600}
 .hc-item figcaption span{color:var(--muted);font-size:13px}
 @media (max-width:640px){.hero-case{padding:16px 14px 14px;margin-inline:calc(var(--gutter)*-.5)}.hc-head h3{font-size:20px}.hc-head p:last-child{font-size:13px}.hc-pair{gap:8px}.hc-play{left:6px;bottom:6px;font-size:11px;padding:3px 8px 3px 3px}.hc-play svg{width:18px;height:18px}.hc-item figcaption b{font-size:14px}.hc-item figcaption span{font-size:12px}}
-.hc-more{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;max-width:860px;margin-top:18px;padding-top:18px;border-top:1px solid #E3D6B8}
+.hc-more{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:860px;margin-top:18px;padding-top:18px;border-top:1px solid #E3D6B8}
 .hc-more .hc-item,.hc-more .hc-item figcaption{align-content:start}
+.hc-more .hc-wide{grid-column:span 2}
+.hc-more .hc-wide .hc-ph{aspect-ratio:3/2}
+.hc-moreb{display:block;width:100%;margin-top:14px;padding:12px;border:1px solid #C9B489;border-radius:2px;background:transparent;color:var(--ink);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+@media (max-width:640px){.hc-more .hc-wide .hc-ph{aspect-ratio:4/3}.hc-more.folded .hc-item.hc-x{display:none}}
 .hc-more .hc-item figcaption b{font-size:15px}
 .hc-more .oc{margin-top:3px}
 .hc-note{margin-top:2px;color:var(--berry);font-size:12px}
@@ -1452,23 +1456,40 @@ button.sl-d:active{transform:scale(.94)}
           </figure>
         </div>
         <div class="hc-more">
+          <figure class="hc-item hc-wide" data-cat="school">
+            <button type="button" class="hc-ph" data-vid="vid/yonsei-dorm26.mp4" data-poster="vid/yonsei-dorm26-poster.webp" aria-label="연세대학교 기숙사 로비 설치 영상 보기"><img src="img/yonsei-dorm26.webp" srcset="img/yonsei-dorm26-600.webp 800w, img/yonsei-dorm26.webp 1400w" sizes="(max-width:640px) 100vw, 570px" width="1400" height="1050" loading="lazy" alt="연세대학교 기숙사 로비 창가에 설치한 2.9m 트리 2그루와 LED 사슴 가족, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>연세대학교 기숙사 로비</b><span>2.9m · 프리미엄 · 2그루</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em><button type="button" class="hc-prop" data-props-open>소품 · LED 사슴 가족</button></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="public">
+            <button type="button" class="hc-ph" data-vid="vid/kkumbat.mp4" data-poster="vid/kkumbat-poster.webp" aria-label="대학로 꿈밭극장 설치 영상 보기"><img src="img/kkumbat.webp" srcset="img/kkumbat-600.webp 600w, img/kkumbat.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="대학로 꿈밭극장 분홍 벽 앞에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>대학로 꿈밭극장</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="office">
+            <button type="button" class="hc-ph" data-vid="vid/corp-lobby.mp4" data-poster="vid/corp-lobby-poster.webp" aria-label="기업 로비 설치 영상 보기"><img src="img/corp-lobby.webp" srcset="img/corp-lobby-600.webp 600w, img/corp-lobby.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="원목 루버 벽 기업 로비에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>기업 로비</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="clinic">
+            <button type="button" class="hc-ph" data-vid="vid/clinic-m.mp4" data-poster="vid/clinic-m-poster.webp" aria-label="병원 설치 영상 보기"><img src="img/clinic-m.webp" srcset="img/clinic-m-600.webp 600w, img/clinic-m.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="병원 로고 벽 앞에 설치한 1.95m 슬림 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>병원</b><span>1.95m 슬림 · 스탠다드</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
           <figure class="hc-item" data-cat="shop">
-            <button type="button" class="hc-ph" data-vid="vid/lotteria.mp4" data-poster="vid/lotteria-poster.webp" aria-label="롯데리아 설치 영상 보기"><img src="img/lotteria.webp" srcset="img/lotteria-600.webp 600w, img/lotteria.webp 1000w" sizes="(max-width:640px) 50vw, 210px" width="1000" height="1333" loading="lazy" alt="롯데리아 매장 창가에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <button type="button" class="hc-ph" data-vid="vid/lotteria.mp4" data-poster="vid/lotteria-poster.webp" aria-label="롯데리아 설치 영상 보기"><img src="img/lotteria.webp" srcset="img/lotteria-600.webp 600w, img/lotteria.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="롯데리아 매장 창가에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>롯데리아</b><span>2.3m · 스탠다드</span><em class="oc"><i style="background:#f1eee7"></i><i style="background:#d6c7a1"></i>화이트 &amp; 샴페인</em></figcaption>
           </figure>
           <figure class="hc-item" data-cat="clinic">
-            <button type="button" class="hc-ph" data-vid="vid/rehab.mp4" data-poster="vid/rehab-poster.webp" aria-label="재활의학과 설치 영상 보기"><img src="img/rehab.webp" srcset="img/rehab-600.webp 600w, img/rehab.webp 1000w" sizes="(max-width:640px) 50vw, 210px" width="1000" height="1333" loading="lazy" alt="재활의학과 입구에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <button type="button" class="hc-ph" data-vid="vid/rehab.mp4" data-poster="vid/rehab-poster.webp" aria-label="재활의학과 설치 영상 보기"><img src="img/rehab.webp" srcset="img/rehab-600.webp 600w, img/rehab.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="재활의학과 입구에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>재활의학과</b><span>2.3m 스노우 · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
           </figure>
           <figure class="hc-item" data-cat="school">
-            <button type="button" class="hc-ph" data-vid="vid/school-ms.mp4" data-poster="vid/school-ms-poster.webp" aria-label="중학교 로비 설치 영상 보기"><img src="img/school-ms.webp" srcset="img/school-ms-600.webp 600w, img/school-ms.webp 1000w" sizes="(max-width:640px) 50vw, 210px" width="1000" height="1333" loading="lazy" alt="중학교 로비에 화려하게 꾸민 2.3m 트리, 레드 & 골드, 산타 옷을 입은 모형 강아지"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <button type="button" class="hc-ph" data-vid="vid/school-ms.mp4" data-poster="vid/school-ms-poster.webp" aria-label="중학교 로비 설치 영상 보기"><img src="img/school-ms.webp" srcset="img/school-ms-600.webp 600w, img/school-ms.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="중학교 로비에 화려하게 꾸민 2.3m 트리, 레드 & 골드, 산타 옷을 입은 모형 강아지"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>중학교 로비</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em><small class="hc-note">요청에 맞춰 화려하게</small><button type="button" class="hc-prop" data-props-open>소품 · 모형 강아지</button></figcaption>
           </figure>
           <figure class="hc-item" data-cat="office">
-            <button type="button" class="hc-ph" data-vid="vid/office-navy.mp4" data-poster="vid/office-navy-poster.webp" aria-label="스픽 본사 설치 영상 보기"><img src="img/office-navy.webp" srcset="img/office-navy-600.webp 600w, img/office-navy.webp 1000w" sizes="(max-width:640px) 50vw, 210px" width="1000" height="1333" loading="lazy" alt="스픽 본사 창가에 설치한 2.3m 트리, 네이비 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <button type="button" class="hc-ph" data-vid="vid/office-navy.mp4" data-poster="vid/office-navy-poster.webp" aria-label="스픽 본사 설치 영상 보기"><img src="img/office-navy.webp" srcset="img/office-navy-600.webp 600w, img/office-navy.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="스픽 본사 창가에 설치한 2.3m 트리, 네이비 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>스픽 본사</b><span>2.3m · 스탠다드</span><em class="oc"><i style="background:#1d2d45"></i><i style="background:#c7a463"></i>네이비 &amp; 골드</em></figcaption>
           </figure>
         </div>
+        <button type="button" class="hc-moreb" id="hcMoreBtn" hidden></button>
       </article>
       <button type="button" class="past-open" id="pastOpen" aria-expanded="false" aria-controls="pastCases"><span class="po-t"><b>이전 시즌 사례 보기</b><small id="pastN"></small></span><span class="po-ic" aria-hidden="true"></span></button>
       <div class="past-cases" id="pastCases">
@@ -2372,7 +2393,16 @@ button.sl-d:active{transform:scale(.94)}
     document.querySelectorAll('#cases [data-cat]').forEach(el => { el.hidden = !all && el.dataset.cat !== curF; });
     feat.classList.toggle('is-empty', ![...feat.children].some(el => !el.hidden));
     const hcase = document.querySelector('#cases .hero-case');   // 2026 칸: 현장별 분류, 보일 카드가 없으면 칸째 숨김
-    if (hcase) { const pair = hcase.querySelector('.hc-pair'); hcase.hidden = !hcase.querySelector('[data-cat]:not([hidden])'); hcase.classList.toggle('only-more', !!pair && pair.hidden); }
+    if (hcase) { const pair = hcase.querySelector('.hc-pair'); hcase.hidden = !hcase.querySelector('[data-cat]:not([hidden])'); hcase.classList.toggle('only-more', !!pair && pair.hidden);
+      // 2026 새 현장: 휴대폰에서는 6칸(넓은 카드는 2칸)만 먼저 보여 주고 나머지는 '2026 사례 더 보기'
+      const hm = hcase.querySelector('.hc-more'), hb = document.getElementById('hcMoreBtn');
+      if (hm && hb) {
+        let used = 0, extra = 0;
+        hm.querySelectorAll('.hc-item').forEach(it => { const w = it.classList.contains('hc-wide') ? 2 : 1; const x = all && (used + w > 6); it.classList.toggle('hc-x', x); if (x) extra++; used += w; });
+        const fold = all && phone.matches && !hcase.dataset.open && extra > 0;
+        hm.classList.toggle('folded', fold); hb.hidden = !fold; hb.textContent = '2026 사례 더 보기 (' + extra + '곳)';
+        if (!hb.dataset.on) { hb.dataset.on = 1; hb.addEventListener('click', () => { hcase.dataset.open = 1; applyCases(); }); }
+      } }
     grid.classList.toggle('is-filtered', !all);
     smallCases.forEach((el, i) => el.classList.toggle('is-extra', i >= 6));
     if (applyCases.ran) document.querySelectorAll('#cases [data-cat]:not([hidden]), #cases .case-cta').forEach(el => { el.classList.add('in'); el.classList.remove('fade-in'); void el.offsetWidth; el.classList.add('fade-in'); });
