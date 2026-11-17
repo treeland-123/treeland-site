@@ -162,9 +162,43 @@ function sign(b) {
     setCells(r, { status: '서명완료', name: w.name, tel: w.tel, rrn: String(w.rrn).replace(/^(\d{6})-?(\d{7})$/, '$1-$2'), bank: w.bank || '', account: w.account,
       holder: w.holder || w.name, signedAt: Utilities.formatDate(new Date(b.signedAt || Date.now()), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'), hash: b.hash || '', ua: String(b.ua || '').slice(0, 300),
       pdfId: file.getId(), pdfUrl: file.getUrl() });
+    try { notifySigned(rowObj(r), file); } catch (x) {}   // 메일 실패해도 서명은 그대로 완료
     return { ok: true };
   } finally { lock.releaseLock(); }
 }
+
+/* ---------- 서명 알림 메일 (2026-11-16): 대표에게만. 주민번호·계좌번호는 넣지 않음 ---------- */
+const NOTIFY_TO = 'info@treeland.kr';
+function notifySigned(o, file) {
+  const wd = '일월화수목금토', won = (n) => Number(n || 0).toLocaleString('ko-KR');
+  const dates = String(o.dates || '').split(',').filter(Boolean).sort();
+  const day = (s) => { const d = new Date(s + 'T00:00:00+09:00'); return (d.getMonth() + 1) + '/' + d.getDate() + '(' + wd[d.getDay()] + ')'; };
+  const toMin = (t) => { const p = String(t || '0:0').split(':').map(Number); return p[0] * 60 + p[1]; };
+  let span = toMin(o.end) - toMin(o.start); if (span <= 0) span += 1440;
+  const hours = Math.max(0, span - (Number(o.breakMin) || 0)) / 60;
+  let pay;
+  if (o.payType === 'piece') {
+    let items = []; try { items = JSON.parse(o.items || '[]'); } catch (x) {}
+    const total = items.reduce((s, x) => s + (Number(x.rate) || 0) * (Number(x.qty) || 0), 0) || (Number(o.rate) || 0) * (Number(o.qty) || 0);
+    pay = '건당\n' + items.map((x) => '  - ' + x.t + ' ' + won(x.rate) + '원 × ' + x.qty + '건 = ' + won(x.rate * x.qty) + '원').join('\n') + '\n  합계 ' + won(total) + '원';
+  } else {
+    const dayPay = Math.round((Number(o.wage) || 0) * hours);
+    pay = '시급 ' + won(o.wage) + '원 · 1일 ' + won(dayPay) + '원 · 총 ' + won(dayPay * dates.length) + '원 (' + dates.length + '일)';
+  }
+  const body = [o.name + '님이 근로계약서에 서명했습니다.', '',
+    '연락처: ' + o.tel,
+    '근무일: ' + dates.map(day).join(', '),
+    '근무 시간: ' + o.start + ' ~ ' + o.end + ' (하루 ' + (Math.round(hours * 100) / 100) + '시간)',
+    '장소: ' + o.place, '업무: ' + o.job,
+    '임금: ' + pay,
+    '지급: ' + (o.payDay || '근로일 당일'),
+    o.memo ? '내부 메모: ' + o.memo : '', '',
+    '서명본 PDF를 첨부했습니다. 주민번호·계좌는 근로계약 관리 화면에서 확인하세요.',
+    'https://treeland.kr/staff/'].filter((l, i, a) => !(l === '' && a[i - 1] === '')).join('\n');
+  MailApp.sendEmail({ to: NOTIFY_TO, subject: '[근로계약 서명] ' + o.name + ' · ' + dates.map(day).join(', '), body: body, name: '근로계약 알림', attachments: [file.getBlob()] });
+}
+// 편집기에서 한 번 실행: 메일 보내기 권한 승인 + 시험 메일
+function notifyTest() { MailApp.sendEmail(NOTIFY_TO, '[근로계약 알림] 시험 메일', '알바가 근로계약서에 서명하면 이 주소로 알림이 옵니다.'); }
 
 function setStatus(id, st) {
   const r = findRow(id);
