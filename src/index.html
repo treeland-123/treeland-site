@@ -2946,7 +2946,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     when: () => {
       // 설치 예약 현황 달력에서 날짜 고르기 (마감된 날은 못 고름)
       const S = window.TL_SLOTS;
-      if (!S) return ask('언제쯤 설치하고 싶으세요?', chips(['11월 초', '11월 중순', '11월 말', '12월', '아직 몰라요'], v => answer('when', v, v)), '설치는 11월부터 진행합니다.');
+      if (!S) return ask('언제쯤 설치하고 싶으세요?', chips(['11월 말', '12월 초', '12월 중순', '아직 몰라요'], v => answer('when', v, v)), '설치는 11월부터 진행합니다.');
       const w = document.createElement('div'); w.className = 'qcal';
       let m = S.firstOpen();
       const tabs = document.createElement('div'); tabs.className = 'slots-tabs'; const cal = document.createElement('div'); cal.className = 'slots-cal';
@@ -3307,13 +3307,13 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
     var a = box.querySelector('.sl-at');
     if (a) a.textContent = live && at ? at + ' 기준' : '';
   }
-  // 첫 화면 문구는 '11월 초 일부 일정 마감'으로 고정 (대표님 지시 10/29). 11월에 마감·일부 마감이 하나라도 있으면 표시
+  // 첫 화면 문구는 '11월 일부 일정 마감'으로 고정 (10/29 지시, 11/17 '초' 뺌). 11월에 마감·일부 마감이 하나라도 있으면 표시
   function hero(){
     var el = document.getElementById('heroSlot'); if (!el) return;
     var any = false;
     for (var d = 1; d <= 30; d++) { var st = state(key(11, d)); if (st === 'full' || st === 'part') { any = true; break; } }
     if (!any) { el.hidden = true; return; }
-    el.querySelector('span').innerHTML = '<b>11월 초 일부 일정 마감</b> · 남은 일정 보기';
+    el.querySelector('span').innerHTML = '<b>11월 일부 일정 마감</b> · 남은 일정 보기';
     el.hidden = false;
   }
   function apply(c, t, isLive){ closed = c || {}; live = !!isLive; if (t) { var x = new Date(t); at = (x.getMonth() + 1) + '/' + x.getDate() + ' ' + pad(x.getHours()) + ':' + pad(x.getMinutes()); } draw(); hero(); subs.forEach(function(f){ try { f(); } catch (e) {} }); }
@@ -3328,7 +3328,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
     if (head) head.addEventListener('click', function(){ var o = !box.classList.contains('open'); box.classList.toggle('open', o); head.setAttribute('aria-expanded', String(o)); if (o && window.gtag) try { gtag('event', 'slots_view', { via: 'price' }); } catch (x) {} });
     if ('IntersectionObserver' in window) { var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) { box.classList.add('nudge'); io.disconnect(); } }); }, { threshold: .8 }); io.observe(box); }
   }
-  function summary(){ var el = document.getElementById('slSum'); if (!el) return; var any = false; for (var d = 1; d <= 30; d++) { var st = state(key(11, d)); if (st === 'full' || st === 'part') { any = true; break; } } el.textContent = any ? '11월 초 일부 일정 마감 · 눌러서 보기' : '눌러서 펼쳐 보기'; }
+  function summary(){ var el = document.getElementById('slSum'); if (!el) return; var any = false; for (var d = 1; d <= 30; d++) { var st = state(key(11, d)); if (st === 'full' || st === 'part') { any = true; break; } } el.textContent = any ? '11월 일부 일정 마감 · 눌러서 보기' : '눌러서 펼쳐 보기'; }
   subs.push(summary); summary();
   // 첫 화면 '남은 일정 보기' → 스크롤 대신 팝업으로 달력
   var dlg = document.getElementById('slotsDlg'), dm = null;
