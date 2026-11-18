@@ -272,7 +272,7 @@ $("#newForm").addEventListener("submit", async e => {
     if(c.payType === "piece") keepRates(c.items);
     pinState(true, "확인되었습니다.");
     const days = k.dates.map(d => fmtDay(d, true)).join(", ");
-    $("#r-msg").value = `안녕하세요.\n${days} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n아래 링크에서 내용 확인하시고 정보 입력 후 서명해 주세요. 서명하면 계약서 PDF를 바로 받으실 수 있어요.\n\n${j.url}`;
+    $("#r-msg").value = signMsg(c, j.url);
     $("#openLink").href = j.url; $("#result").hidden = false;
     loadList();
   }catch(err){ newErr("서버에 연결하지 못했습니다. 잠시 뒤 다시 눌러 주세요."); }
@@ -297,6 +297,9 @@ function flags(it){
   const f = []; if(info.age < 18) f.push(`만 ${info.age}세 — 친권자 동의서·가족관계증명서 받기`); if(info.foreign) f.push("외국인 — 체류자격 확인");
   return f.length ? `<span class="flag">${f.join(" · ")}</span>` : "";
 }
+// 알바에게 보내는 카톡 문구 (대표님 양식 11/18): 날짜·시간 + 링크만
+function signMsg(c, url){ return `${dateList(c.dates).map(d => fmtDay(d, true)).join(", ")} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n${url}`; }
+const shortDT = s => { const m = String(s || "").match(/^\d{4}-(\d{2})-(\d{2})/); return m ? `${+m[1]}/${+m[2]}` : ""; };
 function renderList(){
   if(!ITEMS.length){ $("#list").innerHTML = `<p class="lead">아직 계약이 없습니다.</p>`; return; }
   $("#list").innerHTML = ITEMS.map(it => {
@@ -304,11 +307,11 @@ function renderList(){
     const done = it.status === "서명완료", A = done ? calcActual(it) : null;
     const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}</dl>` : (it.memo ? `<div class="m" style="grid-column:1/-1">메모 ${esc(it.memo)}</div>` : "");
     const acts = done
-      ? `${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무시간 수정</button>`
+      ? `${it.paidAt ? `<button type="button" class="ghost" data-paid="0" data-id="${esc(it.id)}">지급 취소</button>` : `<button type="button" class="primary" data-paid="1" data-id="${esc(it.id)}" style="padding:7px 14px">지급 완료</button>`}${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무시간 수정</button>`
       : it.status === "서명대기"
-        ? `<button type="button" class="ghost" data-copy="${esc(it.url)}">링크 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
+        ? `<button type="button" class="ghost" data-copy="${esc(signMsg(it, it.url))}">문구 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
         : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
-    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}</div>
+    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}${done ? (it.paidAt ? ` <span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : ` <span class="badge" style="color:var(--err)">지급 전</span>`) : ""}</div>
       <div class="m">${esc(it.start)}~${esc(it.end)} · ${k.piece ? `건당 ${k.items.map(x => `${esc(x.t)} ${won(x.rate)}원×${x.qty}`).join(", ")}` : `시급 ${won(it.wage)}원`} · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
       ${A && A.edited ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span></div>` : ""}
       ${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
@@ -319,6 +322,12 @@ $("#list").addEventListener("click", async e => {
   const b = e.target.closest("button"); if(!b) return;
   if(b.dataset.copy != null){ try{ await navigator.clipboard.writeText(b.dataset.copy); const t = b.textContent; b.textContent = "복사됨"; setTimeout(() => b.textContent = t, 1500); }catch(x){} return; }
   if(b.dataset.edit){ openEditor(b.dataset.edit, b.closest(".item")); return; }
+  if(b.dataset.paid != null){   // 임금 지급 완료 / 취소
+    if(b.disabled) return; b.disabled = true; const on = b.dataset.paid === "1"; b.textContent = on ? "저장 중…" : "취소 중…";
+    const j = await api({ action:"paid", pin:pin(), id:b.dataset.id, on }).catch(() => ({}));
+    if(!j.ok){ b.disabled = false; b.textContent = j.error === "bad_action" ? "서버 반영 전 — 잠시 뒤 다시" : "실패 — 다시"; return; }
+    const it = ITEMS.find(x => x.id === b.dataset.id); if(it) it.paidAt = j.paidAt; renderList(); return;
+  }
   const act = b.dataset.act; if(!act) return;
   if(act === "delete"){
     if(b.dataset.sure !== "1"){ b.dataset.sure = "1"; b.textContent = "한 번 더 누르면 삭제 (서명본 포함)"; b.style.color = "var(--err)"; setTimeout(() => { b.dataset.sure = ""; b.textContent = "삭제"; b.style.color = "var(--sub)"; }, 4000); return; }

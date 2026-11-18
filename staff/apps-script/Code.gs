@@ -11,7 +11,7 @@
  */
 const CONTRACT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxSKXLeVZoI-Qx2rieXI_f4DjKdf7jNzI9S_vtBrJJnqMYjOBvzs9TUHxQK7Ko0h-9oDg/exec';
 const COLS = ['id', 'created', 'status', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'memo',
-  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual', 'allow', 'payType', 'unit', 'rate', 'qty', 'items'];   // allow: 예전 내부 수당(안 씀). payType: hour(시급)·piece(건당)
+  'name', 'tel', 'rrn', 'bank', 'account', 'holder', 'signedAt', 'hash', 'ua', 'pdfId', 'pdfUrl', 'actual', 'allow', 'payType', 'unit', 'rate', 'qty', 'items', 'paidAt'];   // paidAt: 임금 지급 완료 시각. allow: 예전 내부 수당(안 씀). payType: hour(시급)·piece(건당)
 const PUBLIC = ['id', 'dates', 'start', 'end', 'breakMin', 'place', 'job', 'wage', 'payDay', 'payType', 'unit', 'rate', 'qty', 'items'];
 
 function doGet(e) {
@@ -37,6 +37,7 @@ function doPost(e) {
       case 'resume': return out(setStatus(b.id, '서명대기'));
       case 'delete': return out(remove(b.id));
       case 'actual': return out(saveActual(b.id, b.actual));
+      case 'paid': return out(setPaid(b.id, b.on));
       default: return out({ error: 'bad_action' });
     }
   } catch (err) { return out({ error: 'server', message: String(err && err.message || err) }); }
@@ -235,6 +236,18 @@ function saveActual(id, a) {
   if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
   setCells(r, { actual: Object.keys(out).length ? JSON.stringify(out) : '' });
   return { ok: true, actual: out };
+}
+
+// 임금 지급 완료 표시 (관리 화면 「지급 완료」). on=false면 취소
+function setPaid(id, on) {
+  const r = findRow(id);
+  if (!r) return { error: 'not_found' };
+  if (rowObj(r).status !== '서명완료') return { error: 'not_signed' };
+  const sh = sheet();
+  if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');
+  const v = on ? Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm') : '';
+  setCells(r, { paidAt: v });
+  return { ok: true, paidAt: v };
 }
 
 /** 처음 한 번 편집기에서 실행: 시트·폴더를 만들고 권한을 승인받음 */
