@@ -87,6 +87,8 @@ a{color:var(--ink)}
 .tree .one{font-size:13px;color:var(--sub)}
 .tree input.tplace{flex:1 1 100%;font-size:14px;padding:6px 8px}
 .del{border:0;background:none;color:var(--sub);font-size:13px;text-decoration:underline;margin-left:auto}
+.dayhint{display:block;margin-top:4px;font-size:14px;font-weight:600;color:var(--ink)}
+.dayhint:empty{display:none}
 </style>
 </head>
 <body>
@@ -124,8 +126,8 @@ a{color:var(--ink)}
         <div class="field"><label for="n-addons">추가 장식·소품</label><textarea id="n-addons" rows="2" style="min-height:64px" placeholder="견적서를 불러오면 채워집니다. 없으면 비워 두세요 (계약서에 '없음'으로 표시)"></textarea></div>
         <div class="field"><label for="n-note">비고 (선택, 고객 화면과 계약서에 표시)</label><textarea id="n-note" rows="2" style="min-height:64px" placeholder="예: 영업 종료 후 설치, 주차는 건물 뒤편"></textarea></div>
         <div class="grid2">
-          <div class="field"><label for="n-install">설치 예정 일시</label><input type="datetime-local" id="n-install" step="1800"></div>
-          <div class="field"><label for="n-retrieve">회수 예정 일시</label><input type="datetime-local" id="n-retrieve" step="1800"></div>
+          <div class="field"><label for="n-install">설치 예정 일시</label><input type="datetime-local" id="n-install" step="1800"><span class="hint dayhint" id="h-install"></span></div>
+          <div class="field"><label for="n-retrieve">회수 예정 일시</label><input type="datetime-local" id="n-retrieve" step="1800"><span class="hint dayhint" id="h-retrieve"></span></div>
         </div>
         <div class="grid2">
           <div class="field"><label for="n-price">임대료 (견적서 공급가액, 원)</label><input type="text" id="n-price" inputmode="numeric" placeholder="450,000" autocomplete="off"><span class="hint" id="priceHint"></span></div>
@@ -575,6 +577,10 @@ $("#n-retrieve").addEventListener("focus", e => {
     e.target.value = `${y}-01-${String(d.getDate()).padStart(2,"0")}T10:00`;
   }
 });
+// 고른 날짜 아래에 요일까지 크게: 「11월 24일(화) 13:30」
+function syncDayHints(){ [["#n-install","#h-install"],["#n-retrieve","#h-retrieve"]].forEach(([i, h]) => { const v = $(i).value; $(h).textContent = v ? fmtLong(v) : ""; }); }
+["#n-install","#n-retrieve"].forEach(id => ["input","change","focus","blur"].forEach(ev => $(id).addEventListener(ev, () => setTimeout(syncDayHints))));
+$("#newForm").addEventListener("reset", () => setTimeout(syncDayHints));
 // 작성 중인 내용 임시 저장 (이 기기에만)
 const DRAFT_IDS = ["#n-customer","#n-size","#n-color","#n-note","#n-install","#n-retrieve","#n-price","#n-ship","#n-qno","#n-addons"];
 function saveDraft(){ try{ localStorage.setItem("tl_draft2", JSON.stringify({ f: DRAFT_IDS.map(id => $(id).value), trees })); }catch(e){} }
@@ -589,6 +595,7 @@ $("#trees").addEventListener("click", () => setTimeout(saveDraft));
 $("#sizeChips").addEventListener("click", () => setTimeout(saveDraft));
 
 initQuote();   // 임시 저장분을 불러온 뒤에 실행해야 ?q= 견적이 우선함
+syncDayHints();
 $("#copyBtn").onclick = e => copy($("#r-msg").value, e.currentTarget);
 </script>
 
