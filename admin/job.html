@@ -101,8 +101,11 @@ async function load(){
   const c = UI.cache.get("all");
   const cit = c && (c.all || []).find(x => x.id === ID);
   if(cit){ D = { item: cit, photos: [], log: [], mails: [], staff: c.staff || [] }; if(EXTRAS === undefined) EXTRAS = c.extras || null; render(); }
+  const v0 = EDITED;
   const [j, x] = await Promise.all([ TL.call({ action:"job", id: ID }), OWNER ? TL.ledgerExtras() : null ]);
-  EXTRAS = x;
+  // 불러오는 사이에 버튼을 눌렀으면(설치 완료 등) 예전 값으로 덮어쓰지 않음 — 버튼이 다시 떠서 두세 번 눌리던 문제 (11/19)
+  if(EDITED !== v0){ if(j.ok) j.item = D.item; if(EXTRAS) x && Object.assign(x, EXTRAS); }
+  EXTRAS = x || EXTRAS;
   if(!j.ok){
     if(j.error === "sess"){ TL.logout(); return; }
     $("#app").innerHTML = `<a class="back" href="/admin/jobs.html">건 목록</a><p class="notice bad">${esc(j.error === "not_found" ? "계약을 찾을 수 없습니다." : j.error === "pin" ? "로그인이 필요합니다." : (j.error || "불러오지 못했습니다."))}</p>`;
@@ -241,7 +244,12 @@ function keepCache(){   // 바뀐 내용을 목록 캐시에도 반영 → 뒤�
   UI.cache.set("all", c);
 }
 /* 누르면 바로 반영 → 저장은 뒤에서, 실패하면 되돌림 */
+let EDITED = 0; const BUSY = {};
 async function update(field, value, okMsg){
+  if(BUSY[field]) return; BUSY[field] = 1; EDITED++;
+  try{ await update0(field, value, okMsg); } finally { BUSY[field] = 0; }
+}
+async function update0(field, value, okMsg){
   const before = JSON.parse(JSON.stringify(D.item)), beforeEx = EXTRAS ? JSON.parse(JSON.stringify(EXTRAS)) : EXTRAS;
   const nowS = UI.seoulKey() + " " + new Date().toTimeString().slice(0, 5);
   if(field === "paid"){ if(EXTRAS) EXTRAS[ID] = Object.assign({}, EXTRAS[ID] || {}, { paid: !!value, paidDate: value ? UI.seoulKey() : "" }); D.item.paid = value ? nowS : ""; }
