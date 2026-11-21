@@ -163,13 +163,15 @@
     const due = dueKey(p.key), over = -dayDiff(due);
     return over >= 1 ? { due, over, level: over >= 7 ? 2 : 1 } : null;
   }
+  // 카드 결제 안내 줄 (대표님 양식 11/21): 스토어 링크 + 예약결제 옵션(= 견적번호)
+  function cardLines(it, storeLink){ const q = String(it.qno || "").replace(/^'/, ""); return [`결제 링크: ${storeLink || "(결제 링크)"}`, ...(q ? [`+옵션에서 「예약결제 ${q}」를 선택해주세요+`] : [])]; }
   function remindText(it, o){   // o: { bank, storeLink, taxUrl, extras }
     const od = overdue(it) || { due:"", level:1 }, n = Number(it.price) || 0, total = n + Math.round(n * 0.1);
     const dp = parts(od.due), dueTxt = dp ? `${dp.m}월 ${dp.d}일` : "";
     const card = it.pay === "카드 결제", nm = it.name ? it.name + " " : "";
-    const pay = [`결제 금액: ${won(total)}원 (부가세 포함)`, card ? `결제 링크: ${o.storeLink || "(결제 링크)"}` : `입금 계좌: ${o.bank || "(계좌)"}`];
+    const pay = [`결제 금액: ${won(total)}원 (부가세 포함)`, ...(card ? cardLines(it, o.storeLink) : [`입금 계좌: ${o.bank || "(계좌)"}`])];
     const s = taxState(it, o.extras);
-    const tax = !card && o.taxUrl && s.k !== "ready" && s.k !== "done" ? ["", "세금계산서 발행을 위해 아래 링크에서 사업자등록증을 올리거나 사업자 정보도 함께 넣어 주세요.", o.taxUrl] : [];
+    const tax = !card && o.taxUrl && s.k !== "ready" && s.k !== "done" ? ["", "세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요.", o.taxUrl] : [];
     const head = od.level === 2
       ? ["안녕하세요, 트리랜드입니다.", `${nm}트리 설치 건 대금이 기한(${dueTxt})에서 7일이 지나도록 확인되지 않아 다시 안내드립니다.`]
       : ["안녕하세요, 트리랜드입니다.", `${nm}트리 설치 건 결제 관련해 다시 연락드립니다.`, `${dueTxt}까지로 안내드린 금액이 아직 확인되지 않아 한 번 더 안내드립니다.`];
@@ -284,5 +286,5 @@
     return { rows, check, addons: [...addons.values()] };
   }
 
-  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, overdue, remindText, BOX, parseTrees, materials, matTotals };
+  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, overdue, cardLines, remindText, BOX, parseTrees, materials, matTotals };
 })();
