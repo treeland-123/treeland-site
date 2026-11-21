@@ -163,8 +163,8 @@
     const due = dueKey(p.key), over = -dayDiff(due);
     return over >= 1 ? { due, over, level: over >= 7 ? 2 : 1 } : null;
   }
-  // 카드 결제 안내 줄 (대표님 양식 11/21): 스토어 링크 + 예약결제 옵션(= 견적번호)
-  function cardLines(it, storeLink){ const q = String(it.qno || "").replace(/^'/, ""); return [`결제 링크: ${storeLink || "(결제 링크)"}`, ...(q ? [`+옵션에서 「예약결제 ${q}」를 선택해주세요+`] : [])]; }
+  // 카드 결제 안내 줄 (대표님 양식 11/21): 스토어 링크는 건마다 새로 만들어 넣으므로 「(링크)」 자리만, 예약결제 옵션 = 그 현장 견적번호
+  function cardLines(it){ const q = String(it.qno || "").replace(/^'/, ""); return ["결제 링크: (링크)", ...(q ? [`+옵션에서 「예약결제 ${q}」를 선택해주세요+`] : [])]; }
   function remindText(it, o){   // o: { bank, storeLink, taxUrl, extras }
     const od = overdue(it) || { due:"", level:1 }, n = Number(it.price) || 0, total = n + Math.round(n * 0.1);
     const dp = parts(od.due), dueTxt = dp ? `${dp.m}월 ${dp.d}일` : "";

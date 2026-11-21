@@ -206,7 +206,7 @@ const TPLS = [
       const total = c && c.price ? (c.noVat ? c.price : c.price + Math.round(c.price * 0.1)) : 0;
       return `안녕하세요, 트리랜드입니다.\n\n${c && c.name ? c.name + " " : ""}트리 설치를 마쳐 결제 안내드립니다.\n\n`
         + `결제 금액: ${total ? won(total) + "원" : "[결제 금액]"}${c && c.noVat ? "" : " (부가세 포함)"}\n`
-        + (card ? `결제 링크: ${CTX.storeLink || "[결제 링크]"}\n${c && c.qno ? `+옵션에서 「예약결제 ${c.qno}」를 선택해주세요+\n` : ""}\n` : `입금 계좌: ${CTX.bank || "신한은행 110-635-611292 (예금주 트리랜드)"}\n`)
+        + (card ? `결제 링크: (링크)\n${c && c.qno ? `+옵션에서 「예약결제 ${c.qno}」를 선택해주세요+\n` : ""}\n` : `입금 계좌: ${CTX.bank || "신한은행 110-635-611292 (예금주 트리랜드)"}\n`)
         + `${card ? "결제" : "입금"} 기한: ${v(c && dueText(c.install), "기한")}\n\n` + (card ? "링크에서 위 금액으로 결제해 주시면 됩니다.\n\n" : "")
         + (card ? "" : `세금계산서 발행을 위해 아래 링크에서 사업자 정보를 등록해 주세요.\n${v(c && c.taxUrl, "등록 링크")}\n\n`) + SIGN_OFF;
     } },
