@@ -1019,6 +1019,7 @@ dialog.lb{z-index:50}
 .qx-o{display:flex;flex-wrap:wrap;gap:4px}
 .qx-o button{flex:1 1 auto;min-height:30px;padding:3px 6px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer}
 .qx-o button[aria-pressed="true"]{background:var(--pine);border-color:var(--pine);color:#F4F1EA}
+.qx-o button:disabled{cursor:not-allowed;color:var(--muted);background:#F2F0EA;border-style:dashed}
 .qx-st{display:flex;align-items:center;justify-content:center;gap:10px}
 .qx-st button{width:32px;height:32px;border:1px solid var(--pine);border-radius:50%;background:#fff;color:var(--pine);font-family:inherit;font-size:17px;line-height:1;cursor:pointer}
 .qx-st button:disabled{opacity:.35;cursor:default}
@@ -1511,6 +1512,10 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
           <figure class="hc-item hc-wide" data-cat="school">
             <button type="button" class="hc-ph" data-vid="vid/yonsei-dorm26.mp4" data-poster="vid/yonsei-dorm26-poster.webp" aria-label="연세대학교 기숙사 로비 설치 영상 보기"><img src="img/yonsei-dorm26.webp" srcset="img/yonsei-dorm26-600.webp 800w, img/yonsei-dorm26.webp 1400w" sizes="(max-width:640px) 100vw, 570px" width="1400" height="1050" loading="lazy" alt="연세대학교 기숙사 로비 창가에 설치한 2.9m 트리 2그루와 LED 사슴 가족, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>연세대학교 기숙사 로비</b><span>2.9m · 프리미엄 · 2그루</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em><button type="button" class="hc-prop" data-props-open>소품 · LED 사슴 가족</button></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="public">
+            <button type="button" class="hc-ph" data-vid="vid/arko26.mp4" data-poster="vid/arko26-poster.webp" aria-label="대학로 아르코예술극장 설치 영상 보기"><img src="img/arko26.webp" srcset="img/arko26-600.webp 600w, img/arko26.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="대학로 아르코예술극장 로비 유리문 옆에 설치한 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>대학로 아르코예술극장</b><span>2.9m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
           </figure>
           <figure class="hc-item" data-cat="public">
             <button type="button" class="hc-ph" data-vid="vid/kkumbat.mp4" data-poster="vid/kkumbat-poster.webp" aria-label="대학로 꿈밭극장 설치 영상 보기"><img src="img/kkumbat.webp" srcset="img/kkumbat-600.webp 600w, img/kkumbat.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="대학로 꿈밭극장 분홍 벽 앞에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
@@ -2547,7 +2552,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     { name: '하단 눈사람 인형 3종 세트', price: 24000, opts: [{ k: '색상', v: [['레드', 'opt-snow-1'], ['그레이', 'opt-snow-2']] }] },
     { name: '메탈 LED 상자 3종 세트', price: 70000, img: 'opt-metal' },
     { name: '단색 상자 12합 세트', price: 45000, opts: [{ k: '색상', v: [['흰색', 'opt-plain-1'], ['골드', 'opt-plain-2'], ['레드', 'opt-plain-3']] }, { k: '모양', v: [['사각'], ['원형']] }] },
-    { name: '하단 소품상자로 대체', price: 0, sub: '무료 · 시그니처 상자 대신', opts: [{ k: '종류', v: [['눈꽃', 'opt-gift-snow'], ['반짝이', 'opt-gift-shine']] }] },
+    { name: '하단 소품상자로 대체', price: 0, sub: '무료 · 시그니처 상자 대신', opts: [{ k: '종류', v: [['반짝이', 'opt-gift-shine'], ['눈꽃', 'opt-gift-snow', 'out']] }] },   // 세 번째 값 'out': 2026 예약 마감 (고를 수 없게, 11/22 눈꽃)
   ];
   const BOX_EXTRA = 5000;   // 시그니처 상자 추가 개당
   const REGIONS = [
@@ -2777,11 +2782,11 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const count = () => sel.filter(x => x.on).length + (boxes ? 1 : 0);
       const label = () => { const n = count(); go.textContent = n ? n + '개 선택 완료' : '선택 없이 넘어가기'; };
       EXTRAS.forEach((e, i) => {
-        const st = sel[i]; st.pick = (e.opts || []).map(() => 0); st.q = N;
+        const st = sel[i]; st.pick = (e.opts || []).map(o => Math.max(0, o.v.findIndex(v => !v[2]))); st.q = N;
         if (!baseBoxes && e.price === 0) return;   // 기본 하단 상자가 없으면(1.35m만) '소품상자로 대체'가 해당 없음
         const card = document.createElement('div'); card.className = 'qcard qx-c';
-        const pics = e.img ? [e.img] : ((e.opts && e.opts[0].v.filter(v => v[1]).map(v => v[1])) || []);
-        const kinds = e.opts ? e.opts[0].v.map(v => v[0]) : [];
+        const pics = e.img ? [e.img] : ((e.opts && e.opts[0].v.filter(v => v[1] && !v[2]).map(v => v[1])) || []);
+        const kinds = e.opts ? e.opts[0].v.map(v => v[0] + (v[2] ? ' 예약 마감' : '')) : [];
         card.innerHTML = '<button type="button" class="qx-hit" aria-pressed="false"><span class="qx-ph">' + pics.map((f, k) => '<img src="img/' + f + '.webp" alt="" loading="lazy"' + (k ? '' : ' class="on"') + '>').join('') +
           (pics.length > 1 ? '<em class="qx-n">' + pics.length + (e.opts[0].k === '색상' ? '색' : '종') + '</em><span class="qx-dots" aria-hidden="true">' + pics.map((f, k) => '<i' + (k ? '' : ' class="on"') + '></i>').join('') + '</span>' : '') + '</span>' +
           '<b>' + e.name + '</b><span>' + (e.price ? '+' + won(e.price) + (N > 1 ? ' · 1그루' : '') : '') + (e.sub ? (e.price ? ' · ' : '') + e.sub : '') + '</span>' +
@@ -2794,7 +2799,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
         (e.opts || []).forEach((o, oi) => {
           const row = document.createElement('div'); row.className = 'qx-o'; row.hidden = true; row.setAttribute('role', 'group'); row.setAttribute('aria-label', e.name + ' ' + o.k);
           o.v.forEach((v, vi) => {
-            const b = document.createElement('button'); b.type = 'button'; b.textContent = v[0]; b.setAttribute('aria-pressed', String(vi === 0));
+            const b = document.createElement('button'); b.type = 'button'; b.textContent = v[0] + (v[2] ? ' · 예약 마감' : ''); b.setAttribute('aria-pressed', String(vi === st.pick[oi])); if (v[2]) { b.disabled = true; row.appendChild(b); return; }
             b.onclick = () => { st.pick[oi] = vi; [...row.children].forEach((x, k) => x.setAttribute('aria-pressed', String(k === vi))); if (v[1]) im.src = 'img/' + v[1] + '.webp'; };
             row.appendChild(b);
           });
