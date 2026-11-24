@@ -300,3 +300,6 @@ function manualSheet() {
   if (!sh) { sh = ss.insertSheet('일정마감'); sh.getRange(1, 1, 1, 3).setValues([['date', 'slot', 'memo']]); sh.setFrozenRows(1); }
   return sh;
 }
+
+// 서버 깨워 두기 (11/24): 5분마다 시간 트리거로 실행. 관리 화면 견적 목록 캐시를 미리 채움
+function keepWarm() { qcached('brief', 120, () => ({ ok: true, quotes: brief() })); }
