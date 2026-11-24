@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=12" data-page="job"></script>
+<script src="/admin/auth.js?v=13" data-page="job"></script>
 <script src="/admin/ui.js?v=14"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -212,10 +212,14 @@ async function taxAct(e){
   const on = b.hasAttribute("data-jtaxdone");
   if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 " + (on ? "완료" : "취소"); setTimeout(() => { if(b.isConnected){ b.dataset.armed = ""; b.textContent = on ? "발행 완료" : "발행 완료 취소"; } }, 3000); return true; }
   if(BUSY.tax) return true; BUSY.tax = 1; EDITED++;   // 뒤에서 받아 오는 예전 장부 값이 방금 누른 것을 되돌리지 않게
-  b.disabled = true;
+  if(!EXTRAS){ BUSY.tax = 0; TL.toast("장부를 불러오지 못했습니다. 새로고침해 주세요.", "bad"); return true; }
+  // 누르는 즉시 화면에 반영하고 저장은 뒤에서 (실패하면 되돌림)
+  const before = EXTRAS[ID] ? JSON.parse(JSON.stringify(EXTRAS[ID])) : undefined;
+  EXTRAS[ID] = Object.assign({}, EXTRAS[ID] || {}, { taxInvoice: on });
+  render(); TL.toast(on ? "세금계산서 발행 완료" : "발행 완료를 취소했습니다");
   const j = await TL.setTax(ID, on, EXTRAS).catch(() => null); BUSY.tax = 0;
-  if(!j || !j.ok){ b.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return true; }
-  render(); keepCache(); TL.toast(on ? "세금계산서 발행 완료 · 장부에 체크했습니다" : "발행 완료를 취소했습니다");
+  if(!j || !j.ok){ if(before) EXTRAS[ID] = before; else delete EXTRAS[ID]; render(); TL.toast((j && j.error) || "저장하지 못했습니다. 다시 눌러 주세요.", "bad"); return true; }
+  render(); keepCache();
   return true;
 }
 /* 대표 직접 입력: 고객이 카톡으로 보낸 정보·사업자등록증 사진. 빈 칸이 있어도 저장(발행 대기는 등록증 또는 상호·업종·사업자번호 + 이메일) */

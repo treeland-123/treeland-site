@@ -86,32 +86,40 @@
   }
   /* 입금 여부는 지출 장부(계약보충 extras)가 기준. 대표 화면에서 읽고, 입금 확인은 장부와 계약 서버 양쪽에 같이 씀 */
   const LEDGER = "https://script.google.com/macros/s/AKfycbxQ3PcUoyJs9t2awb8TAfD2-7T_Ov4vpXLXpr8VPOAfQVD0uO_4rpuvrcFEPLz2nJnQ/exec";
+  const lpost = (b) => fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify(Object.assign({ pin: LS.g("tl_pin") }, b)) }).then(r => r.json());
+  // 관리 화면은 입금·세금계산서 표시(extras)만 받음 (장부 v3, 11/24). 장부가 예전 버전이면 전체(load)로 받음
   async function ledgerExtras(){
     const pin = LS.g("tl_pin"); if(staff || !pin) return null;
     try{
-      const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"load", pin }) });
-      const j = await r.json(); return j.ok ? (j.extras || {}) : null;
+      let j = await lpost({ action:"extras" });
+      if(!j.ok && j.error === "bad_action") j = await lpost({ action:"load" });
+      return j.ok ? (j.extras || {}) : null;
     }catch(e){ return null; }
   }
   const todayKST = () => new Intl.DateTimeFormat("sv-SE", { timeZone:"Asia/Seoul", year:"numeric", month:"2-digit", day:"2-digit" }).format(new Date());
-  // extras: ledgerExtras() 결과(없으면 장부는 건드리지 않음 — 세금계산서·메모를 덮어쓰지 않으려고)
+  // 바꾼 칸만 저장(patchExtra): 서버가 지금 값을 읽어 합치므로 화면 값이 오래돼도 다른 칸(입금·메모·세금계산서)을 덮어쓰지 않음
+  async function patchExtra(id, patch, extras){
+    let j = await lpost({ action:"patchExtra", data: Object.assign({ id }, patch) });
+    if(!j.ok && j.error === "bad_action"){   // 장부가 예전 버전일 때: 새로 읽고 전체 저장
+      const fresh = await ledgerExtras(), x = Object.assign({}, fresh ? (fresh[id] || {}) : (extras[id] || {}));
+      if("taxInvoice" in patch) x.taxInvoice = !!patch.taxInvoice;
+      if("paid" in patch){ x.paidDate = patch.paid ? (x.paid && x.paidDate || patch.paidDate || todayKST()) : ""; x.paid = !!patch.paid; }
+      const d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!x.paid, paidDate: x.paidDate || "" };
+      j = await lpost({ action:"saveExtra", data: d }); if(j.ok) j.extra = { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate };
+    }
+    if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
+    if(extras) extras[id] = j.extra;
+    return { ok:true };
+  }
+  // extras: ledgerExtras() 결과(없으면 장부는 건드리지 않음)
   async function setTax(id, on, extras){
     if(!extras) return { ok:false, error:"장부를 불러오지 못했습니다. 새로고침해 주세요." };
-    // 화면의 장부 값이 오래됐을 수 있어(캐시) 저장 직전에 새로 읽음 → 입금·메모를 예전 값으로 덮어쓰지 않음
-    const fresh = await ledgerExtras();
-    const x = fresh ? (fresh[id] || {}) : (extras[id] || {}), d = { id, taxInvoice: !!on, memo: x.memo || "", paid: !!x.paid, paidDate: x.paidDate || "" };
-    const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
-    const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
-    extras[id] = Object.assign({}, x, { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate });
-    return { ok:true };
+    try{ return await patchExtra(id, { taxInvoice: !!on }, extras); }catch(e){ return { ok:false, error:"장부에 저장하지 못했습니다. 인터넷 연결을 확인해 주세요." }; }
   }
   async function setPaid(id, paid, extras){
     if(extras){
-      const fresh = await ledgerExtras();   // 저장 직전에 새로 읽음 (세금계산서·메모를 예전 값으로 덮어쓰지 않게)
-      const x = fresh ? (fresh[id] || {}) : (extras[id] || {}), d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!paid, paidDate: paid ? (x.paidDate || todayKST()) : "" };
-      const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
-      const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
-      extras[id] = { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate };
+      let j; try{ j = await patchExtra(id, { paid: !!paid, paidDate: todayKST() }, extras); }catch(e){ j = { ok:false, error:"장부에 저장하지 못했습니다. 인터넷 연결을 확인해 주세요." }; }
+      if(!j.ok) return j;
     }
     return call({ action:"update", id, field:"paid", value: !!paid });
   }
