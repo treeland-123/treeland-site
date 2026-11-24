@@ -73,6 +73,7 @@ button{font:inherit;cursor:pointer}
 .ed .d .note{grid-column:2/-1;font-size:13px}
 .ed .sum{font-size:13.5px;font-variant-numeric:tabular-nums}
 .ed .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.item .t i.add{font-style:normal;font-size:11px;font-weight:600;color:var(--accent,#1F3D30);border:1px solid currentColor;border-radius:4px;padding:0 3px;margin-left:3px;vertical-align:1px}
 .ed .d .dp{grid-column:5;justify-self:end;font-size:12.5px;color:var(--sub);font-variant-numeric:tabular-nums;white-space:nowrap}
 .ed .d .note{grid-column:2/5}
 .ed .xr{grid-column:2/-1;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-start}
@@ -309,18 +310,21 @@ const shortDT = s => { const m = String(s || "").match(/^\d{4}-(\d{2})-(\d{2})/)
 function renderList(){
   if(!ITEMS.length){ $("#list").innerHTML = `<p class="lead">아직 계약이 없습니다.</p>`; return; }
   $("#list").innerHTML = ITEMS.map(it => {
-    const k = calc(it), days = k.dates.map(d => fmtDay(d, true)).join(", ");
-    const done = it.status === "서명완료", A = done ? calcActual(it) : null;
+    const k = calc(it), done = it.status === "서명완료", A = done ? calcActual(it) : null;
+    // 서명 완료: 실제 근무한 날(결근 빼고, 「근무 기록·추가」로 넣은 날 포함) / 서명 전: 계약한 날
+    const days = A ? A.worked.map(d => fmtDay(d.date, true) + (d.extra ? "<i class=\"add\">추가</i>" : "")).join(", ") || "근무일 없음" : esc(k.dates.map(d => fmtDay(d, true)).join(", "));
+    const added = A ? A.days.filter(d => d.extra && !d.off) : [];
+    const addLine = added.length ? `<div class="m" style="grid-column:1/-1">추가한 날 · ${added.map(d => `${fmtDay(d.date, true)} ${d.items ? d.items.map(x => `${esc(x.t || "작업")} ${won(x.rate)}원×${x.qty}`).join(", ") : `${esc(d.start)}~${esc(d.end)} 시급 ${won(d.wage)}원`} = ${won(d.pay)}원`).join(" · ")}</div>` : "";
     const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}</dl>` : (it.memo ? `<div class="m" style="grid-column:1/-1">메모 ${esc(it.memo)}</div>` : "");
     const acts = done
       ? `${it.paidAt ? `<button type="button" class="ghost" data-paid="0" data-id="${esc(it.id)}">지급 취소</button>` : `<button type="button" class="primary" data-paid="1" data-id="${esc(it.id)}" style="padding:7px 14px">지급 완료</button>`}${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무 기록·추가</button>`
       : it.status === "서명대기"
         ? `<button type="button" class="ghost" data-copy="${esc(signMsg(it, it.url))}">문구 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
         : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
-    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${esc(days)}</div><div class="hd">${badge(it.status)}${done ? (it.paidAt ? ` <span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : ` <span class="badge" style="color:var(--err)">지급 전</span>`) : ""}</div>
+    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${days}</div><div class="hd">${badge(it.status)}${done ? (it.paidAt ? ` <span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : ` <span class="badge" style="color:var(--err)">지급 전</span>`) : ""}</div>
       <div class="m">${esc(it.start)}~${esc(it.end)} · ${k.piece ? `건당 ${k.items.map(x => `${esc(x.t)} ${won(x.rate)}원×${x.qty}`).join(", ")}` : `시급 ${won(it.wage)}원`} · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
       ${A && A.edited ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span></div>` : ""}
-      ${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
+      ${addLine}${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
       <div class="acts">${acts}<button type="button" class="ghost" data-act="delete" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--sub)">삭제</button></div></div>`;
   }).join("");
 }
