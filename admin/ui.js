@@ -116,6 +116,8 @@
     G.late = G.week.filter(x => dayDiff(parts(x.install).key) < 0);
     G.pay = owner ? payWaiting(live, d.extras).sort(byIn) : [];
     G.over = G.pay.filter(x => { const p = parts(x.install); return p && dueKey(p.key) < t; });
+    // 입금 완료: 장부 기준, 최근 입금 순
+    G.paid = owner ? live.filter(x => SIGNED(x) && TL.isPaid(x, d.extras)).sort((a, b) => String(TL.paidDate(b, d.extras)).localeCompare(String(TL.paidDate(a, d.extras)))) : [];
     G.ret = live.filter(x => SIGNED(x) && !x.doneOut && parts(x.retrieve)).sort(byOut);
     G.ret2w = G.ret.filter(x => dayDiff(parts(x.retrieve).key) <= 13);
     G.done = all.filter(x => x.doneOut && !x.archived).sort(byOut);
@@ -125,6 +127,7 @@
     G.tax = owner ? live.filter(x => SIGNED(x) && x.doneIn && x.pay !== "카드 결제")
       .map(x => ({ x, s: taxState(x, d.extras) })).sort((a, b) => TORD[a.s.k] - TORD[b.s.k] || (b.s.days || 0) - (a.s.days || 0)).map(o => o.x) : [];
     G.taxTodo = G.tax.filter(x => taxState(x, d.extras).k !== "done");
+    G.taxDone = G.tax.length - G.taxTodo.length;
     G.archived = all.filter(x => x.archived);
     G.mine = live.filter(x => me && x.crew === me && !x.doneOut).sort(byIn);
     G.live = all.filter(x => !x.archived);
