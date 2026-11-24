@@ -24,10 +24,11 @@ function doPost(e) {
   try {
     switch (b.action) {
       case 'list': return out({ ok: true, quotes: list(), next: peekNo(b.year) });
-      case 'reserve': return out({ ok: true, no: reserveNo(b.year) });
-      case 'save': return out(save(b.quote));
-      case 'delete': return out(remove(b.no));
-      case 'send': return out(send(b));
+      case 'brief': return out(qcached('brief', 120, () => ({ ok: true, quotes: brief() })));   // 관리 화면용 가벼운 목록 (11/24)
+      case 'reserve': { const r = { ok: true, no: reserveNo(b.year) }; qbump(); return out(r); }
+      case 'save': { const r = save(b.quote); qbump(); return out(r); }
+      case 'delete': { const r = remove(b.no); qbump(); return out(r); }
+      case 'send': { try { return out(send(b)); } finally { qbump(); } }
       case 'check': return out({ ok: true, aliasReady: aliasReady() });
       case 'docList': return out({ ok: true, docs: docList() });
       case 'docGet': return out(docGet(b.key));
@@ -78,6 +79,21 @@ function list() {
     let state = null; try { state = r.state ? JSON.parse(r.state) : null; } catch (x) {}
     return { no: String(r.no), cust: r.cust, email: r.email, total: Number(r.total) || 0, at: iso(r.savedAt), sentAt: iso(r.sentAt), sentTo: r.sentTo, state: state };
   }).sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+}
+// 관리 화면(건 목록·홈)은 번호·상호·금액·날짜만 필요: 견적 내용(state)은 빼고 보냄
+function brief() {
+  return rows().map(r => ({ no: String(r.no), cust: r.cust, total: Number(r.total) || 0, at: iso(r.savedAt), sentAt: iso(r.sentAt) }))
+    .sort((a, b) => (b.at || '').localeCompare(a.at || ''));
+}
+// 읽기 캐시 (11/24): 견적이 저장·삭제·발송될 때마다 세대 값을 바꿔 예전 캐시는 다시 쓰지 않음
+function qgen() { const c = CacheService.getScriptCache(); let g = c.get('gen'); if (!g) { g = String(Date.now()); c.put('gen', g, 21600); } return g; }
+function qbump() { try { CacheService.getScriptCache().put('gen', String(Date.now()) + Math.random().toString(36).slice(2, 6), 21600); } catch (x) {} }
+function qcached(key, ttl, fn) {
+  let c = null, k = '';
+  try { c = CacheService.getScriptCache(); k = key + '_' + qgen(); const v = c.get(k); if (v) return JSON.parse(v); } catch (x) { c = null; }
+  const o = fn();
+  if (c && o && o.ok) { try { const t = JSON.stringify(o); if (t.length < 90000) c.put(k, t, ttl); } catch (x) {} }
+  return o;
 }
 function iso(v) { if (!v) return ''; if (v instanceof Date) return v.toISOString(); return String(v); }
 

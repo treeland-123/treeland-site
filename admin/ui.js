@@ -73,8 +73,10 @@
   async function quoteList(){
     const pin = TL.LS.g("tl_pin"); if(TL.staff || !pin) return [];
     try{
-      const r = await fetch(QUOTE_EP, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"list", pin }) });
-      const j = await r.json(); return (j.quotes || []).map(x => ({ no:x.no, cust:x.cust, total:x.total, at:x.at, sentAt:x.sentAt }));
+      const q = a => fetch(QUOTE_EP, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:a, pin }) }).then(r => r.json());
+      let j = await q("brief");   // 견적 내용 없이 가벼운 목록 (견적 서버 v5). 예전 서버면 전체 목록
+      if(!j.ok && j.error === "bad_action") j = await q("list");
+      return (j.quotes || []).map(x => ({ no:x.no, cust:x.cust, total:x.total, at:x.at, sentAt:x.sentAt }));
     }catch(e){ return []; }
   }
   async function loadAll(opt){
