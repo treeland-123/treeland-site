@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=11" data-page="jobs"></script>
+<script src="/admin/auth.js?v=12" data-page="jobs"></script>
 <script src="/admin/ui.js?v=14"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -49,6 +49,10 @@ const { esc } = UI;
 const OWNER = !TL.staff;
 const P = new URLSearchParams(location.search);
 let D = null, F = P.get("f") || "", Q = "";
+/* 이 화면에서 누른 입금 확인·발행 완료: 뒤에서 받아 온 목록(누르기 전에 읽은 장부)이 되돌리지 않게 덮어씀 */
+const LOCAL = {};
+const keepLocal = (id, patch) => { LOCAL[id] = Object.assign(LOCAL[id] || {}, patch); };
+function applyLocal(d){ if(d && d.extras) Object.keys(LOCAL).forEach(id => { d.extras[id] = Object.assign({}, d.extras[id] || {}, LOCAL[id]); }); return d; }
 const TAXURLS = {};
 function prefetchTax(){
   if(!OWNER || F !== "pay" || !D) return;
@@ -156,6 +160,7 @@ document.addEventListener("click", async e => {
     const id = b.dataset.pay, it = D.all.find(x => x.id === id);
     const before = D.extras ? JSON.stringify(D.extras[id] || null) : null;
     if(D.extras) D.extras[id] = Object.assign({}, D.extras[id] || {}, { paid:true, paidDate: UI.seoulKey() }); else it.paid = UI.seoulKey();
+    keepLocal(id, { paid:true, paidDate: UI.seoulKey() });
     const wrap = b.closest(".rowwrap"); wrap.style.transition = "opacity .2s, transform .2s"; wrap.style.opacity = "0"; wrap.style.transform = "translateX(24px)";
     setTimeout(() => render(false), 200);
     TL.toast(`${it.name || "선택한 곳"} 입금 확인`);
@@ -163,6 +168,7 @@ document.addEventListener("click", async e => {
     const ex = D.extras ? Object.assign({}, D.extras, { [id]: before ? JSON.parse(before) : undefined }) : null;
     const j = await TL.setPaid(id, true, ex).catch(() => null);
     if(!j || !j.ok){
+      delete LOCAL[id];
       if(D.extras){ if(before) D.extras[id] = JSON.parse(before); else delete D.extras[id]; } else it.paid = "";
       render(false); TL.toast("저장하지 못했습니다. 다시 눌러 주세요.", "bad"); return;
     }
@@ -193,9 +199,10 @@ document.addEventListener("click", async e => {
   const td = e.target.closest("[data-taxdone]");
   if(td){
     if(td.dataset.armed !== "1"){ td.dataset.armed = "1"; td.classList.add("armed"); td.textContent = "한 번 더"; setTimeout(() => { if(td.isConnected){ td.dataset.armed = ""; td.classList.remove("armed"); td.textContent = "발행 완료"; } }, 3000); return; }
-    const it = D.all.find(x => x.id === td.dataset.taxdone); td.disabled = true;
+    if(td.disabled) return;
+    const it = D.all.find(x => x.id === td.dataset.taxdone); td.disabled = true; keepLocal(it.id, { taxInvoice: true });
     const j = await TL.setTax(it.id, true, D.extras).catch(() => null);
-    if(!j || !j.ok){ td.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return; }
+    if(!j || !j.ok){ delete LOCAL[it.id].taxInvoice; td.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return; }
     UI.cache.set("all", D); render(false); TL.toast(`${it.name || ""} 세금계산서 발행 완료 · 장부에 체크했습니다`); return;
   }
   const bk = e.target.closest("#bulkIn");
@@ -218,7 +225,7 @@ document.addEventListener("click", async e => {
   if(c){ D = c; render(true); $("#stamp").textContent = "새로 받는 중…"; }
   else { $("#list").innerHTML = UI.skRows(6); FILTERS.length && ($("#filters").innerHTML = FILTERS.slice(0, 5).map(f => `<button type="button" aria-pressed="${f[0] === F}">${esc(f[1])}</button>`).join("")); }
   try{
-    D = await UI.loadAll({ quotes: OWNER, log: false });
+    D = applyLocal(await UI.loadAll({ quotes: OWNER, log: false })); UI.cache.set("all", D);
     render(!c);
     const d = new Date(); $("#stamp").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")} 기준`;
   }catch(e){

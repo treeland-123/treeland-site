@@ -97,7 +97,9 @@
   // extras: ledgerExtras() 결과(없으면 장부는 건드리지 않음 — 세금계산서·메모를 덮어쓰지 않으려고)
   async function setTax(id, on, extras){
     if(!extras) return { ok:false, error:"장부를 불러오지 못했습니다. 새로고침해 주세요." };
-    const x = extras[id] || {}, d = { id, taxInvoice: !!on, memo: x.memo || "", paid: !!x.paid, paidDate: x.paidDate || "" };
+    // 화면의 장부 값이 오래됐을 수 있어(캐시) 저장 직전에 새로 읽음 → 입금·메모를 예전 값으로 덮어쓰지 않음
+    const fresh = await ledgerExtras();
+    const x = fresh ? (fresh[id] || {}) : (extras[id] || {}), d = { id, taxInvoice: !!on, memo: x.memo || "", paid: !!x.paid, paidDate: x.paidDate || "" };
     const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
     const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
     extras[id] = Object.assign({}, x, { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate });
@@ -105,7 +107,8 @@
   }
   async function setPaid(id, paid, extras){
     if(extras){
-      const x = extras[id] || {}, d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!paid, paidDate: paid ? (x.paidDate || todayKST()) : "" };
+      const fresh = await ledgerExtras();   // 저장 직전에 새로 읽음 (세금계산서·메모를 예전 값으로 덮어쓰지 않게)
+      const x = fresh ? (fresh[id] || {}) : (extras[id] || {}), d = { id, taxInvoice: !!x.taxInvoice, memo: x.memo || "", paid: !!paid, paidDate: paid ? (x.paidDate || todayKST()) : "" };
       const r = await fetch(LEDGER, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body: JSON.stringify({ action:"saveExtra", pin: LS.g("tl_pin"), data: d }) });
       const j = await r.json(); if(!j.ok) return { ok:false, error: "장부에 저장하지 못했습니다. " + (j.error || "") };
       extras[id] = { taxInvoice: d.taxInvoice, memo: d.memo, paid: d.paid, paidDate: d.paidDate };

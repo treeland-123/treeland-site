@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<script src="/admin/auth.js?v=11" data-page="job"></script>
+<script src="/admin/auth.js?v=12" data-page="job"></script>
 <script src="/admin/ui.js?v=14"></script>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex">
@@ -211,8 +211,9 @@ async function taxAct(e){
   const b = e.target.closest("[data-jtaxdone],[data-jtaxundo]"); if(!b) return false;
   const on = b.hasAttribute("data-jtaxdone");
   if(b.dataset.armed !== "1"){ b.dataset.armed = "1"; b.textContent = "한 번 더 누르면 " + (on ? "완료" : "취소"); setTimeout(() => { if(b.isConnected){ b.dataset.armed = ""; b.textContent = on ? "발행 완료" : "발행 완료 취소"; } }, 3000); return true; }
+  if(BUSY.tax) return true; BUSY.tax = 1; EDITED++;   // 뒤에서 받아 오는 예전 장부 값이 방금 누른 것을 되돌리지 않게
   b.disabled = true;
-  const j = await TL.setTax(ID, on, EXTRAS).catch(() => null);
+  const j = await TL.setTax(ID, on, EXTRAS).catch(() => null); BUSY.tax = 0;
   if(!j || !j.ok){ b.disabled = false; TL.toast((j && j.error) || "저장하지 못했습니다.", "bad"); return true; }
   render(); keepCache(); TL.toast(on ? "세금계산서 발행 완료 · 장부에 체크했습니다" : "발행 완료를 취소했습니다");
   return true;
