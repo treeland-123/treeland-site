@@ -327,10 +327,11 @@ function taxCard(it){
   if(!OWNER || it.status !== "서명완료" || it.pay === "카드 결제") return "";
   const s = UI.taxState(it, EXTRAS), t = it.tax || {}, has = s.k === "ready" || s.k === "done";
   const known = it.tax || it.biz ? `<p style="margin:0;font-size:15px;line-height:1.6">${taxHtml(it)}</p>` : "";
-  const hint = has ? "" : `<p class="hint">${s.k === "req" ? `${esc(String(t.req).slice(5, 16).replace("-", "/"))}에 요청했고 아직 다 받지 못했습니다.` : "사업자등록증이나 사업자 정보를 아직 받지 못했습니다."} 등록 링크를 보내거나, 카톡으로 받은 내용을 직접 입력하세요.</p>`;
+  const hint = has ? "" : `<p class="hint">${s.k === "req" ? `${esc(String(t.req).slice(5, 16).replace("-", "/"))}에 요청했고 아직 다 받지 못했습니다.` : "사업자등록증이나 사업자 정보를 아직 받지 못했습니다."} 등록 링크를 보내거나, 카톡으로 받은 내용을 직접 입력하세요. 이미 발행했으면 「발행 완료」를 누르세요.</p>`;
   const req = `<button type="button" class="btn ${has ? "sub " : ""}sm" data-jtaxreq>${s.k === "req" || has ? "다시 요청 복사" : "등록 요청 복사"}</button>`;
   const btns = (s.k === "done" ? `<button type="button" class="btn sub sm" data-jtaxundo>발행 완료 취소</button>`
     : s.k === "ready" ? `<button type="button" class="btn sub sm" data-jtaxinfo>발행 정보 복사</button><button type="button" class="btn sm" data-jtaxdone>발행 완료</button>` : "")
+    + (s.k === "done" || s.k === "ready" ? "" : `<button type="button" class="btn sub sm" data-jtaxdone>발행 완료</button>`)   // 정보 등록 없이 이미 발행한 건도 손으로 완료 처리
     + (s.k === "done" ? "" : req) + `<button type="button" class="btn sub sm" data-jtaxedit>직접 입력</button>`;
   const body = known + hint;
   return `<section class="card"><div class="ch"><h2>세금계산서</h2><span class="chip ${s.cls}">${esc(s.label)}</span></div>${body}<div class="btns" style="flex-wrap:wrap">${btns}</div></section>`;

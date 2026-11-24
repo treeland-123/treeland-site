@@ -132,13 +132,13 @@ function render(animate){
   if(animate) UI.rise($("#list"));
   prefetchTax();
 }
-/* 세금계산서 줄: 상태 칩 + 할 일 버튼 (미등록·요청함 → 요청 복사 / 발행 대기 → 정보 복사·발행 완료) */
+/* 세금계산서 줄: 상태 칩 + 할 일 버튼 (미등록·요청함 → 요청 복사·발행 완료 / 발행 대기 → 정보 복사·발행 완료) */
 function taxRow(it, row){
   const s = UI.taxState(it, D.extras);
   const r = row.replace(/<span class="end">[\s\S]*?<\/span><\/a>$/, `<span class="end"><span class="chip ${s.cls}">${esc(s.label)}</span></span></a>`);
   const id = esc(it.id);
   const btns = s.k === "ready" ? `<button type="button" class="taxb sub" data-taxinfo="${id}">정보 복사</button><button type="button" class="taxb" data-taxdone="${id}">발행 완료</button>`
-    : s.k === "done" ? "" : `<button type="button" class="taxb ${s.k === "req" ? "sub" : ""}" data-taxreq="${id}">${s.k === "req" ? "다시 요청" : "요청 복사"}</button>`;
+    : s.k === "done" ? "" : `<button type="button" class="taxb ${s.k === "req" ? "sub" : ""}" data-taxreq="${id}">${s.k === "req" ? "다시 요청" : "요청 복사"}</button><button type="button" class="taxb sub" data-taxdone="${id}">발행 완료</button>`;   // 이미 발행한 건은 정보 등록 없이도 완료 처리
   return btns ? `<div class="rowwrap">${r}<span class="taxbtns">${btns}</span></div>` : r;
 }
 $("#filters").addEventListener("click", e => {
