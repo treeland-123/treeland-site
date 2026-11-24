@@ -219,7 +219,7 @@ function remove(id) {
 }
 
 // 실근무 기록(내부용): 근로일별 실제 시작·종료·휴게, 결근, 추가 근로일. 서명한 계약서 PDF는 그대로 둠
-// actual = { 'yyyy-MM-dd': { start, end, breakMin, note } 또는 { off:true, note } } — 계약과 다른 날만 저장
+// actual = { 'yyyy-MM-dd': { start, end, breakMin, note, wage?, piece? } 또는 { off:true, note } } — 계약과 다른 날만 저장. wage·piece는 추가한 날의 그날 시급·건별 작업
 function saveActual(id, a) {
   const r = findRow(id);
   if (!r) return { error: 'not_found' };
@@ -230,7 +230,15 @@ function saveActual(id, a) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return;
     if (x.off) { out[d] = { off: true, note: String(x.note || '').slice(0, 100) }; return; }
     if (!hm.test(x.start || '') || !hm.test(x.end || '')) return;
-    out[d] = { start: x.start, end: x.end, breakMin: Math.max(0, Math.round(Number(x.breakMin) || 0)), note: String(x.note || '').slice(0, 100) };
+    const o = { start: x.start, end: x.end, breakMin: Math.max(0, Math.round(Number(x.breakMin) || 0)), note: String(x.note || '').slice(0, 100) };
+    // 추가한 날(11/24): 그날 시급 또는 건별 작업 (내부 기록)
+    const w = Math.round(Number(x.wage) || 0); if (w > 0 && w <= 1000000) o.wage = w;
+    if (Array.isArray(x.piece)) {
+      const p = x.piece.slice(0, 20).map((i) => ({ t: String(i && i.t || '').trim().slice(0, 40), rate: Math.round(Number(i && i.rate) || 0), qty: Math.round(Number(i && i.qty) || 0) }))
+        .filter((i) => i.rate > 0 && i.rate <= 10000000 && i.qty > 0 && i.qty <= 999);
+      if (p.length) { o.piece = p; delete o.wage; }
+    }
+    out[d] = o;
   });
   const sh = sheet();
   if (sh.getLastColumn() < COLS.length) sh.getRange(1, 1, 1, COLS.length).setValues([COLS]).setFontWeight('bold');

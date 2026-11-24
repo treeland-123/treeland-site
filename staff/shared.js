@@ -45,15 +45,19 @@ function payText(c){
   return k.piece ? `건당 · ${k.items.map(itemLine).join(", ")} · 합계 ${won(k.total)}원` : `시급 ${won(c.wage)}원 · 1일 ${won(k.dayPay)}원 · 총 ${won(k.total)}원 (${k.dates.length}일)`;
 }
 // 실근무 기록(관리 화면에서 사후 수정, 내부용). 기록 없는 날은 계약 시간 그대로
+// 추가한 날(계약에 없는 날)은 그날만의 시급(wage) 또는 건별 작업(piece: [{t,rate,qty}])으로 기록 가능 (11/24, 내부 기록)
 function actualDays(c){
   let a = {}; try{ a = c.actual ? JSON.parse(c.actual) : {}; }catch(e){ a = {}; }
-  const base = dateList(c.dates), wage = Number(c.wage) || 0;
+  const base = dateList(c.dates), wage = Number(c.wage) || 0, pieceC = c.payType === "piece";
   return [...new Set([...base, ...Object.keys(a)])].sort().map(d => {
-    const x = a[d], v = { date:d, start:c.start, end:c.end, breakMin:Number(c.breakMin) || 0, off:false, note:"", extra:!base.includes(d), edited:!!x };
-    if(x){ v.note = x.note || ""; if(x.off) v.off = true; else { v.start = x.start; v.end = x.end; v.breakMin = Number(x.breakMin) || 0; } }
+    const x = a[d], v = { date:d, start:c.start, end:c.end, breakMin:Number(c.breakMin) || 0, off:false, note:"", extra:!base.includes(d), edited:!!x, wage: pieceC ? 0 : wage, items:null };
+    if(x){ v.note = x.note || ""; if(x.off) v.off = true; else { v.start = x.start || c.start; v.end = x.end || c.end; v.breakMin = Number(x.breakMin) || 0; if(Number(x.wage) > 0) v.wage = Math.round(Number(x.wage)); if(v.extra && Array.isArray(x.piece) && x.piece.length) v.items = pieceItems({ items: x.piece }); } }
     let span = toMin(v.end) - toMin(v.start); if(span <= 0) span += 1440;
     v.hours = v.off ? 0 : Math.max(0, span - v.breakMin) / 60;
-    v.pay = v.off ? 0 : c.payType === "piece" ? (base.includes(d) ? Math.round(calc(c).total / Math.max(1, base.length)) : 0) : Math.round(wage * v.hours);   // 건당은 근무시간과 관계없이 총액을 근로일에 나눔
+    v.pay = v.off ? 0
+      : v.items ? v.items.reduce((s, i) => s + i.rate * i.qty, 0)   // 추가한 날 건별
+      : pieceC ? (v.extra ? 0 : Math.round(calc(c).total / Math.max(1, base.length)))   // 건당 계약은 근무시간과 관계없이 총액을 근로일에 나눔
+      : Math.round(v.wage * v.hours);
     return v;
   });
 }

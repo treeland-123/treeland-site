@@ -375,10 +375,17 @@ function staffExp(){   // 서명완료 근로계약 → 인건비 지출 (총 �
     const base=String(t.dates||"").split(",").filter(Boolean),all=[...new Set(base.concat(Object.keys(act)))].sort();
     const hrs=(st,en,br)=>{const[sh,sm]=String(st).split(":").map(Number),[eh,em]=String(en).split(":").map(Number);let span=(eh*60+em)-(sh*60+sm);if(span<=0)span+=1440;return Math.max(0,span-(Number(br)||0))/60};
     const days=all.filter(d=>!(act[d]&&act[d].off));
-    const piece=t.payType==="piece";   // 건당 계약: 건당 금액 × 건수 (근무시간과 무관)
-    const amount=piece?(Number(t.rate)||0)*(Number(t.qty)||0):days.reduce((sum,d)=>{const x=act[d];return sum+Math.round((Number(t.wage)||0)*(x?hrs(x.start,x.end,x.breakMin):hrs(t.start,t.end,t.breakMin)))},0);
+    const piece=t.payType==="piece";   // 건당 계약: 계약 총액(건당 금액 × 건수)을 계약한 날에 나눔 (근무시간과 무관)
+    // 근로계약 화면 「근무 기록·추가」로 계약에 없는 날을 넣으면 그날 시급(wage) 또는 건별(piece)로 계산 (staff/shared.js actualDays와 같은 계산)
+    const dayPay=d=>{const x=act[d],extra=!base.includes(d);
+      if(x&&extra&&Array.isArray(x.piece)&&x.piece.length)return x.piece.reduce((a,i)=>a+Math.round(Number(i.rate)||0)*Math.round(Number(i.qty)||0),0);
+      if(piece)return extra?0:Math.round((Number(t.rate)||0)*(Number(t.qty)||0)/Math.max(1,base.length));
+      const w=x&&Number(x.wage)>0?Number(x.wage):(Number(t.wage)||0);
+      return Math.round(w*(x?hrs(x.start||t.start,x.end||t.end,x.breakMin):hrs(t.start,t.end,t.breakMin)))};
+    const amount=days.reduce((sum,d)=>sum+dayPay(d),0);
+    const added=days.filter(d=>!base.includes(d)).length;
     return {id:"s:"+t.id,fromStaff:true,amount,category:"인건비",date:days[0]||"",siteId:"",season:seasonOf(days[0]),vendor:t.name,pay:"계좌이체",
-      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}${piece?` · 건당 ${(()=>{let a=[];try{a=t.items?JSON.parse(t.items):[]}catch(e){}return a.length?a.map(x=>`${x.t} ${x.qty}건`).join(", "):`${t.qty}건`})()}`:""}${Object.keys(act).length?" (근무시간 수정됨)":""}`,createdAt:0};
+      memo:`근로계약 ${days.map(d=>md(d)).join(", ")} ${t.start}~${t.end}${piece?` · 건당 ${(()=>{let a=[];try{a=t.items?JSON.parse(t.items):[]}catch(e){}return a.length?a.map(x=>`${x.t} ${x.qty}건`).join(", "):`${t.qty}건`})()}`:""}${added?` · 추가 ${added}일`:""}${Object.keys(act).length?" (근무 기록 수정됨)":""}`,createdAt:0};
   });
 }
 const allExp=()=>S.expenses.concat(staffExp());
