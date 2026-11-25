@@ -299,6 +299,18 @@ select{min-height:46px;padding:8px 12px;border:1px solid var(--line);background:
 .clients li{display:grid;gap:2px;padding:4px 16px;border-left:1px solid var(--line);min-width:0}
 .clients b{font-family:var(--display);font-size:18px;font-weight:600;line-height:1.35}
 .clients span{font-size:13px;color:var(--muted)}
+/* 주요 설치 장소: 로고 + 이름이 옆으로 계속 흐르는 띠 (11/22) */
+.clq{position:relative;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent);mask-image:linear-gradient(90deg,transparent,#000 7%,#000 93%,transparent)}
+.clq-r{display:flex;width:max-content;animation:clq 33s linear infinite}
+.clq-t{display:flex;align-items:center;margin:0;padding:0;list-style:none}
+.clq-t li{display:flex;align-items:center;gap:8px;padding:5px 22px;white-space:nowrap;font-family:var(--display);font-size:15px;font-weight:500;line-height:1.3;color:#5d635f}
+.clq-t img{display:block;height:22px;width:auto;flex:none;filter:grayscale(1) brightness(.55) contrast(1.1);opacity:.8}   /* 로고 한 톤 (11/26) */
+/* 얼리버드 끝난 뒤 숨김 (내년 다시 사용) */
+html.after2 .eb{display:none!important}
+.clq-t .clq-wm img{height:12px}
+@keyframes clq{to{transform:translateX(-50%)}}
+@media (max-width:640px){.clq-t li{padding:4px 16px;font-size:13.5px;gap:7px}.clq-t img{height:19px}.clq-t .clq-wm img{height:11px}}
+@media (prefers-reduced-motion:reduce){.clq{-webkit-mask-image:none;mask-image:none}.clq-r{animation:none;width:auto}.clq-t{flex-wrap:wrap;gap:6px 0}.clq-t[aria-hidden]{display:none}}
 .trust-label{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:8px}
 
 /* case cards with before toggle */
@@ -1164,6 +1176,7 @@ dialog.qd::backdrop{background:rgba(8,12,10,.55)}
 .tier-lnk{color:inherit;text-decoration:underline;text-decoration-color:rgba(163,35,47,.45);text-underline-offset:3px}
 
 .dt-box .pair-frame{aspect-ratio:2/1}
+.dt-box .pair-frame.one{grid-template-columns:1fr;aspect-ratio:2/1}
 .dt-proof{display:flex;align-items:center;gap:8px;margin-top:10px;color:var(--ink)}
 .dt-pt{position:relative;flex:none;width:64px;height:64px;padding:0;border:1px solid var(--line);border-radius:2px;background:var(--surface);overflow:hidden;cursor:zoom-in}
 .dt-pt img,.dt-pt video{display:block;width:100%;height:100%;object-fit:cover}
@@ -1398,6 +1411,7 @@ button.sl-d:active{transform:scale(.94)}
 .hero-case.only-more .hc-head h3,.hero-case.only-more .hc-head p:last-child{display:none}
 .hero-case.only-more .hc-head{margin-bottom:10px}
 .hero-case.only-more .hc-more{margin-top:0;padding-top:0;border-top:0}
+.hero-case .hc-more{margin-top:0;padding-top:0;border-top:0}   /* 뷰티 브랜드 본사 강조 칸 없앰 (11/26) */
 @media (max-width:640px){.hc-more{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 8px;margin-top:14px;padding-top:14px}.hc-more .hc-item figcaption b{font-size:14px}.hc-more .hc-item figcaption span{font-size:12px}.hc-prop{font-size:12px}.hc-note{font-size:11.5px}}
 /* 이전 시즌 사례 접기 */
 .past-open{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;max-width:860px;margin:6px 0 0;padding:16px 18px;border:1px solid var(--ink);border-radius:2px;background:transparent;color:var(--ink);cursor:pointer;text-align:left}
@@ -1473,7 +1487,7 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
     <div class="wrap">
       <div class="count-wrap"><div class="count"><b class="num"><span data-count="121">121</span>+</b><span>누적 설치</span></div><div class="count"><b class="num"><span data-count="88">88</span>%</b><span>재계약률</span></div></div>
       <div><p class="trust-label">주요 설치 장소</p>
-        <ul class="clients"><li><b>연세대학교</b><span>경영관 · 기숙사</span></li><li><b>대학로 아르코예술극장</b><span>로비</span></li><li><b>월성원자력본부</b><span>홍보관</span></li><li><b>관악 서울청년센터</b><span>공공시설</span></li></ul>
+        <div class="clq"><div class="clq-r"><ul class="clq-t"><li><img src="img/cl/yonsei.webp" width="28" height="28" alt="" loading="lazy">연세대학교</li><li><img src="img/cl/lotteria.webp" width="41" height="28" alt="" loading="lazy">롯데리아</li><li><img src="img/cl/arko.webp" width="69" height="28" alt="" loading="lazy">아르코·대학로예술극장</li><li class="clq-wm"><img src="img/cl/leel.webp" width="64" height="16" alt="" loading="lazy">청담 르엘</li><li class="clq-wm"><img src="img/cl/ediya.svg" width="164" height="16" alt="이디야커피" loading="lazy"></li><li><img src="img/cl/ydp.webp" width="25" height="28" alt="" loading="lazy">영등포구청</li><li><img src="img/cl/speak.webp" width="43" height="28" alt="" loading="lazy">스픽</li><li><img src="img/cl/galforet.webp" width="21" height="28" alt="" loading="lazy">갤러리아 포레</li><li><img src="img/cl/ktl.webp" width="49" height="28" alt="" loading="lazy">한국산업기술시험원</li><li><img src="img/cl/mammoth.webp" width="40" height="28" alt="" loading="lazy">매머드커피</li><li><img src="img/cl/brighten.webp" width="30" height="28" alt="" loading="lazy">브라이튼 여의도</li><li><img src="img/cl/khnp.webp" width="43" height="28" alt="" loading="lazy">월성원자력본부</li><li><img src="img/cl/pierre.webp" width="28" height="28" alt="" loading="lazy">피에르파브르</li><li><img src="img/cl/seoul.webp" width="26" height="28" alt="" loading="lazy">서울청년센터</li></ul><ul class="clq-t" aria-hidden="true"><li><img src="img/cl/yonsei.webp" width="28" height="28" alt="" loading="lazy">연세대학교</li><li><img src="img/cl/lotteria.webp" width="41" height="28" alt="" loading="lazy">롯데리아</li><li><img src="img/cl/arko.webp" width="69" height="28" alt="" loading="lazy">아르코·대학로예술극장</li><li class="clq-wm"><img src="img/cl/leel.webp" width="64" height="16" alt="" loading="lazy">청담 르엘</li><li class="clq-wm"><img src="img/cl/ediya.svg" width="164" height="16" alt="이디야커피" loading="lazy"></li><li><img src="img/cl/ydp.webp" width="25" height="28" alt="" loading="lazy">영등포구청</li><li><img src="img/cl/speak.webp" width="43" height="28" alt="" loading="lazy">스픽</li><li><img src="img/cl/galforet.webp" width="21" height="28" alt="" loading="lazy">갤러리아 포레</li><li><img src="img/cl/ktl.webp" width="49" height="28" alt="" loading="lazy">한국산업기술시험원</li><li><img src="img/cl/mammoth.webp" width="40" height="28" alt="" loading="lazy">매머드커피</li><li><img src="img/cl/brighten.webp" width="30" height="28" alt="" loading="lazy">브라이튼 여의도</li><li><img src="img/cl/khnp.webp" width="43" height="28" alt="" loading="lazy">월성원자력본부</li><li><img src="img/cl/pierre.webp" width="28" height="28" alt="" loading="lazy">피에르파브르</li><li><img src="img/cl/seoul.webp" width="26" height="28" alt="" loading="lazy">서울청년센터</li></ul></div></div>
         <button type="button" class="doc-link" data-doc>기관·기업 담당자용 회사 소개서 (PDF)<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M3 9 9 3M4 3h5v5" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
       </div>
     </div>
@@ -1494,19 +1508,8 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
       </div>
       <article class="hero-case" aria-labelledby="hcT">
         <div class="hc-head">
-          <p class="eyebrow">2026 시즌</p>
-          <h3 id="hcT">뷰티 브랜드 본사</h3>
-          <p>공간 특성에 맞춰 로비는 화사하게, 사무 공간은 차분하게 연출했습니다.</p>
-        </div>
-        <div class="hc-pair" data-cat="office">
-          <figure class="hc-item">
-            <button type="button" class="hc-ph" data-vid="vid/heimish-snow.mp4" data-poster="vid/heimish-snow-poster.webp" aria-label="스노우 트리 설치 영상 보기"><img src="img/heimish-snow.webp" srcset="img/heimish-snow-600.webp 600w, img/heimish-snow.webp 1000w" sizes="(max-width:640px) 50vw, 420px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 로비에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
-            <figcaption><b>로비 · 2.3m 스노우 · 프리미엄</b><span>레드 &amp; 골드</span></figcaption>
-          </figure>
-          <figure class="hc-item">
-            <button type="button" class="hc-ph" data-vid="vid/heimish-green.mp4" data-poster="vid/heimish-green-poster.webp" aria-label="그린 트리 설치 영상 보기"><img src="img/heimish-green.webp" srcset="img/heimish-green-600.webp 600w, img/heimish-green.webp 1000w" sizes="(max-width:640px) 50vw, 420px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 사무 공간에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
-            <figcaption><b>사무 공간 · 2.3m · 프리미엄</b><span>화이트 &amp; 샴페인</span></figcaption>
-          </figure>
+          <h3 id="hcT">2026 설치 사례</h3>
+          <p>11월부터 설치한 곳들입니다. 사진을 누르면 설치 영상을 볼 수 있어요.</p>
         </div>
         <div class="hc-more">
           <figure class="hc-item hc-wide" data-cat="school">
@@ -1516,6 +1519,30 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
           <figure class="hc-item" data-cat="public">
             <button type="button" class="hc-ph" data-vid="vid/arko26.mp4" data-poster="vid/arko26-poster.webp" aria-label="대학로 아르코예술극장 설치 영상 보기"><img src="img/arko26.webp" srcset="img/arko26-600.webp 600w, img/arko26.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="대학로 아르코예술극장 로비 유리문 옆에 설치한 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>대학로 아르코예술극장</b><span>2.9m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="public">
+            <button type="button" class="hc-ph" data-vid="vid/ydp26.mp4" data-poster="vid/ydp26-poster.webp" aria-label="영등포구청 설치 영상 보기"><img src="img/ydp26.webp" srcset="img/ydp26-600.webp 600w, img/ydp26.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="영등포구청 1층 로비에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>영등포구청</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="office">
+            <button type="button" class="hc-ph" data-vid="vid/leel.mp4" data-poster="vid/leel-poster.webp" aria-label="청담 르엘 설치 영상 보기"><img src="img/leel.webp" srcset="img/leel-600.webp 600w, img/leel.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="한강이 보이는 청담 르엘 거실에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>청담 르엘</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="office">
+            <button type="button" class="hc-ph" data-vid="vid/heimish-snow.mp4" data-poster="vid/heimish-snow-poster.webp" aria-label="뷰티 브랜드 본사 로비 설치 영상 보기"><img src="img/heimish-snow.webp" srcset="img/heimish-snow-600.webp 600w, img/heimish-snow.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 로비에 설치한 2.3m 스노우 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>뷰티 브랜드 본사 로비</b><span>2.3m 스노우 · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="office">
+            <button type="button" class="hc-ph" data-vid="vid/heimish-green.mp4" data-poster="vid/heimish-green-poster.webp" aria-label="뷰티 브랜드 본사 사무 공간 설치 영상 보기"><img src="img/heimish-green.webp" srcset="img/heimish-green-600.webp 600w, img/heimish-green.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="뷰티 브랜드 본사 사무 공간에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>뷰티 브랜드 본사 사무 공간</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#f1eee7"></i><i style="background:#d6c7a1"></i>화이트 &amp; 샴페인</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="shop">
+            <button type="button" class="hc-ph" data-vid="vid/cafe26.mp4" data-poster="vid/cafe26-poster.webp" aria-label="카페 설치 영상 보기"><img src="img/cafe26.webp" srcset="img/cafe26-600.webp 600w, img/cafe26.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="나무 천장 카페에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>카페</b><span>2.3m · 프리미엄 + 1.35m</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="clinic">
+            <button type="button" class="hc-ph" data-zoom="img/onsoop.webp" aria-label="온숲동물병원 사진 크게 보기"><img src="img/onsoop.webp" srcset="img/onsoop-600.webp 600w, img/onsoop.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="온숲동물병원 로비에 설치한 2.3m 트리와 강아지 모형, 레드 & 골드"></button>
+            <figcaption><b>온숲동물병원</b><span>2.3m · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
           </figure>
           <figure class="hc-item" data-cat="public">
             <button type="button" class="hc-ph" data-vid="vid/kkumbat.mp4" data-poster="vid/kkumbat-poster.webp" aria-label="대학로 꿈밭극장 설치 영상 보기"><img src="img/kkumbat.webp" srcset="img/kkumbat-600.webp 600w, img/kkumbat.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="대학로 꿈밭극장 분홍 벽 앞에 설치한 2.3m 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
@@ -1528,6 +1555,10 @@ h1.sec-h1{font-size:clamp(26px,4.2vw,40px)}
           <figure class="hc-item" data-cat="clinic">
             <button type="button" class="hc-ph" data-vid="vid/clinic-m.mp4" data-poster="vid/clinic-m-poster.webp" aria-label="병원 설치 영상 보기"><img src="img/clinic-m.webp" srcset="img/clinic-m-600.webp 600w, img/clinic-m.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="병원 로고 벽 앞에 설치한 1.95m 슬림 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
             <figcaption><b>병원</b><span>1.95m 슬림 · 스탠다드</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
+          </figure>
+          <figure class="hc-item" data-cat="office">
+            <button type="button" class="hc-ph" data-vid="vid/law.mp4" data-poster="vid/law-poster.webp" aria-label="법률사무소 설치 영상 보기"><img src="img/law.webp" srcset="img/law-600.webp 600w, img/law.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="법률사무소 입구에 설치한 1.95m 슬림 트리, 레드 & 골드"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
+            <figcaption><b>법률사무소</b><span>1.95m 슬림 · 프리미엄</span><em class="oc"><i style="background:#9e2330"></i><i style="background:#c7a463"></i>레드 &amp; 골드</em></figcaption>
           </figure>
           <figure class="hc-item" data-cat="shop">
             <button type="button" class="hc-ph" data-vid="vid/lotteria.mp4" data-poster="vid/lotteria-poster.webp" aria-label="롯데리아 설치 영상 보기"><img src="img/lotteria.webp" srcset="img/lotteria-600.webp 600w, img/lotteria.webp 1000w" sizes="(max-width:640px) 50vw, 280px" width="1000" height="1333" loading="lazy" alt="롯데리아 매장 창가에 설치한 2.3m 트리, 화이트 & 샴페인"><span class="hc-play"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="rgba(12,22,17,.55)"/><path d="M10 8.2v7.6l6-3.8z" fill="#fff"/></svg><em>영상</em></span></button>
@@ -2496,6 +2527,10 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   window.TL_E2_END = end;
   document.querySelectorAll('.e2d').forEach(function(e){ e.textContent = (+v[1]) + '월 ' + (+v[2]) + '일'; });
   document.querySelectorAll('.e2s').forEach(function(e){ e.textContent = (+v[1]) + '.' + (+v[2]); });
+  /* 1차 마감일(<meta name="tl-e1-end">)로 일정표 날짜도 맞춤 — 내년엔 meta 두 줄만 바꾸면 됨 */
+  var m1 = document.querySelector('meta[name="tl-e1-end"]'), w = ((m1 && m1.content) || '2026-11-08').split('-'), n1 = new Date(Date.UTC(+w[0], w[1] - 1, +w[2] + 1));
+  document.querySelectorAll('.e1s').forEach(function(e){ e.textContent = (+w[1]) + '.' + (+w[2]); });
+  document.querySelectorAll('.e2b').forEach(function(e){ e.textContent = (n1.getUTCMonth() + 1) + '.' + n1.getUTCDate(); });
   window.TL_PH = Date.now() + 9 * 3600000 < end + 86400000 ? 2 : 0;
   if (window.TL_PH) return;
   /* 2차 마감 뒤: 정가 표기 */
@@ -2503,6 +2538,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
   document.querySelectorAll('[data-p0]').forEach(function(e){ e.innerHTML = e.getAttribute('data-p0'); });
   document.querySelectorAll('.sheet2 .tp').forEach(function(c){ var b = c.querySelector('b'), x = c.querySelector('s'); if (b && x) { b.textContent = x.textContent; x.remove(); } });
   var tl = document.querySelectorAll('.tl li'); if (tl.length > 2) { tl[1].classList.remove('on'); tl[2].classList.add('on'); }
+  /* 얼리버드 일정표·Q&A는 지우지 않고 숨김 (내년 다시 사용, class="eb") */
 })();
 </script>
 <dialog class="qd" id="quoteDlg" aria-labelledby="qdT">
@@ -2542,7 +2578,7 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
     { id: 's290', name: '2.9m', img: 'q-size-290', sub: '천장이 높은 로비' },
   ];
   const COLORS = [
-    { name: '레드 & 골드', img: 'ornament-red-set' }, { name: '화이트 & 샴페인', img: 'ornament-champagne-set', tag: 'NEW' },
+    { name: '레드 & 골드', img: 'ornament-red-set' }, { name: '화이트 & 샴페인', img: 'ornament-champagne-set' },
     { name: '세이지 그린 & 골드', img: 'ornament-green-set-sq' }, { name: '네이비 & 골드', img: 'ornament-navy-set', out: 1 },   // out: 2026 예약 마감 (고를 수 없게)
   ];
   // 추가 장식: 사이트 기존 견적 계산기와 같은 품목·종류
@@ -2704,8 +2740,8 @@ d.addEventListener('click',function(e){if(e.target===d)c()});})();
       const sum = t => list.reduce((a, u) => a + unit(u.size, t), 0), sumL = t => list.reduce((a, u) => a + P[u.size][t][0], 0);
       const pr = t => phase() ? '<s class="qp-was">' + won(sumL(t)) + '</s><span class="qp-now"><em class="qp-off">' + (szs.length === 1 ? pct(szs[0], t) + '%' : '할인') + '</em>' + won(sum(t)) + '</span>' : won(sumL(t));
       const w = cards([
-        { v: 'std', b: '스탠다드', s: '기존 설치 사례와 같은 구성 · 하단 상자 3·5·8개', img: 'std-speak', p: pr('std') },
-        { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-hm', p: pr('pre'), tag: '2026', k: 'pre' },
+        { v: 'std', b: '스탠다드', s: '기본 구성 · 하단 상자 3·5·8개', img: 'std-speak', p: pr('std') },
+        { v: 'pre', b: '프리미엄', s: '오너먼트 1.5배 · 리본·솔방울·베리 · 하단 상자 2배 · 리모컨 LED 별', img: 'premium-ydp', p: pr('pre'), k: 'pre' },
       ], v => { A.tierPer = null; answer('tier', v, v === 'pre' ? '프리미엄' : '스탠다드'); }, { cls: 'two' });
       if (list.length > 1) w.appendChild(Object.assign(chips(['트리마다 다르게 고를게요'], () => {
         bubble('me', '트리마다 다르게 고를게요');
@@ -3076,7 +3112,7 @@ addEventListener('scroll',function(){if(!t)t=setTimeout(chk,180);},{passive:true
 (function(){
   var URL = 'https://script.google.com/macros/s/AKfycbxigaA0T_E9v7DG9AhjUxlCUysyDrREY3pVBPrC7twXq0D0HsipphzPJAEFkqudnrM0TQ/exec?action=slots';
   // 서버에 연결되기 전(또는 실패 시) 쓰는 마감 칸 — 대표님 확인 10/29
-  var FALLBACK = { '2026-11-02': { am: 1, pm: 1 }, '2026-11-03': { am: 1, pm: 1 }, '2026-11-04': { am: 1 }, '2026-11-05': { am: 1, pm: 1 }, '2026-11-07': { am: 1, pm: 1 }, '2026-11-09': { am: 1, pm: 1 }, '2026-11-10': { am: 1, pm: 1 }, '2026-11-11': { am: 1, pm: 1 }, '2026-11-12': { am: 1, pm: 1 }, '2026-11-13': { am: 1, pm: 1 }, '2026-11-16': { am: 1, pm: 1 }, '2026-11-17': { am: 1, pm: 1 }, '2026-11-18': { am: 1, pm: 1 }, '2026-11-19': { am: 1, pm: 1 }, '2026-11-20': { am: 1 }, '2026-11-23': { am: 1, pm: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 } };   // 11/4 서버 값과 맞춤(11/5·9·10·12·13·28·29 종일 마감 추가) (미리보기는 서버 연결이 막혀 이 값으로 보임)
+  var FALLBACK = { '2026-11-26': { am: 1, pm: 1 }, '2026-11-27': { pm: 1 }, '2026-11-28': { am: 1, pm: 1 }, '2026-11-29': { am: 1, pm: 1 }, '2026-11-30': { pm: 1 }, '2026-12-01': { am: 1, pm: 1 }, '2026-12-02': { pm: 1 }, '2026-12-07': { am: 1 }, '2026-12-15': { pm: 1 }, '2027-01-01': { pm: 1 }, '2027-01-03': { pm: 1 }, '2027-01-08': { pm: 1 }, '2027-01-11': { am: 1 }, '2027-01-14': { am: 1, pm: 1 }, '2027-01-15': { pm: 1 }, '2027-01-16': { pm: 1 }, '2027-01-18': { am: 1 }, '2027-01-22': { pm: 1 }, '2027-01-25': { pm: 1 }, '2027-01-27': { am: 1 }, '2027-01-28': { am: 1, pm: 1 }, '2027-01-29': { am: 1, pm: 1 }, '2027-01-30': { am: 1, pm: 1 }, '2027-01-31': { am: 1, pm: 1 }, '2027-02-01': { am: 1, pm: 1 }, '2027-02-02': { am: 1 }, '2027-02-04': { am: 1, pm: 1 }, '2027-02-09': { pm: 1 }, '2027-02-10': { pm: 1 }, '2027-02-11': { pm: 1 }, '2027-02-12': { am: 1, pm: 1 }, '2027-02-13': { pm: 1 }, '2027-02-14': { am: 1 }, '2027-02-20': { am: 1 } };   // 11/26 서버 값 전체로 맞춤 (미리보기는 서버 연결이 막혀 이 값으로 보임)
   var YEAR = 2026, MONTHS = [11, 12], WD = ['일', '월', '화', '수', '목', '금', '토'];
   var closed = {}, at = '', live = false, subs = [];
   var pad = function(n){ return (n < 10 ? '0' : '') + n; };
