@@ -66,6 +66,8 @@ button{font:inherit;cursor:pointer}
 .item .more{display:flex;flex-direction:column;gap:8px;margin-top:6px}
 .item .more .acts{margin-top:0}
 .primary.sm{padding:7px 14px;font-size:13.5px;border-radius:6px}
+.mk{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}.mk>#newBtn{flex:1 1 200px}
+.mk .direct{flex:1 1 260px;display:flex;gap:6px;min-width:0}.mk .direct select{flex:1;min-width:0;padding:10px}.mk .direct .ghost{white-space:nowrap;font-weight:600;padding:8px 12px}
 .days{font-size:13px}.days td{padding:5px 6px}.days td:first-child,.days td.n{white-space:nowrap}.days .n{text-align:right}.days tr.off td{color:var(--sub);text-decoration:line-through}
 .days i.add,.r2 i.add{font-style:normal;font-size:11px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 3px;margin-left:3px;vertical-align:1px}
 .sec{font-size:13px;color:var(--sub);font-weight:600;margin:14px 0 0;display:flex;gap:6px;align-items:baseline}.sec span{color:var(--ink)}.sec .s2{margin-left:auto;font-variant-numeric:tabular-nums}
@@ -167,7 +169,14 @@ td.n,th.n{text-align:right}
         <div class="field"><label for="n-job">업무 내용</label><input type="text" id="n-job" value="트리 오너먼트 장식 작업"></div>
         <div class="field"><label for="n-memo">내부 메모 (선택, 알바에게 안 보임)</label><input type="text" id="n-memo" placeholder="예: 지인 소개, 2.3m 3그루"></div>
         <p class="error" id="newErr" role="alert" hidden></p>
-        <button type="submit" class="primary" id="newBtn">링크 만들기</button>
+        <div class="mk">
+          <button type="submit" class="primary" id="newBtn">링크 만들기</button>
+          <div class="direct">
+            <select id="n-worker" aria-label="기존 근무자"><option value="">기존 근무자 선택 (서명 없이 등록)</option></select>
+            <button type="submit" class="ghost" id="directBtn" data-direct="1" hidden>서명 없이 등록</button>
+          </div>
+        </div>
+        <p class="hint" id="directHint" hidden>예전에 서명한 이 사람의 인적사항·계좌로 위 조건의 계약을 바로 「서명완료」로 등록합니다. 알바에게 링크를 보내지 않고, 서명본 PDF는 없습니다.</p>
       </div>
     </form>
     <div class="result" id="result" hidden>
@@ -277,8 +286,20 @@ function updateCalc(){
   $("#calcBox").innerHTML = `하루 ${hText(k.hours)} × ${won(c.wage)}원 = <b>${won(k.dayPay)}원</b>` + (k.dates.length > 1 ? ` · ${k.dates.length}일 합계 <b>${won(k.total)}원</b>` : "") + `<br><span class="hint">${k.under15 ? "주 15시간 미만이라 주휴수당 없음" : "주 15시간 이상이라 주휴수당 대상입니다 (별도 지급)"}${k.hours > 8 ? " · 하루 8시간 초과" : ""}</span>` + (low ? `<br><span class="flag">${low.slice(3)}</span>` : "");
 }
 function newErr(m){ const e = $("#newErr"); e.textContent = m; e.hidden = !m; }
+/* 기존 근무자 바로 등록 (11/25): 서명한 사람 중 고르면 「서명 없이 등록」 버튼이 나옴 */
+function fillWorkers(){
+  const sel = $("#n-worker"), cur = sel.value, seen = new Set(), opts = [];
+  ITEMS.filter(it => it.status === "서명완료" && it.name && it.rrn).forEach(it => { const k = personKey(it); if(seen.has(k)) return; seen.add(k); opts.push(it); });   // 최근 계약 기준 한 사람 한 줄
+  opts.sort((a, b) => String(a.name).localeCompare(String(b.name), "ko"));
+  sel.innerHTML = `<option value="">기존 근무자 선택 (서명 없이 등록)</option>` + opts.map(it => `<option value="${esc(it.id)}">${esc(it.name)} · ${esc(it.tel || "")}</option>`).join("");
+  sel.value = opts.some(it => it.id === cur) ? cur : ""; directUi();
+}
+function directUi(){ const on = !!$("#n-worker").value, w = ITEMS.find(x => x.id === $("#n-worker").value); $("#directBtn").hidden = !on; $("#directHint").hidden = !on; if(w) $("#directBtn").textContent = `${w.name} 서명 없이 등록`; }
+$("#n-worker").addEventListener("change", directUi);
 $("#newForm").addEventListener("submit", async e => {
   e.preventDefault();
+  const direct = !!(e.submitter && e.submitter.dataset.direct), from = $("#n-worker").value;
+  if(direct && !from) return newErr("기존 근무자를 골라 주세요.");
   const c = form(), k = calc(c);
   if(!k.dates.length) return newErr("근무일을 추가해 주세요.");
   if(!c.start || !c.end) return newErr("시작·종료 시각을 넣어 주세요.");
@@ -287,7 +308,22 @@ $("#newForm").addEventListener("submit", async e => {
     const bad = k.items.find(x => !x.t || !x.rate || !x.qty); if(bad) return newErr(`${bad.t || "작업 내용이 빈 줄"}: 작업 내용·건당 금액·건수를 모두 넣어 주세요.`);
   } else if(c.wage < MIN_WAGE) return newErr(`시급은 최저시급 ${won(MIN_WAGE)}원 이상이어야 합니다.`);
   if(!c.place || !c.job) return newErr("근무 장소와 업무 내용을 넣어 주세요.");
-  newErr(""); const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
+  newErr("");
+  if(direct){   // 서명 없이 바로 등록 → 목록의 「지급 전」에 들어감
+    const db = $("#directBtn"), label = db.textContent; if(db.disabled) return; db.disabled = true; db.textContent = "등록하는 중…";
+    try{
+      const j = await api({ action:"direct", pin:pin(), contract:c, from });
+      if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); return newErr("비밀번호를 확인해 주세요."); }
+      if(j.error === "bad_action") return newErr("서버가 아직 예전 버전입니다. 잠시 뒤 다시 눌러 주세요.");
+      if(!j.ok) return newErr(j.error === "from" ? "고른 근무자의 서명 기록을 찾지 못했습니다." : "등록하지 못했습니다. 입력값을 확인해 주세요.");
+      if(c.payType === "piece") keepRates(c.items);
+      $("#n-worker").value = ""; directUi(); $("#result").hidden = true;
+      await loadList(); $("#h-list").scrollIntoView({ block:"start" });
+    }catch(err){ newErr("서버에 연결하지 못했습니다. 잠시 뒤 다시 눌러 주세요."); }
+    finally{ db.disabled = false; db.textContent = label; directUi(); }
+    return;
+  }
+  const btn = $("#newBtn"); btn.disabled = true; btn.textContent = "만드는 중…";
   try{
     const j = await api({ action:"create", pin:pin(), contract:c });
     if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); return newErr("비밀번호를 확인해 주세요."); }
@@ -311,7 +347,7 @@ async function loadList(){
     const j = await api({ action:"list", pin:pin() });
     if(j.error === "pin"){ pinState(false, "비밀번호가 맞지 않습니다."); $("#list").innerHTML = `<p class="lead">비밀번호를 확인해 주세요.</p>`; return; }
     if(!j.ok) throw new Error(j.error);
-    pinState(true, "확인되었습니다."); ITEMS = j.items || []; renderList(); renderReport();
+    pinState(true, "확인되었습니다."); ITEMS = j.items || []; renderList(); renderReport(); fillWorkers();
   }catch(e){ $("#list").innerHTML = `<p class="error">불러오지 못했습니다. 새로고침을 눌러 주세요.</p>`; }
 }
 const badge = s => `<span class="badge ${s === "서명완료" ? "b-ok" : s === "서명대기" ? "b-wait" : "b-stop"}">${esc(s)}</span>`;
@@ -326,7 +362,7 @@ const shortDT = s => { const m = String(s || "").match(/^\d{4}-(\d{2})-(\d{2})/)
 /* 목록 (11/25 가독성 개편): 지급 전 · 서명 대기 · 지급 완료(접힘) 묶음, 카드 3줄 + 더보기, 이름 검색·사람별 모아보기 */
 let Q = "", PERSON = "";
 const OPEN = new Set();   // 더보기 펼친 카드
-const personKey = it => String(it.rrn || "").slice(0, 8) || String(it.name || "").trim();
+const personKey = it => String(it.rrn || "").replace(/\D/g, "") || String(it.name || "").trim();   // 같은 사람 = 주민번호 같음
 const payOf = it => { if(it.status !== "서명완료") return calc(it).total; return calcActual(it).total; };
 const firstDay = it => { const ds = it.status === "서명완료" ? calcActual(it).worked.map(d => d.date) : dateList(it.dates); return ds[0] || "9999"; };
 function daysShort(it){
@@ -343,6 +379,7 @@ function cardHtml(it){
   const chips = [
     done && it.paidAt ? `<span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : "",
     it.status === "링크중지" ? badge(it.status) : "",
+    /^서명 없이/.test(it.ua || "") ? `<span class="badge b-wait">서명 없이 등록</span>` : "",
     A && A.edited ? `<span class="badge b-stop">근무 기록 수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원</span>` : "",
     flags(it)
   ].filter(Boolean).join(" ");
@@ -353,7 +390,7 @@ function cardHtml(it){
   // 더보기: 날짜별 근무 내역, 개인 정보, 나머지 버튼
   const rows = A ? A.days.map(d => `<tr class="${d.off ? "off" : ""}"><td>${fmtDay(d.date, true)}${d.extra ? `<i class="add">추가</i>` : ""}</td><td>${d.off ? "결근" : `${esc(d.start)}~${esc(d.end)}`}</td><td>${d.off ? "" : d.items ? d.items.map(x => `${esc(x.t || "작업")} ${won(x.rate)}×${x.qty}`).join(", ") : k.piece && !d.extra ? "건당 계약" : `시급 ${won(d.wage)}`}</td><td class="n">${d.off ? "" : won(d.pay) + "원"}</td></tr>`).join("")
     : k.dates.map(d => `<tr><td>${fmtDay(d, true)}</td><td>${esc(it.start)}~${esc(it.end)}</td><td>${cond}</td><td class="n">${won(k.dayPay)}원</td></tr>`).join("");
-  const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${k.piece ? `<dt>계약 작업</dt><dd>${k.items.map(x => esc(itemLine(x))).join("<br>")}</dd>` : ""}${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}<dt>만든 날</dt><dd>${esc(it.created)}</dd></dl>`
+  const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}${/^서명 없이/.test(it.ua || "") ? " · 서명 없이 등록(기존 근무자)" : ""}</dd>${k.piece ? `<dt>계약 작업</dt><dd>${k.items.map(x => esc(itemLine(x))).join("<br>")}</dd>` : ""}${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}<dt>만든 날</dt><dd>${esc(it.created)}</dd></dl>`
     : `<dl>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}<dt>만든 날</dt><dd>${esc(it.created)}</dd></dl>`;
   const more = [
     done ? `<button type="button" class="ghost" data-edit="${id}">근무 기록·추가</button>` : "",

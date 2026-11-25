@@ -33,6 +33,7 @@ function doPost(e) {
     switch (b.action) {
       case 'list': return out({ ok: true, items: readAll() });
       case 'create': return out(create(b.contract || {}));
+      case 'direct': return out(createDirect(b.contract || {}, b.from));   // 기존 근무자: 서명 없이 바로 등록 (11/25)
       case 'cancel': return out(setStatus(b.id, '링크중지'));
       case 'resume': return out(setStatus(b.id, '서명대기'));
       case 'delete': return out(remove(b.id));
@@ -135,6 +136,21 @@ function create(c) {
   const sh = sheet();
   sh.appendRow(COLS.map((k) => String(row[k] == null ? '' : row[k])));
   return { ok: true, id: id, url: signUrl(id) };
+}
+
+// 기존 근무자 바로 등록 (2026-11-25, 대표님 결정): 예전에 서명한 계약(from)의 인적사항·계좌를 그대로 가져와 새 계약을 '서명완료'로 만듦.
+// 서명·서명본 PDF는 없음(ua에 표시). 근무일·임금 조건 검사는 create와 같음
+function createDirect(c, from) {
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const fr = findRow(from); if (!fr) return { error: 'from' };
+    const w = rowObj(fr); if (w.status !== '서명완료' || !w.name || !w.rrn) return { error: 'from' };
+    const r = create(c); if (!r.ok) return r;
+    const row = findRow(r.id); if (!row) return { error: 'server' };
+    setCells(row, { status: '서명완료', name: w.name, tel: w.tel, rrn: w.rrn, bank: w.bank, account: w.account, holder: w.holder,
+      signedAt: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm:ss'), ua: '서명 없이 등록 (기존 근무자 · ' + String(from) + ')' });
+    return { ok: true, id: r.id };
+  } finally { lock.releaseLock(); }
 }
 
 function getPublic(id) {
