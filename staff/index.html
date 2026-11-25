@@ -165,7 +165,7 @@ td.n,th.n{text-align:right}
           <div class="chips" id="payChips"><button type="button" class="pick" data-v="근로일 당일" aria-pressed="true">당일</button><button type="button" class="pick" data-v="근로일 다음 날">다음 날</button><button type="button" class="pick" data-v="마지막 근로일 다음 날">마지막 근무 다음 날</button></div>
           <input type="text" id="n-pay" value="근로일 당일">
         </div>
-        <div class="field"><label for="n-place">근무 장소</label><input type="text" id="n-place" value="서울 성북구 아리랑로19길 87 (작업장)"></div>
+        <div class="field"><label for="n-place">근무 장소</label><input type="text" id="n-place" value="서울특별시 강북구 삼양로123길 41"></div>
         <div class="field"><label for="n-job">업무 내용</label><input type="text" id="n-job" value="트리 오너먼트 장식 작업"></div>
         <div class="field"><label for="n-memo">내부 메모 (선택, 알바에게 안 보임)</label><input type="text" id="n-memo" placeholder="예: 지인 소개, 2.3m 3그루"></div>
         <p class="error" id="newErr" role="alert" hidden></p>
@@ -204,7 +204,7 @@ td.n,th.n{text-align:right}
 if(!STAFF_ENDPOINT) $("#demoNote").hidden = false;
 let ITEMS = [], DATES = [];
 const DEMO = [
-  { id:"demo1", created:"2026-11-01 18:10", status:"서명완료", dates:"2026-11-14,2026-11-15", start:"14:00", end:"16:00", breakMin:"0", place:"서울 성북구 아리랑로19길 87 (작업장)", job:"트리 오너먼트 장식 작업", wage:"12000", payDay:"근로일 당일", memo:"", name:"김예시", tel:"010-1234-5678", rrn:"050312-3123456", bank:"카카오뱅크", account:"3333-01-1234567", holder:"김예시", signedAt:"2026-11-01 18:20:11", pdfUrl:"#", url:"#" },
+  { id:"demo1", created:"2026-11-01 18:10", status:"서명완료", dates:"2026-11-14,2026-11-15", start:"14:00", end:"16:00", breakMin:"0", place:"서울특별시 강북구 삼양로123길 41", job:"트리 오너먼트 장식 작업", wage:"12000", payDay:"근로일 당일", memo:"", name:"김예시", tel:"010-1234-5678", rrn:"050312-3123456", bank:"카카오뱅크", account:"3333-01-1234567", holder:"김예시", signedAt:"2026-11-01 18:20:11", pdfUrl:"#", url:"#" },
   { id:"demo2", created:"2026-11-01 18:12", status:"서명대기", dates:"2026-11-20", start:"10:00", end:"15:00", breakMin:"30", place:"고객 매장", job:"트리 오너먼트 장식 작업", wage:"11000", payDay:"근로일 당일", memo:"", url:"#" },
 ];
 
