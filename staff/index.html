@@ -57,12 +57,27 @@ button{font:inherit;cursor:pointer}
 .error{color:var(--err);font-size:14px;margin:0}
 .result{background:var(--soft);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:10px}
 .list{display:flex;flex-direction:column}
-.item{display:grid;grid-template-columns:1fr auto;gap:2px 12px;padding:12px 0;border-top:1px solid var(--line);font-size:14px}
-.item:first-child{border-top:0}
+.item{display:flex;flex-direction:column;gap:4px;padding:14px 0;border-top:1px solid var(--line);font-size:14px}
+.item .r1{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.item .nm{border:0;background:none;padding:0;color:var(--ink);font-size:16px;font-weight:700;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+.item .amt{font-size:16px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.item .r2{color:var(--sub);font-size:13.5px;font-variant-numeric:tabular-nums}
+.item .r3{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.item .more{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.item .more .acts{margin-top:0}
+.primary.sm{padding:7px 14px;font-size:13.5px;border-radius:6px}
+.days{font-size:13px}.days td{padding:5px 6px}.days td:first-child,.days td.n{white-space:nowrap}.days .n{text-align:right}.days tr.off td{color:var(--sub);text-decoration:line-through}
+.days i.add,.r2 i.add{font-style:normal;font-size:11px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 3px;margin-left:3px;vertical-align:1px}
+.sec{font-size:13px;color:var(--sub);font-weight:600;margin:14px 0 0;display:flex;gap:6px;align-items:baseline}.sec span{color:var(--ink)}.sec .s2{margin-left:auto;font-variant-numeric:tabular-nums}
+.list>.sec:first-child,.psum+.sec{margin-top:4px}
+.psum{background:var(--soft);border-radius:8px;padding:10px 12px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;font-variant-numeric:tabular-nums}.psum span{color:var(--sub);font-size:13px}.psum .ghost{flex:none}
+.fold{margin-top:14px;border-top:1px solid var(--line);padding-top:10px}.fold>summary{cursor:pointer;color:var(--sub);font-size:13.5px;font-weight:600;padding:4px 0}
+#q{padding:9px 12px}
+.item:first-child,.sec+.item{border-top:0}
 .item .t{font-weight:500;min-width:0;overflow-wrap:anywhere}
 .item .m{color:var(--sub);font-size:13px;font-variant-numeric:tabular-nums}
-.item .acts{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.item dl{grid-column:1/-1;margin:6px 0 0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;background:var(--soft);border-radius:8px;padding:10px 12px}
+.item .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;align-items:center}
+.item dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:13.5px;background:var(--soft);border-radius:8px;padding:10px 12px}
 .ed{grid-column:1/-1;margin-top:8px;border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
 .ed .d{display:grid;grid-template-columns:76px 1fr 1fr 70px auto;gap:6px;align-items:center;font-size:13.5px}
 .ed .d input{padding:7px 8px;font-size:14px;min-width:0}
@@ -163,6 +178,7 @@ td.n,th.n{text-align:right}
 
   <section aria-labelledby="h-list">
     <div class="row" style="justify-content:space-between"><h2 id="h-list">계약 목록</h2><button type="button" class="ghost" id="reload">새로고침</button></div>
+    <input type="search" id="q" placeholder="이름·연락처·계좌로 찾기" autocomplete="off" aria-label="근로계약 찾기">
     <div class="list" id="list"><p class="lead">비밀번호를 넣고 확인을 누르세요.</p></div>
   </section>
 
@@ -307,29 +323,78 @@ function flags(it){
 // 알바에게 보내는 카톡 문구 (대표님 양식 11/18): 날짜·시간 + 링크만
 function signMsg(c, url){ return `${dateList(c.dates).map(d => fmtDay(d, true)).join(", ")} ${c.start}~${c.end} 오너먼트 작업 근로계약서입니다.\n${url}`; }
 const shortDT = s => { const m = String(s || "").match(/^\d{4}-(\d{2})-(\d{2})/); return m ? `${+m[1]}/${+m[2]}` : ""; };
+/* 목록 (11/25 가독성 개편): 지급 전 · 서명 대기 · 지급 완료(접힘) 묶음, 카드 3줄 + 더보기, 이름 검색·사람별 모아보기 */
+let Q = "", PERSON = "";
+const OPEN = new Set();   // 더보기 펼친 카드
+const personKey = it => String(it.rrn || "").slice(0, 8) || String(it.name || "").trim();
+const payOf = it => { if(it.status !== "서명완료") return calc(it).total; return calcActual(it).total; };
+const firstDay = it => { const ds = it.status === "서명완료" ? calcActual(it).worked.map(d => d.date) : dateList(it.dates); return ds[0] || "9999"; };
+function daysShort(it){
+  const A = it.status === "서명완료" ? calcActual(it) : null;
+  const list = A ? A.worked : dateList(it.dates).map(d => ({ date:d, extra:false }));
+  if(!list.length) return "근무일 없음";
+  const add = list.some(d => d.extra) ? `<i class="add">추가</i>` : "";
+  return (list.length > 2 ? `${fmtDay(list[0].date, true)} 외 ${list.length - 1}일` : list.map(d => fmtDay(d.date, true)).join(", ")) + add;
+}
+function cardHtml(it){
+  const k = calc(it), done = it.status === "서명완료", A = done ? calcActual(it) : null, id = esc(it.id), open = OPEN.has(it.id);
+  const cond = k.piece ? `건당 ${k.count}건` : `시급 ${won(it.wage)}원`;
+  const hrs = A ? hText(A.hours) : hText(k.hours * k.dates.length);
+  const chips = [
+    done && it.paidAt ? `<span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : "",
+    it.status === "링크중지" ? badge(it.status) : "",
+    A && A.edited ? `<span class="badge b-stop">근무 기록 수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원</span>` : "",
+    flags(it)
+  ].filter(Boolean).join(" ");
+  const main = done
+    ? (it.paidAt ? "" : `<button type="button" class="primary sm" data-paid="1" data-id="${id}">지급 완료</button>`) + `<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button>`
+    : it.status === "서명대기" ? `<button type="button" class="primary sm" data-copy="${esc(signMsg(it, it.url))}">문구 복사</button>`
+    : `<button type="button" class="ghost" data-act="resume" data-id="${id}">다시 열기</button>`;
+  // 더보기: 날짜별 근무 내역, 개인 정보, 나머지 버튼
+  const rows = A ? A.days.map(d => `<tr class="${d.off ? "off" : ""}"><td>${fmtDay(d.date, true)}${d.extra ? `<i class="add">추가</i>` : ""}</td><td>${d.off ? "결근" : `${esc(d.start)}~${esc(d.end)}`}</td><td>${d.off ? "" : d.items ? d.items.map(x => `${esc(x.t || "작업")} ${won(x.rate)}×${x.qty}`).join(", ") : k.piece && !d.extra ? "건당 계약" : `시급 ${won(d.wage)}`}</td><td class="n">${d.off ? "" : won(d.pay) + "원"}</td></tr>`).join("")
+    : k.dates.map(d => `<tr><td>${fmtDay(d, true)}</td><td>${esc(it.start)}~${esc(it.end)}</td><td>${cond}</td><td class="n">${won(k.dayPay)}원</td></tr>`).join("");
+  const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${k.piece ? `<dt>계약 작업</dt><dd>${k.items.map(x => esc(itemLine(x))).join("<br>")}</dd>` : ""}${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}<dt>만든 날</dt><dd>${esc(it.created)}</dd></dl>`
+    : `<dl>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}<dt>만든 날</dt><dd>${esc(it.created)}</dd></dl>`;
+  const more = [
+    done ? `<button type="button" class="ghost" data-edit="${id}">근무 기록·추가</button>` : "",
+    done && it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : "",
+    done && it.paidAt ? `<button type="button" class="ghost" data-paid="0" data-id="${id}">지급 취소</button>` : "",
+    it.status === "서명대기" ? `<button type="button" class="ghost" data-act="cancel" data-id="${id}">링크 중지</button>` : "",
+    `<button type="button" class="ghost" data-act="delete" data-id="${id}" style="margin-left:auto;color:var(--sub)">삭제</button>`
+  ].join("");
+  return `<div class="item${open ? " open" : ""}" data-item="${id}">
+    <div class="r1"><button type="button" class="nm" data-person="${esc(personKey(it))}" title="이 사람 계약만 보기">${esc(it.name || "서명 전")}</button><b class="amt">${won(payOf(it))}원</b></div>
+    <div class="r2">${daysShort(it)} · ${esc(it.start)}~${esc(it.end)} · ${cond} · ${hrs}</div>
+    ${chips ? `<div class="r3">${chips}</div>` : ""}
+    <div class="acts">${main}<button type="button" class="ghost more-btn" data-more="${id}" aria-expanded="${open}">${open ? "접기 ▴" : "더보기 ▾"}</button></div>
+    <div class="more"${open ? "" : " hidden"}><table class="days"><tbody>${rows}</tbody></table>${info}<div class="acts">${more}</div></div>
+  </div>`;
+}
 function renderList(){
   if(!ITEMS.length){ $("#list").innerHTML = `<p class="lead">아직 계약이 없습니다.</p>`; return; }
-  $("#list").innerHTML = ITEMS.map(it => {
-    const k = calc(it), done = it.status === "서명완료", A = done ? calcActual(it) : null;
-    // 서명 완료: 실제 근무한 날(결근 빼고, 「근무 기록·추가」로 넣은 날 포함) / 서명 전: 계약한 날
-    const days = A ? A.worked.map(d => fmtDay(d.date, true) + (d.extra ? "<i class=\"add\">추가</i>" : "")).join(", ") || "근무일 없음" : esc(k.dates.map(d => fmtDay(d, true)).join(", "));
-    const added = A ? A.days.filter(d => d.extra && !d.off) : [];
-    const addLine = added.length ? `<div class="m" style="grid-column:1/-1">추가한 날 · ${added.map(d => `${fmtDay(d.date, true)} ${d.items ? d.items.map(x => `${esc(x.t || "작업")} ${won(x.rate)}원×${x.qty}`).join(", ") : `${esc(d.start)}~${esc(d.end)} 시급 ${won(d.wage)}원`} = ${won(d.pay)}원`).join(" · ")}</div>` : "";
-    const info = done ? `<dl><dt>연락처</dt><dd>${esc(it.tel)}</dd><dt>주민번호</dt><dd>${esc(it.rrn)}</dd><dt>계좌</dt><dd>${esc(it.bank)} ${esc(it.account)} (${esc(it.holder)})</dd><dt>서명</dt><dd>${esc(it.signedAt)}</dd>${it.memo ? `<dt>메모</dt><dd>${esc(it.memo)}</dd>` : ""}</dl>` : (it.memo ? `<div class="m" style="grid-column:1/-1">메모 ${esc(it.memo)}</div>` : "");
-    const acts = done
-      ? `${it.paidAt ? `<button type="button" class="ghost" data-paid="0" data-id="${esc(it.id)}">지급 취소</button>` : `<button type="button" class="primary" data-paid="1" data-id="${esc(it.id)}" style="padding:7px 14px">지급 완료</button>`}${it.pdfUrl ? `<a class="ghost" href="${esc(it.pdfUrl)}" target="_blank" rel="noopener">서명본 PDF</a>` : ""}<button type="button" class="ghost" data-copy="${esc(it.account)}">계좌 복사</button><button type="button" class="ghost" data-edit="${esc(it.id)}">근무 기록·추가</button>`
-      : it.status === "서명대기"
-        ? `<button type="button" class="ghost" data-copy="${esc(signMsg(it, it.url))}">문구 복사</button><button type="button" class="ghost" data-act="cancel" data-id="${esc(it.id)}">링크 중지</button>`
-        : `<button type="button" class="ghost" data-act="resume" data-id="${esc(it.id)}">다시 열기</button>`;
-    return `<div class="item"><div class="t">${esc(it.name || "서명 전")} · ${days}</div><div class="hd">${badge(it.status)}${done ? (it.paidAt ? ` <span class="badge b-ok">지급 완료 ${shortDT(it.paidAt)}</span>` : ` <span class="badge" style="color:var(--err)">지급 전</span>`) : ""}</div>
-      <div class="m">${esc(it.start)}~${esc(it.end)} · ${k.piece ? `건당 ${k.items.map(x => `${esc(x.t)} ${won(x.rate)}원×${x.qty}`).join(", ")}` : `시급 ${won(it.wage)}원`} · 총 ${won(k.total)}원</div><div class="m">${esc(it.created)}</div>
-      ${A && A.edited ? `<div class="m" style="grid-column:1/-1;color:var(--ink)">실근무 ${A.worked.length}일 · ${hText(A.hours)} · 총 ${won(A.total)}원 <span style="color:var(--sub)">(수정됨 · 계약 대비 ${A.total - k.total >= 0 ? "+" : ""}${won(A.total - k.total)}원)</span></div>` : ""}
-      ${addLine}${flags(it) ? `<div style="grid-column:1/-1">${flags(it)}</div>` : ""}${info}
-      <div class="acts">${acts}<button type="button" class="ghost" data-act="delete" data-id="${esc(it.id)}" style="margin-left:auto;color:var(--sub)">삭제</button></div></div>`;
-  }).join("");
+  const q = Q.replace(/[\s-]+/g, "").toLowerCase();
+  const pool = ITEMS.filter(it => (!PERSON || personKey(it) === PERSON) && (!q || [it.name, it.tel, it.bank, it.account].some(v => String(v || "").replace(/[\s-]+/g, "").toLowerCase().includes(q))));
+  const unpaid = pool.filter(it => it.status === "서명완료" && !it.paidAt).sort((a, b) => firstDay(a).localeCompare(firstDay(b)));
+  const waiting = pool.filter(it => it.status === "서명대기").sort((a, b) => firstDay(a).localeCompare(firstDay(b)));
+  const paid = pool.filter(it => it.status === "서명완료" && it.paidAt).sort((a, b) => String(b.paidAt).localeCompare(String(a.paidAt)));
+  const stopped = pool.filter(it => it.status !== "서명완료" && it.status !== "서명대기");
+  const sum = list => list.reduce((s, it) => s + payOf(it), 0);
+  let head = "";
+  if(PERSON){
+    const signed = pool.filter(it => it.status === "서명완료"), days = signed.reduce((s, it) => s + calcActual(it).worked.length, 0);
+    head = `<div class="psum"><div><b>${esc((pool[0] || {}).name || "")}</b> 모아보기<br><span>계약 ${pool.length}건 · 근무 ${days}일 · 지급 총 ${won(sum(signed))}원${unpaid.length ? ` (지급 전 ${won(sum(unpaid))}원)` : ""}</span></div><button type="button" class="ghost" id="clearPerson">전체 보기</button></div>`;
+  }
+  const sec = (title, list, extra) => list.length ? `<h3 class="sec">${title} <span>${list.length}</span>${extra || ""}</h3>${list.map(cardHtml).join("")}` : "";
+  const fold = paid.length + stopped.length ? `<details class="fold"${PERSON || Q ? " open" : ""}><summary>지급 완료 ${paid.length}명${stopped.length ? ` · 링크 중지 ${stopped.length}건` : ""} 보기</summary>${sec("지급 완료", paid)}${sec("링크 중지", stopped)}</details>` : "";
+  const body = sec("지급 전", unpaid, ` <span class="s2">${won(sum(unpaid))}원</span>`) + sec("서명 대기", waiting) + fold;
+  $("#list").innerHTML = head + (body || `<p class="lead">${Q ? "찾는 사람이 없습니다." : "해당하는 계약이 없습니다."}</p>`);
 }
+$("#q").addEventListener("input", e => { Q = e.target.value.trim(); renderList(); });
 $("#list").addEventListener("click", async e => {
   const b = e.target.closest("button"); if(!b) return;
+  if(b.dataset.more){ const id = b.dataset.more; OPEN.has(id) ? OPEN.delete(id) : OPEN.add(id); const el = b.closest(".item"); el.classList.toggle("open"); el.querySelector(".more").hidden = !OPEN.has(id); b.textContent = OPEN.has(id) ? "접기 ▴" : "더보기 ▾"; b.setAttribute("aria-expanded", OPEN.has(id)); return; }
+  if(b.dataset.person){ PERSON = PERSON === b.dataset.person ? "" : b.dataset.person; renderList(); $("#h-list").scrollIntoView({ block:"start" }); return; }
+  if(b.id === "clearPerson"){ PERSON = ""; renderList(); return; }
   if(b.dataset.copy != null){ try{ await navigator.clipboard.writeText(b.dataset.copy); const t = b.textContent; b.textContent = "복사됨"; setTimeout(() => b.textContent = t, 1500); }catch(x){} return; }
   if(b.dataset.edit){ openEditor(b.dataset.edit, b.closest(".item")); return; }
   if(b.dataset.paid != null){   // 임금 지급 완료 / 취소
