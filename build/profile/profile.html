@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<title>트리랜드 회사 소개서</title>
+<!-- 회사 소개서 원본. PDF 만들기: python3 build/profile/make.py → docs/treeland-company-profile.pdf
+     고칠 때: 업데이트 날짜(UPDATED) 두 곳(표지·꼬리말은 스크립트가 채움)과 숫자·가격을 사이트와 맞출 것 -->
+<link rel="stylesheet" href="node_modules/@fontsource/hahmlet/600.css">
+<link rel="stylesheet" href="node_modules/@fontsource/hahmlet/700.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-sans-kr/400.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-sans-kr/500.css">
+<link rel="stylesheet" href="node_modules/@fontsource/ibm-plex-sans-kr/600.css">
+<style>
+@page{size:A4;margin:0}
+:root{--ink:#15211B;--pine:#1F3D30;--berry:#A3232F;--paper:#F2F3EE;--surface:#E7EAE2;--line:#CBD2C8;--mute:#5d665f;--gold:#9a7a3e}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#888}
+body{font-family:"IBM Plex Sans KR",sans-serif;color:var(--ink);font-size:9.6pt;line-height:1.62;-webkit-print-color-adjust:exact;print-color-adjust:exact;word-break:keep-all}
+.page{width:210mm;height:297mm;padding:13mm 17mm 11mm;background:var(--paper);display:flex;flex-direction:column;position:relative;overflow:hidden;break-after:page;margin:0 auto}
+@media screen{.page{margin:8mm auto}}
+.hd{display:flex;justify-content:space-between;align-items:center;padding-bottom:5mm;border-bottom:1px solid var(--line);margin-bottom:8mm}
+.hd img{height:6.4mm;display:block}
+.hd span{font-size:8.6pt;color:var(--mute)}
+.no{font-family:Hahmlet,serif;font-weight:700;color:var(--berry);font-size:10.5pt;margin-bottom:2.2mm}
+h2{font-family:Hahmlet,serif;font-weight:700;font-size:23pt;line-height:1.25;letter-spacing:-.01em}
+h3{font-size:11pt;font-weight:600}
+.ttl{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:5.5mm}
+.ttl small{font-size:8.6pt;color:var(--mute)}
+.ft{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-size:7.8pt;color:var(--mute);padding-top:4mm}
+.ft b{color:var(--ink);font-weight:600;font-size:8.4pt}
+img.ph{display:block;width:100%;object-fit:cover;background:var(--surface)}
+.cap{font-size:8pt;color:var(--mute);margin-top:1.6mm;line-height:1.45}
+.cap b{color:var(--ink);font-weight:600}
+.num{font-variant-numeric:tabular-nums}
+table{border-collapse:collapse;width:100%}
+
+/* 표지 */
+.cover .hero{height:186mm;margin-bottom:2mm}
+.cover .hero img{height:100%;object-position:50% 88%}
+.cover .eyebrow{color:var(--berry);font-weight:600;font-size:9.4pt;margin:6mm 0 2.5mm;display:flex;justify-content:space-between;align-items:center}
+.cover .main{display:grid;grid-template-columns:1fr 1fr;gap:8mm;align-items:end}
+.cover h1{font-family:Hahmlet,serif;font-weight:700;font-size:31pt;line-height:1.22;letter-spacing:-.01em}
+.cover .main p{font-size:10.2pt;line-height:1.75;color:#2c3530}
+.cover .upd{display:inline-flex;gap:2.2mm;align-items:center;font-size:8.4pt;font-weight:500;color:var(--pine);border:1px solid var(--pine);padding:.9mm 2.8mm}
+.cover .upd i{width:1.6mm;height:1.6mm;border-radius:50%;background:var(--berry)}
+.cover .ft{border-top:1px solid var(--line);font-size:8.6pt}
+
+/* 01 회사 소개 */
+.intro{display:grid;grid-template-columns:1fr 66mm;gap:8mm;margin-bottom:7mm}
+.intro p{margin-bottom:3mm;font-size:9.8pt;line-height:1.75}
+.intro img{height:84mm}
+.facts{border-top:2px solid var(--ink);margin-bottom:7mm}
+.facts th,.facts td{text-align:left;vertical-align:top;padding:2.3mm 0;border-bottom:1px solid var(--line);font-size:9.2pt}
+.facts th{width:30mm;font-weight:500;color:var(--mute)}
+.facts td strong{font-weight:600}
+.logos{display:grid;grid-template-columns:repeat(3,1fr);column-gap:5mm;border-top:1px solid var(--ink)}
+.logos div{display:flex;align-items:center;gap:2.2mm;padding:2.6mm 0;border-bottom:1px solid var(--line);font-size:8.6pt;font-weight:500;min-height:10.5mm}
+.logos img{height:5.2mm;filter:grayscale(1) contrast(1.1);opacity:.85;flex:none}
+.logos .wm img{height:3.3mm}
+.logos .wm.only img{height:2.9mm}
+
+/* 02 사례 */
+.cases1{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4.5mm}
+.cases1 img{height:106mm}
+.cases2{display:grid;grid-template-columns:2fr 1fr 1fr;gap:4mm;margin-bottom:4mm}
+.cases2 img{height:68mm}
+.note{font-size:8.8pt;color:#2c3530;line-height:1.7;border-top:1px solid var(--line);padding-top:3mm}
+
+/* 03 구성 */
+.tiers{display:grid;grid-template-columns:1fr 1fr;gap:8mm;margin-bottom:5mm}
+.tier .top{display:grid;grid-template-columns:42mm 1fr;gap:4.5mm;align-items:end;margin-bottom:3.5mm}
+.tier .top img{height:62mm}
+.tier .lab{font-size:7.6pt;letter-spacing:.18em;font-weight:600;color:var(--gold)}
+.tier h3{font-family:Hahmlet,serif;font-size:16pt;font-weight:700;margin:.6mm 0 1.4mm}
+.tier .top p{font-size:9.2pt;line-height:1.6}
+.tier ul{list-style:none;border-top:2px solid var(--ink)}
+.tier li{padding:1.9mm 0 1.9mm 3.2mm;border-bottom:1px solid var(--line);font-size:9pt;position:relative;line-height:1.5}
+.tier li::before{content:"·";position:absolute;left:0;color:var(--mute)}
+.tier li small{color:var(--mute);font-size:8.2pt}
+.box-note{background:var(--surface);padding:3mm 4mm;font-size:8.8pt;line-height:1.65;margin-bottom:6mm}
+.colors{display:grid;grid-template-columns:repeat(4,1fr);gap:3.5mm}
+.colors img{height:36mm;border:1px solid #fff}
+.colors b{display:block;font-size:9.2pt;font-weight:600;margin-top:2mm}
+.colors span{font-size:7.8pt;color:var(--mute)}
+.colors .out img{filter:grayscale(.85) opacity(.55)}
+.page .tag{display:inline-block;font-size:6.8pt;font-weight:600;color:#fff;background:var(--mute);padding:.2mm 1.4mm;margin-left:1.2mm;vertical-align:.4mm;line-height:1.5}
+.page .tag.red{background:var(--berry)}
+.price .sz .tag,.colors .tag{color:#fff;font-size:6.8pt;display:inline-block}
+.sub-h{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2.6mm}
+.sub-h small{font-size:8.2pt;color:var(--mute)}
+
+/* 04 트리와 장식 */
+.lead{font-size:9.6pt;margin:-2mm 0 4.5mm}
+.cmp-h{font-size:9.6pt;font-weight:600;margin-bottom:2mm}
+.cmp-h span{font-weight:400;color:var(--mute)}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:4mm;margin-bottom:4.5mm}
+.cmp img{height:38mm}
+.cmp .cap{font-size:7.9pt}
+.leaf{display:grid;grid-template-columns:62mm 1fr;gap:5mm;align-items:center;margin-bottom:4.5mm}
+.leaf img{height:41mm}
+.leaf p,.boxrow p{font-size:8.9pt;line-height:1.65}
+.boxrow{display:grid;grid-template-columns:82mm 1fr;gap:5mm;align-items:center}
+.boxrow img{height:41mm}
+
+/* 05 가격 */
+.pr-lead{background:var(--pine);color:#fff;padding:2.6mm 4mm;font-size:9pt;margin:-1mm 0 4mm}
+.pr-lead b{font-weight:600;color:#f1dfb2}
+.price{border-top:2px solid var(--ink);margin-bottom:3.5mm}
+.price th{font-size:7.8pt;font-weight:500;color:var(--mute);text-align:left;padding:1.5mm 0;border-bottom:1px solid var(--line)}
+.price th.r,.price td.r{text-align:right}
+.price th.pre{color:var(--gold)}
+.price td{border-bottom:1px solid var(--line);padding:1.6mm 0;vertical-align:middle}
+.price td.im{width:13mm}
+.price td.im img{width:10mm;height:13mm;object-fit:cover;display:block}
+.price .sz b{font-family:Hahmlet,serif;font-size:13pt;font-weight:700;display:block;line-height:1.3}
+.price .sz span{font-size:7.6pt;color:var(--mute)}
+.price td.sp{font-size:8.6pt;color:#2c3530}
+.price td.r{font-weight:600;font-size:10.2pt;width:27mm}
+.price td.r small{font-weight:400;font-size:7.6pt;color:var(--mute)}
+.price tr.out td{color:#9aa39b}
+.price tr.out img{filter:grayscale(1) opacity(.6)}
+.incl{background:var(--surface);padding:2.6mm 4mm;font-size:8.3pt;line-height:1.6;margin-bottom:3mm}
+.incl b{font-weight:600}.incl b.p{color:var(--gold)}
+.multi{border:1px solid var(--pine);padding:2.4mm 4mm;font-size:8.4pt;display:grid;grid-template-columns:23mm 1fr;margin-bottom:4mm;line-height:1.6}
+.multi b{font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:7mm}
+.two h3{font-size:10pt;margin-bottom:1.6mm}
+.two h3 small{font-weight:400;font-size:7.8pt;color:var(--mute)}
+.mini{border-top:1px solid var(--ink)}
+.mini td{border-bottom:1px solid var(--line);padding:1.5mm 0;font-size:8.3pt}
+.mini td.r{text-align:right;font-weight:600;white-space:nowrap;padding-left:2mm}
+.mini td small{color:var(--mute);font-size:7.6pt}
+.reg td:nth-child(2){text-align:right;padding-right:4mm;font-weight:600}
+.reg td:nth-child(4){text-align:right;font-weight:600}
+.props{font-size:8.3pt;line-height:1.6;margin-top:4mm}
+.props h3{margin-bottom:1.6mm;padding-bottom:1.6mm;border-bottom:1px solid var(--ink)}
+
+/* 06 진행 */
+.steps{border-top:2px solid var(--ink);margin-bottom:7mm}
+.steps td{border-bottom:1px solid var(--line);padding:2.8mm 0;vertical-align:top;font-size:9.3pt;line-height:1.65}
+.steps td.n{width:10mm;font-family:Hahmlet,serif;font-weight:700;color:var(--berry)}
+.steps td.t{width:24mm;font-weight:600}
+.terms{border-top:1px solid var(--ink);margin-bottom:7mm}
+.terms td{border-bottom:1px solid var(--line);padding:2.4mm 0;vertical-align:top;font-size:8.9pt;line-height:1.65}
+.terms td:first-child{width:24mm;color:var(--mute);font-weight:500}
+.contact{background:var(--pine);color:#fff;padding:5mm 6mm;display:grid;grid-template-columns:1fr auto;gap:5mm;align-items:center}
+.contact h3{font-family:Hahmlet,serif;font-size:14pt;margin-bottom:2mm}
+.contact table td{font-size:8.7pt;padding:.7mm 0;color:#fff}
+.contact table td:first-child{width:19mm;color:#b9c7bd}
+.contact table b{font-weight:600}
+.qrs{display:flex;gap:4mm}
+.qrs figure{text-align:center;font-size:7.6pt;color:#dfe6e1}
+.qrs img{width:25mm;height:25mm;display:block;margin-bottom:1.5mm;background:#fff}
+.co{display:flex;justify-content:space-between;align-items:flex-end;margin-top:6mm;font-size:8pt;color:var(--mute);line-height:1.7}
+.co b{color:var(--ink);font-weight:600}
+.co img{height:15mm}
+</style>
+</head>
+<body>
+
+<!-- 표지 -->
+<section class="page cover">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>회사 소개서 · 2026 시즌</span></div>
+  <div class="hero"><img class="ph" src="../../img/hero-ydp.webp" alt=""></div>
+  <p class="cap"><b>영등포구청 1층 로비</b> · 2.3m · 프리미엄 · 레드 &amp; 골드</p>
+  <p class="eyebrow"><span>기관·기업 담당자용 회사 소개서</span><span class="upd"><i></i><span><span data-upd-long></span> 업데이트</span></span></p>
+  <div class="main">
+    <h1>크리스마스트리<br>대여 · 설치</h1>
+    <p>대학 로비, 공연장, 공공시설, 사무실에 공간에 맞는 크기의 트리를 설치하고, 1월~2월 초에 철거·회수합니다. 기간에 따른 추가금은 없습니다.</p>
+  </div>
+  <div class="ft"><span>트리랜드 TREELAND</span><span>070-4571-7467 · info@treeland.kr · www.treeland.kr</span></div>
+</section>
+
+<!-- 01 회사 소개 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>회사 소개</span></div>
+  <p class="no">01</p>
+  <div class="ttl"><h2>회사 소개</h2></div>
+  <div class="intro">
+    <div>
+      <p>트리랜드는 크리스마스 시즌 동안 트리와 장식, 소품을 대여하고 설치부터 철거·회수까지 맡는 시즌 연출 회사입니다. 공간 사진을 받아 천장 높이와 동선에 맞는 크기, 벽과 가구에 어울리는 장식 색상을 정하고, 장식은 미리 구성해 와서 현장 작업을 1시간 안팎으로 마칩니다.</p>
+      <p>11월부터 약속한 날에 방문해 설치하고, 1월~2월 초에 다시 방문해 철거합니다. 회수한 트리의 세척과 보관도 트리랜드가 맡기 때문에, 기관에서는 창고 공간이나 설치 인력을 따로 마련하지 않으셔도 됩니다.</p>
+      <p>구성은 스탠다드와 프리미엄 두 가지이며, 공간 사진을 보고 맞는 쪽을 함께 정합니다.</p>
+    </div>
+    <div><img class="ph" src="../../img/hero-corp.webp" alt="" style="object-position:50% 40%"><p class="cap"><b>기업 로비</b> · 2.3m · 프리미엄</p></div>
+  </div>
+  <table class="facts">
+    <tr><th>설치 실적</th><td><strong>누적 설치 350건 이상</strong> · 재계약률 88%</td></tr>
+    <tr><th>설치 분야</th><td>대학, 공공·문화시설, 기업 사무실, 병원, 매장, 주거 공간</td></tr>
+    <tr><th>맡는 일</th><td>크기·색상 제안, 장식 사전 준비, 방문 설치, 1월~2월 초 철거·회수, 세척·보관</td></tr>
+    <tr><th>가격</th><td>크기별 가격을 홈페이지에 공개하고, 견적서도 같은 가격으로 보내드립니다</td></tr>
+    <tr><th>서류·결제</th><td>견적서 이메일 발송, 전자계약, 세금계산서 발행, 카드·현금 결제</td></tr>
+  </table>
+  <div class="sub-h"><h3>주요 설치처</h3><small>2025~2026 시즌</small></div>
+  <div class="logos">
+    <div><img src="../../img/cl/yonsei.webp" alt="">연세대학교</div>
+    <div><img src="../../img/cl/arko.webp" alt="">아르코·대학로예술극장</div>
+    <div><img src="../../img/cl/ydp.webp" alt="">영등포구청</div>
+    <div><img src="../../img/cl/khnp.webp" alt="">월성원자력본부</div>
+    <div><img src="../../img/cl/ktl.webp" alt="">한국산업기술시험원</div>
+    <div><img src="../../img/cl/seoul.webp" alt="">서울청년센터</div>
+    <div><img src="../../img/cl/speak.webp" alt="">스픽</div>
+    <div><img src="../../img/cl/pierre.webp" alt="">피에르파브르</div>
+    <div class="wm"><img src="../../img/cl/leel.webp" alt="">청담 르엘</div>
+    <div><img src="../../img/cl/galforet.webp" alt="">갤러리아 포레</div>
+    <div><img src="../../img/cl/brighten.webp" alt="">브라이튼 여의도</div>
+    <div><img src="../../img/cl/lotteria.webp" alt="">롯데리아</div>
+    <div class="wm only"><img src="../../img/cl/ediya.svg" alt="이디야커피"></div>
+    <div><img src="../../img/cl/mammoth.webp" alt="">매머드커피</div>
+  </div>
+  <div class="ft"><span>트리랜드 TREELAND · 회사 소개서 · <span data-upd></span> 업데이트</span><b data-pg></b></div>
+</section>
+
+<!-- 02 설치 사례 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>설치 사례</span></div>
+  <p class="no">02</p>
+  <div class="ttl"><h2>2026 설치 사례</h2><small>11월부터 설치한 곳</small></div>
+  <div class="cases1">
+    <figure><img class="ph" src="../../img/hero-arko26.webp" alt="" style="object-position:50% 50%"><figcaption class="cap"><b>대학로 아르코예술극장 로비</b> · 2.9m · 프리미엄 · 레드 &amp; 골드</figcaption></figure>
+    <figure><img class="ph" src="../../img/hero-leel.webp" alt="" style="object-position:42% 50%"><figcaption class="cap"><b>청담 르엘</b> · 2.3m · 프리미엄 · 레드 &amp; 골드</figcaption></figure>
+  </div>
+  <div class="cases2">
+    <figure><img class="ph" src="../../img/yonsei-dorm26.webp" alt="" style="object-position:50% 45%"><figcaption class="cap"><b>연세대학교 기숙사 로비</b> · 2.9m 2그루 · 프리미엄 (LED 사슴은 별도 소품)</figcaption></figure>
+    <figure><img class="ph" src="../../img/heimish-snow.webp" alt=""><figcaption class="cap"><b>뷰티 브랜드 본사 로비</b> · 2.3m 스노우</figcaption></figure>
+    <figure><img class="ph" src="../../img/kkumbat.webp" alt=""><figcaption class="cap"><b>대학로 꿈밭극장</b> · 2.3m</figcaption></figure>
+  </div>
+  <p class="note">이 밖에 기업 사무실, 중학교, 병원, 법률사무소, 동물병원, 카페, 매장 등에 설치했습니다. 설치 영상과 전체 사례는 홈페이지(www.treeland.kr)에서 보실 수 있습니다.<br>모두 트리랜드가 설치한 실제 사진입니다.</p>
+  <div class="ft"><span>트리랜드 TREELAND · 회사 소개서 · <span data-upd></span> 업데이트</span><b data-pg></b></div>
+</section>
+
+<!-- 03 구성 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>구성</span></div>
+  <p class="no">03</p>
+  <div class="ttl"><h2>스탠다드와 프리미엄</h2></div>
+  <div class="tiers">
+    <div class="tier">
+      <div class="top"><img class="ph" src="../../img/std-speak.webp" alt=""><div><p class="lab">STANDARD</p><h3>스탠다드</h3><p>오너먼트와 시그니처 상자로 꾸민 기본 구성입니다.</p></div></div>
+      <ul>
+        <li>입체 성형 PE 잎, LED 조명 내장</li>
+        <li>오너먼트 <small>(2.3m 기준 80개)</small>, 리본, 상단 별</li>
+        <li>트리 스커트 122cm</li>
+        <li>하단 시그니처 상자 <small>(1.95m 3개 · 2.3m 5개 · 2.9m 8개)</small></li>
+      </ul>
+    </div>
+    <div class="tier">
+      <div class="top"><img class="ph" src="../../img/premium-ydp.webp" alt=""><div><p class="lab">PREMIUM</p><h3>프리미엄</h3><p>오너먼트를 1.5배로 늘리고 리본·솔방울·베리를 더한 구성입니다.</p></div></div>
+      <ul>
+        <li>오너먼트 1.5배 <small>(2.3m 기준 120개)</small></li>
+        <li>벨벳 리본 · 솔방울 · 레드·화이트 베리</li>
+        <li>트리 스커트 150cm</li>
+        <li>하단 시그니처 상자 두 배 <small>(6개 · 10개 · 15개)</small></li>
+        <li>리모컨으로 켜고 끄는 LED 별</li>
+      </ul>
+    </div>
+  </div>
+  <p class="box-note">두 구성 모두 같은 트리와 LED 조명, KC 인증 전기안정기, 방문 설치, 1월~2월 초 회수가 들어갑니다. 1.35m는 구성을 나누지 않고 프리미엄 장식에 기본 별을 단 단일 구성으로 운영합니다.</p>
+  <div class="sub-h"><h3>장식 색상</h3><small>트리마다 다른 색을 고르실 수 있습니다</small></div>
+  <div class="colors">
+    <div><img class="ph" src="assets/col-red.jpg" alt=""><b>레드 &amp; 골드</b><span>나무 가구, 벽돌 벽이 있는 공간</span></div>
+    <div><img class="ph" src="assets/col-champ.jpg" alt=""><b>화이트 &amp; 샴페인</b><span>흰 벽, 대리석, 모던한 공간</span></div>
+    <div><img class="ph" src="assets/col-sage.jpg" alt=""><b>세이지 그린 &amp; 골드</b><span>아이보리 벽, 밝은 나무색 공간</span></div>
+    <div class="out"><img class="ph" src="assets/col-navy.jpg" alt=""><b>네이비 &amp; 골드<span class="tag">2026 예약 마감</span></b><span>흰 벽, 크림색 벽 앞</span></div>
+  </div>
+  <div class="ft"><span>정하기 어려우시면 공간 사진을 보내주세요. 벽과 가구 색에 맞춰 골라 드립니다.</span><b data-pg></b></div>
+</section>
+
+<!-- 04 트리와 장식 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>트리와 장식</span></div>
+  <p class="no">04</p>
+  <div class="ttl"><h2>트리와 장식</h2></div>
+  <p class="lead">트리 옆에서 사진을 찍는 경우가 많아, 가까이서 봐도 자연스러운 수입 트리를 사용합니다.</p>
+  <p class="cmp-h">조명 <span>· 줄 전구를 감은 트리와 LED 내장 트리</span></p>
+  <div class="cmp">
+    <figure><img class="ph" src="assets/led-string.jpg" alt=""><figcaption class="cap"><b>줄 전구를 감은 트리</b> · 감는 간격에 따라 빛이 몰리거나 비어 보이는 곳이 생기고, 전선이 가지 위로 지나갑니다.</figcaption></figure>
+    <figure><img class="ph" src="assets/led-built.jpg" alt=""><figcaption class="cap"><b>트리랜드 LED 내장 트리</b> · 가지를 따라 LED가 내장되어 위에서 아래까지 고르게 밝고, 전선이 보이지 않습니다. 2.3m 기준 LED 1,850개.</figcaption></figure>
+  </div>
+  <p class="cmp-h">오너먼트 <span>· 일반 단색 오너먼트와 트리랜드 오너먼트</span></p>
+  <div class="cmp">
+    <figure><img class="ph" src="assets/orn-plain.jpg" alt=""><figcaption class="cap"><b>일반 오너먼트</b> · 같은 크기의 매끈한 유광 볼이 대부분입니다.</figcaption></figure>
+    <figure><img class="ph" src="assets/orn-tl.jpg" alt=""><figcaption class="cap"><b>트리랜드 오너먼트</b> · 무광과 유광, 골이 진 볼을 섞어 같은 색 계열이어도 더 풍성해 보입니다.</figcaption></figure>
+  </div>
+  <div class="leaf">
+    <img class="ph" src="assets/leaf.jpg" alt="">
+    <p><b>잎</b> · 얇은 필름인 일반 PVC 잎(왼쪽)은 가까이 보면 납작합니다. 트리랜드는 두께와 굴곡이 있는 입체 성형 PE 잎(오른쪽)을 사용하고, 설치할 때 가지를 한 가닥씩 펼쳐 모양을 잡습니다. 2.3m 스노우는 고밀도 PVC 잎입니다.</p>
+  </div>
+  <div class="boxrow">
+    <img class="ph" src="../../img/dt-box-real.webp" alt="">
+    <p><b>하단 상자</b> · 투알 드 주이 패턴의 시그니처 상자를 직접 제작합니다. 2.3m 이상 트리에는 큰 상자를 씁니다.</p>
+  </div>
+  <div class="ft"><span>일반 트리·일반 오너먼트·PVC 잎은 비교용 예시 사진입니다.</span><b data-pg></b></div>
+</section>
+
+<!-- 05 크기와 가격 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>크기와 가격</span></div>
+  <p class="no">05</p>
+  <div class="ttl"><h2>크기와 가격</h2><small>트리 1그루 · 부가세 별도</small></div>
+  <p class="pr-lead">홈페이지 <b>www.treeland.kr</b>에 공개한 가격 그대로이며, 견적서도 이 가격으로 보내드립니다.</p>
+  <table class="price">
+    <tr><th></th><th>크기</th><th>맞는 공간</th><th class="r">스탠다드</th><th class="r pre">프리미엄</th></tr>
+    <tr><td class="im"><img src="../../img/size-135.webp" alt=""></td><td class="sz"><b>1.35m</b><span>하단 지름 81cm · 하단 상자 없음</span></td><td class="sp">작은 공간, 입구 옆</td><td class="r" colspan="2" style="text-align:center;padding-left:14mm">340,000원 <small>(단일 구성)</small></td></tr>
+    <tr><td class="im"><img src="../../img/size-195.webp" alt=""></td><td class="sz"><b>1.95m 슬림</b><span>하단 지름 100cm · 하단 상자 3개</span></td><td class="sp">폭이 좁은 자리</td><td class="r num">525,000원</td><td class="r num">650,000원</td></tr>
+    <tr><td class="im"><img src="../../img/size-230.webp" alt=""></td><td class="sz"><b>2.3m<span class="tag red">인기</span></b><span>하단 지름 140cm · 하단 상자 5개</span></td><td class="sp">사무실, 라운지, 로비</td><td class="r num">645,000원</td><td class="r num">800,000원</td></tr>
+    <tr class="out"><td class="im"><img src="../../img/size-230s.webp" alt=""></td><td class="sz"><b>2.3m 스노우<span class="tag">2026 예약 마감</span></b><span>하단 지름 140cm · 하단 상자 5개</span></td><td class="sp">잎 끝에 눈이 덮인 트리</td><td class="r num">725,000원</td><td class="r num">900,000원</td></tr>
+    <tr><td class="im"><img src="../../img/size-290.webp" alt=""></td><td class="sz"><b>2.9m</b><span>하단 지름 155cm · 하단 상자 8개</span></td><td class="sp">천장이 높은 로비, 공연장</td><td class="r num">1,450,000원</td><td class="r num">1,650,000원</td></tr>
+  </table>
+  <p class="incl"><b>공통</b> · 트리(LED 조명 내장), 오너먼트, 리본, 상단 별, 트리 스커트, 하단 시그니처 상자, KC 인증 전기안정기(SMPS), 방문 설치와 1월~2월 초 철거·회수<br><b class="p">프리미엄</b> · 오너먼트 1.5배, 벨벳 리본·솔방울·베리, 하단 상자 두 배, 리모컨 LED 별</p>
+  <p class="multi"><b>여러 그루 설치</b><span>2그루 5%, 3그루 10% 할인 · 4그루 이상은 개별 상담 · 크기를 섞을 수 있고, 한 곳에 설치하면 운임은 한 번만 받습니다.</span></p>
+  <div class="two">
+    <div>
+      <h3>지역별 운임 <small>(만원)</small></h3>
+      <table class="mini reg">
+        <tr><td>서울</td><td>무료</td><td>경기·인천</td><td>10~20</td></tr>
+        <tr><td>강원</td><td>25~35</td><td>충북</td><td>30~40</td></tr>
+        <tr><td>충남·세종·대전</td><td>35~45</td><td>전라·경상</td><td>40~50</td></tr>
+      </table>
+      <div class="props"><h3>추가 소품</h3><p>LED 눈사람·사슴, 대형 리스 등 실내용 소품도 함께 대여합니다. 가격은 개별 안내합니다.</p></div>
+    </div>
+    <div>
+      <h3>추가 장식 <small>(선택 · 트리 1그루 기준)</small></h3>
+      <table class="mini">
+        <tr><td>인형 오너먼트 6개 추가 <small>(곰돌이·동물)</small></td><td class="r">25,000원</td></tr>
+        <tr><td>라탄 바스켓 받침대로 변경 <small>(브라운·흰색)</small></td><td class="r">20,000원</td></tr>
+        <tr><td>하단 눈사람 인형 3종 세트 <small>(레드·그레이)</small></td><td class="r">24,000원</td></tr>
+        <tr><td>메탈 LED 상자 3종 세트</td><td class="r">70,000원</td></tr>
+        <tr><td>단색 상자 12합 세트 <small>(흰색·골드·레드)</small></td><td class="r">45,000원</td></tr>
+        <tr><td>시그니처 상자 추가</td><td class="r">개당 5,000원</td></tr>
+        <tr><td>시그니처 상자 대신 하단 소품상자 <small>(반짝이)</small></td><td class="r">무료</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="ft"><span>트리랜드 TREELAND · 회사 소개서 · <span data-upd></span> 업데이트</span><b data-pg></b></div>
+</section>
+
+<!-- 06 진행과 문의 -->
+<section class="page">
+  <div class="hd"><img src="../../img/logo-head.png" alt="TREELAND"><span>진행과 문의</span></div>
+  <p class="no">06</p>
+  <div class="ttl"><h2>진행 순서와 조건</h2></div>
+  <table class="steps">
+    <tr><td class="n">01</td><td class="t">자료 보내기</td><td>설치할 공간 사진 1~2장, 설치 주소(시·구), 희망 설치일, 대략의 천장 높이를 이메일이나 카카오톡으로 보내주세요.</td></tr>
+    <tr><td class="n">02</td><td class="t">견적서 받기</td><td>맞는 크기와 구성, 장식 색상을 제안하고 운임을 포함한 견적서를 이메일로 보내드립니다. 결재 서류로 그대로 쓰실 수 있습니다.</td></tr>
+    <tr><td class="n">03</td><td class="t">전자계약</td><td>받으신 링크에서 휴대폰으로 서명하시면 예약이 확정됩니다.</td></tr>
+    <tr><td class="n">04</td><td class="t">설치</td><td>11월부터 정한 날짜에 방문합니다. 현장 작업은 약 1시간이며, 시설 운영 중에도 동선에 맞춰 설치할 수 있습니다.</td></tr>
+    <tr><td class="n">05</td><td class="t">철거·회수</td><td>1월~2월 초 중 협의한 날짜에 방문해 철거하고, 세척과 보관까지 맡습니다. 기간에 따른 추가요금은 없습니다.</td></tr>
+  </table>
+  <table class="terms">
+    <tr><td>결제</td><td>계약금 없이 설치를 마친 뒤 3일 안에 결제합니다. 기관·법인은 내부 결재 일정에 맞춰 조정합니다. 세금계산서 발행, 카드·현금 결제 가능하며 안내 금액은 부가세 별도입니다.</td></tr>
+    <tr><td>취소</td><td>계약일로부터 7일 안에는 비용 없이 취소할 수 있습니다. 그 뒤에는 설치일에 가까울수록 위약금이 생기며, 기준은 계약서에 적어 드립니다.</td></tr>
+    <tr><td>파손·분실</td><td>고객 부주의로 인한 파손·분실은 비용이 발생할 수 있으며, 기준은 계약서에 적어 드립니다.</td></tr>
+    <tr><td>전기 안전</td><td>모든 트리에 화재 예방을 위해 KC 인증 전기안정기(SMPS)를 설치합니다. 트리를 놓을 자리 가까이에 콘센트가 있어야 합니다.</td></tr>
+  </table>
+  <div class="contact">
+    <div>
+      <h3>기관·기업 견적 문의</h3>
+      <table>
+        <tr><td>전화</td><td><b>070-4571-7467</b> · 평일 9시~18시</td></tr>
+        <tr><td>이메일</td><td><b>info@treeland.kr</b> · 견적서·세금계산서 요청</td></tr>
+        <tr><td>카카오톡</td><td>채널 @트리랜드 · 매일 오전 8시~밤 12시</td></tr>
+        <tr><td>홈페이지</td><td><a href="https://treeland.kr/?utm_source=company_profile&amp;utm_medium=pdf" style="color:#fff;text-decoration:none">www.treeland.kr</a></td></tr>
+        <tr><td>인스타그램</td><td>@treeland.official</td></tr>
+      </table>
+    </div>
+    <div class="qrs">
+      <figure><img src="assets/qr-kakao.png" alt=""><figcaption>카카오톡 상담</figcaption></figure>
+      <figure><img src="assets/qr-site.png" alt=""><figcaption>홈페이지</figcaption></figure>
+    </div>
+  </div>
+  <div class="co">
+    <div><b>트리랜드 (TREELAND)</b> · 대표 홍준서 · 사업자등록번호 360-69-00592<br>서울 성북구 아리랑로19길 87</div>
+    <img src="../../img/logo-mark.png" alt="">
+  </div>
+  <div class="ft"><span>트리랜드 TREELAND · 회사 소개서 · <span data-upd></span> 업데이트</span><b data-pg></b></div>
+</section>
+
+<script>
+// 업데이트 날짜: 여기 한 곳만 고치면 표지와 꼬리말이 함께 바뀜
+const UPDATED = '2026-11-26';
+const [y, m, d] = UPDATED.split('-').map(Number);
+document.querySelectorAll('[data-upd-long]').forEach(e => e.textContent = y + '년 ' + m + '월 ' + d + '일');
+document.querySelectorAll('[data-upd]').forEach(e => e.textContent = y + '.' + String(m).padStart(2, '0') + '.' + String(d).padStart(2, '0'));
+const pages = document.querySelectorAll('.page'), N = String(pages.length).padStart(2, '0');
+pages.forEach((p, i) => { const b = p.querySelector('[data-pg]'); if (b) b.textContent = String(i + 1).padStart(2, '0') + ' / ' + N; });
+</script>
+</body>
+</html>
