@@ -207,11 +207,36 @@
     }
     if(mode === "out" && !it.doneOut) chip = ["회수 예정", "ret"];
     const line = [it.place, mode === "pay" ? (it.pay || "결제 방법 미정") : it.size, crew ? "담당 " + (crew.name || crew.email) : ""].filter(Boolean).join(" · ");
-    return `<a class="row" href="${jobUrl(it)}">${when}<span class="what"><b>${esc(it.name || it.place || "(상호 미입력)")}</b><span>${esc(line)}</span></span><span class="end"><span class="chip ${chip[1]}">${esc(chip[0])}</span></span></a>`;
+    // 견적 번호 · 금액 (대표만). 누르면 견적서가 아래에서 올라옴 (11/27)
+    const qno = String(it.qno || "").replace(/^'/, ""), q = qno && !TL.staff && d && d.quotes ? d.quotes.find(x => x.no === qno) : null;
+    const qline = qno && !TL.staff ? `<span class="qlink" data-quote="${esc(qno)}" data-qname="${esc(it.name || "")}" data-qpdf="${esc(it.qpdf || "")}" role="button" tabindex="0">견적 ${esc(qno)}${q ? ` · ${won(q.total)}원` : ""}</span>` : "";
+    return `<a class="row" href="${jobUrl(it)}">${when}<span class="what"><b>${esc(it.name || it.place || "(상호 미입력)")}</b><span>${esc(line)}</span>${qline}</span><span class="end"><span class="chip ${chip[1]}">${esc(chip[0])}</span></span></a>`;
   }
   function quoteRow(x){
-    return `<a class="row" href="/quote/">${whenCell(x.sentAt || x.at, "보냄")}<span class="what"><b>${esc(x.cust || "(상호 없음)")}</b><span>견적 No. ${esc(x.no)} · ${man(x.total)}</span></span><span class="end"><span class="chip gray">견적</span></span></a>`;
+    return `<a class="row" href="/quote/?open=${encodeURIComponent(x.no)}" data-quote="${esc(x.no)}" data-qname="${esc(x.cust || "")}" data-qcontract="1">${whenCell(x.sentAt || x.at, "보냄")}<span class="what"><b>${esc(x.cust || "(상호 없음)")}</b><span>견적 No. ${esc(x.no)} · ${man(x.total)}</span></span><span class="end"><span class="chip gray">견적</span></span></a>`;
   }
+
+  /* ---------- 견적서 보기 (11/27): 아래에서 올라오는 창. 계약에 붙은 견적서 PDF가 있으면 그것, 없으면 견적서 화면 기록을 그려서 보여 줌 ---------- */
+  function quoteSheet(no, o){
+    o = o || {};
+    const m = String(o.pdf || "").match(/\/d\/([\w-]{20,})|[?&]id=([\w-]{20,})|^([\w-]{25,})$/), fid = m && (m[1] || m[2] || m[3]);
+    const src = fid ? `https://drive.google.com/file/d/${fid}/preview` : `/quote/?view=${encodeURIComponent(no)}`;
+    const acts = [
+      fid ? `<a class="btn sub sm" href="https://drive.google.com/file/d/${fid}/view" target="_blank" rel="noopener">PDF 열기</a>` : "",
+      o.contract ? `<a class="btn sm" href="/contract/admin.html?q=${encodeURIComponent(no)}">계약서 만들기</a>` : "",
+      `<a class="btn sub sm" href="/quote/?open=${encodeURIComponent(no)}">견적서 화면에서 고치기</a>`,
+      `<button type="button" class="btn sub sm" data-close>닫기</button>`
+    ].join("");
+    const sh = TL.sheet(`<div class="qv"><iframe src="${src}" title="견적서 ${esc(no)}"></iframe></div><div class="btns qv-btns">${acts}</div>`, { title: `견적서 ${no}${o.name ? " · " + o.name : ""}${fid ? " (고객에게 보낸 PDF)" : ""}` });
+    const f = sh.el.querySelector("iframe"), fit = () => { if(f.isConnected) f.style.height = Math.round(f.clientWidth * 1123 / 794) + "px"; };
+    fit(); requestAnimationFrame(fit); setTimeout(fit, 250);
+  }
+  // 목록 어디서든 [data-quote]를 누르면 견적서 창 (줄 링크로 넘어가지 않음)
+  document.addEventListener("click", e => {
+    const q = e.target.closest("[data-quote]"); if(!q || TL.staff) return;
+    e.preventDefault(); e.stopPropagation();
+    quoteSheet(q.dataset.quote, { name: q.dataset.qname, pdf: q.dataset.qpdf, contract: !!q.dataset.qcontract });
+  }, true);
 
   /* ---------- 필요 자재: 계약의 트리 구성 + 추가 장식에서 만듦 (사이트 기준 수량) ---------- */
   const BOX = { "1.95m 슬림":3, "2.3m":5, "2.3m 스노우":5, "2.9m":8 };
@@ -291,5 +316,5 @@
     return { rows, check, addons: [...addons.values()] };
   }
 
-  window.UI = { WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, overdue, cardLines, remindText, BOX, parseTrees, materials, matTotals };
+  window.UI = { quoteSheet, WD, esc, won, man, parts, dayDiff, seoulKey, timeKo, rel, whenCell, short, telHref, telShow, normName, stage, SIGNED, dueKey, payWaiting, cache, countUp, rise, skRows, loadAll, quoteList, events, groups, jobUrl, rowHtml, quoteRow, taxState, taxInfoText, taxReqText, copyText, overdue, cardLines, remindText, BOX, parseTrees, materials, matTotals };
 })();

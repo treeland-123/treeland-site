@@ -24,6 +24,8 @@
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0}
+body.qview{padding:0!important;background:#fff}body.qview .app{display:block;max-width:none;margin:0;padding:0}body.qview header,body.qview .form,body.qview .tlbar,body.qview .tltabs{display:none!important}
+body.qview .preview{position:static}body.qview .stage{box-shadow:none;border-radius:0}.qview-miss{margin:24px 16px;color:#666;font-size:15px}
 body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;
   padding:0 max(16px,env(safe-area-inset-right,0px)) 48px max(16px,env(safe-area-inset-left,0px))}
 .app{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,440px) minmax(0,1fr);gap:24px;align-items:start}
@@ -295,9 +297,11 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const fmt = n => (n < 0 ? '-' : '') + Math.abs(Math.round(n)).toLocaleString('ko-KR');
 // ?embed=1 : 계약 관리 화면이 숨은 창으로 열어 견적서 PDF만 만들어 감(서명본 메일 첨부용). 작성 중 임시 저장은 건드리지 않음
 const EMBED = new URLSearchParams(location.search).has('embed');
+// ?view=2026-157 : 관리 화면(건 목록·건 상세)이 창 안에 띄우는 보기 전용 견적서 (11/27). 입력 칸·발행 내역은 숨기고 견적서만, 임시 저장은 건드리지 않음
+const VIEW = new URLSearchParams(location.search).get('view') || '';
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-  set(k, v) { if (EMBED && k === 'tl-quote-draft') return true; try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
+  set(k, v) { if ((EMBED || VIEW) && k === 'tl-quote-draft') return true; try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch { return false; } },
 };
 function korean(n) {
   const d = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'], u = ['', '십', '백', '천'], big = ['', '만', '억'];
@@ -1068,6 +1072,17 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
     if (same) P.at = p.at; else { P = p; if (S) { S.trees.forEach(t => { if (!P.sizes.some(x => x.label === t.size)) t.size = P.sizes[0].label; }); renderForm(); } }
     priceStatus();
   }).catch(() => priceStatus(' · 새 가격표를 받지 못해 지난 가격표'));
+  if (VIEW) {
+    document.body.classList.add('qview');
+    let h = HIST.find(x => x.no === VIEW);
+    if (!h) { try { const j = await api('list', { year: VIEW.slice(0, 4) }); h = (j.quotes || []).find(x => x.no === VIEW); } catch (err) {} }
+    if (!h || !h.state) { document.body.insertAdjacentHTML('afterbegin', `<p class="qview-miss">견적서 ${esc(VIEW)}를 찾지 못했습니다.</p>`); return; }
+    S = JSON.parse(JSON.stringify(h.state)); S.autoNo = false;
+    S.trees.forEach(t => { if (!P.sizes.some(x => x.label === t.size)) t.size = P.sizes[0].label; });
+    renderForm();
+    parent.postMessage({ tlQuoteView: VIEW, total: calc().total }, location.origin);
+    return;
+  }
   if (EMBED) {
     window.tlQuotePdf = async st => {
       S = JSON.parse(JSON.stringify(st)); renderForm();
@@ -1085,6 +1100,14 @@ $('#stampClear').onclick = () => { try { localStorage.removeItem('tl-quote-stamp
   } else S = draft && draft.trees ? draft : freshState();
   if (S.phase === 'e1' && e1Over()) S.phase = autoPhase();
   S.trees.forEach(t => { if (!P.sizes.some(s => s.label === t.size)) t.size = P.sizes[0].label; });
+  // ?open=2026-157 : 관리 화면 「견적서 화면에서 고치기」 → 그 견적을 바로 엶 (발행 내역 「열기」와 같음)
+  const OPEN_NO = new URLSearchParams(location.search).get('open');
+  if (OPEN_NO) {
+    let h = HIST.find(x => x.no === OPEN_NO);
+    if (!h) { try { const j = await api('list', { year: OPEN_NO.slice(0, 4) }); h = (j.quotes || []).find(x => x.no === OPEN_NO); } catch (err) {} }
+    if (h && h.state) { if (S.cust && !RESUME) store.set('tl-quote-prev', S); S = JSON.parse(JSON.stringify(h.state)); S.autoNo = false; RESUME = null; UNTOUCHED = false; }
+    history.replaceState(null, '', location.pathname);
+  }
   $('#form').removeAttribute('aria-busy');
   stampState(); renderHist(); renderForm(); sync();
 })();

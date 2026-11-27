@@ -144,3 +144,8 @@ label.lab{font-size:14px;color:var(--sub);font-weight:500}
 .btn:active,.stat:active,a.row:active,.filters button:active,.press:active{transform:scale(.97)}
 .stat,a.row{transition:transform .12s var(--ease),background .15s}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* 견적서 보기 (11/27) */
+.row .what span.qlink{display:inline-block;margin-top:3px;font-size:13px;color:var(--acc);font-weight:600;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--acc) 35%,transparent);text-underline-offset:3px;cursor:pointer;max-width:100%}
+.qv{margin:2px 0 12px;border-radius:12px;overflow:hidden;box-shadow:0 0 0 1px var(--line);background:#fff}
+.qv iframe{display:block;width:100%;border:0;background:#fff}
+.qv-btns{display:flex;flex-wrap:wrap;gap:8px}.qv-btns .btn{text-decoration:none}
