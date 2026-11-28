@@ -211,8 +211,10 @@
     const qno = String(it.qno || "").replace(/^'/, ""), q = qno && !TL.staff && d && d.quotes ? d.quotes.find(x => x.no === qno) : null;
     // 금액은 계약서 임대료(부가세 포함) 기준 = 결제 안내 금액. 견적서는 계약 뒤에 고쳐 저장될 수 있어서 금액이 다르면 따로 표시 (11/28 연세대 신촌)
     const price = Number(it.price) || 0, ctot = price ? price + Math.round(price * 0.1) : 0;
-    const amt = ctot ? ` · ${won(ctot)}원` : q ? ` · ${won(q.total)}원` : "";
-    const diff = ctot && q && Number(q.total) && Number(q.total) !== ctot ? ` <em class="qdiff">견적서 ${won(q.total)}원과 다름</em>` : "";
+    // 견적 합계 = 임대료면 '부가세 빼고 발행' 견적 → 부가세 없이 임대료가 결제 금액
+    const qt = q ? Number(q.total) || 0 : 0, noVat = !!price && qt === price;
+    const amt = noVat ? ` · ${won(price)}원 (부가세 없음)` : ctot ? ` · ${won(ctot)}원` : q ? ` · ${won(qt)}원` : "";
+    const diff = ctot && qt && qt !== ctot && qt !== price ? ` <em class="qdiff">견적서 ${won(qt)}원과 다름</em>` : "";
     const qline = qno && !TL.staff ? `<span class="qlink" data-quote="${esc(qno)}" data-qname="${esc(it.name || "")}" data-qpdf="${esc(it.qpdf || "")}" role="button" tabindex="0">견적 ${esc(qno)}${amt}${diff}</span>` : "";
     return `<a class="row" href="${jobUrl(it)}">${when}<span class="what"><b>${esc(it.name || it.place || "(상호 미입력)")}</b><span>${esc(line)}</span>${qline}</span><span class="end"><span class="chip ${chip[1]}">${esc(chip[0])}</span></span></a>`;
   }
