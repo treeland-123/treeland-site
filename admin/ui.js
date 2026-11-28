@@ -209,7 +209,11 @@
     const line = [it.place, mode === "pay" ? (it.pay || "결제 방법 미정") : it.size, crew ? "담당 " + (crew.name || crew.email) : ""].filter(Boolean).join(" · ");
     // 견적 번호 · 금액 (대표만). 누르면 견적서가 아래에서 올라옴 (11/27)
     const qno = String(it.qno || "").replace(/^'/, ""), q = qno && !TL.staff && d && d.quotes ? d.quotes.find(x => x.no === qno) : null;
-    const qline = qno && !TL.staff ? `<span class="qlink" data-quote="${esc(qno)}" data-qname="${esc(it.name || "")}" data-qpdf="${esc(it.qpdf || "")}" role="button" tabindex="0">견적 ${esc(qno)}${q ? ` · ${won(q.total)}원` : ""}</span>` : "";
+    // 금액은 계약서 임대료(부가세 포함) 기준 = 결제 안내 금액. 견적서는 계약 뒤에 고쳐 저장될 수 있어서 금액이 다르면 따로 표시 (11/28 연세대 신촌)
+    const price = Number(it.price) || 0, ctot = price ? price + Math.round(price * 0.1) : 0;
+    const amt = ctot ? ` · ${won(ctot)}원` : q ? ` · ${won(q.total)}원` : "";
+    const diff = ctot && q && Number(q.total) && Number(q.total) !== ctot ? ` <em class="qdiff">견적서 ${won(q.total)}원과 다름</em>` : "";
+    const qline = qno && !TL.staff ? `<span class="qlink" data-quote="${esc(qno)}" data-qname="${esc(it.name || "")}" data-qpdf="${esc(it.qpdf || "")}" role="button" tabindex="0">견적 ${esc(qno)}${amt}${diff}</span>` : "";
     return `<a class="row" href="${jobUrl(it)}">${when}<span class="what"><b>${esc(it.name || it.place || "(상호 미입력)")}</b><span>${esc(line)}</span>${qline}</span><span class="end"><span class="chip ${chip[1]}">${esc(chip[0])}</span></span></a>`;
   }
   function quoteRow(x){
