@@ -473,7 +473,13 @@ $("#trees").addEventListener("input", e => {
 // 견적서에서 불러오기: /quote/ 가 이 기기에 저장한 발행 내역(tl-quote-hist)
 function quoteHist(){ try{ return JSON.parse(localStorage.getItem("tl-quote-hist") || "[]") || []; }catch(e){ return []; } }
 // 부가세 빼고 발행한 견적(state.noVat)은 합계 = 공급가액
-const supplyOfQ = h => (h && h.state && h.state.noVat) ? (Number(h.total) || 0) : supplyOf(Number(h && h.total) || 0);
+// 부가세 일부 적용 견적(state.cashPart): 현금분은 부가세 없음, 카드분만 부가세 = floor((공급가액-현금)×0.1)
+const supplyOfQ = h => {
+  const st = (h && h.state) || {}, total = Number(h && h.total) || 0, cash = Math.round(+st.cashPart || 0);
+  if(st.noVat) return total;
+  if(cash > 0){ const g = cash + Math.round((total - cash) / 1.1); for(const s of [g, g - 1, g + 1, g - 2, g + 2]) if(s + Math.floor((s - cash) * 0.1) === total) return s; return g; }
+  return supplyOf(total);
+};
 function supplyOf(total){   // 합계(부가세 포함) → 공급가액. 견적서는 부가세 = round(공급가액×0.1)
   const g = Math.round(total / 1.1);
   for(const s of [g, g - 1, g + 1, g - 2, g + 2]) if(s + Math.round(s * 0.1) === total) return s;

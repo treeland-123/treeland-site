@@ -41,6 +41,13 @@ async function scenario(label, device, clipboard) {
   console.log(`\n[${label}]`);
   const b = await pw.chromium.launch();
   const ctx = await b.newContext({ ...(device ? pw.devices[device] : { viewport: { width: 1300, height: 900 } }), acceptDownloads: true });
+  // 외부망이 막힌 환경: TL_VENDOR 폴더에 html2canvas.min.js·jspdf.umd.min.js를 두면 CDN 대신 그 파일을 씀. 글꼴 등 나머지 외부 요청은 끊음
+  if (process.env.TL_VENDOR) await ctx.route(u => !/^http:\/\/localhost/.test(String(u)) && !/script\.google\.com/.test(String(u)), r => {
+    const m = r.request().url().match(/(html2canvas\.min\.js|jspdf\.umd\.min\.js)$/);
+    return m ? r.fulfill({ path: process.env.TL_VENDOR + '/' + m[1], contentType: 'application/javascript' }) : r.abort();
+  });
+  // 11/14부터 관리 화면은 구글 로그인 필요 → 대표 로그인 상태를 흉내 냄 (서버 요청은 가짜 서버가 받음)
+  await ctx.addInitScript(() => { try { localStorage.setItem('tl_user', JSON.stringify({ sess: 'test', exp: Date.now() + 9e8, role: '대표', name: 'test', email: 'test', checked: Date.now() })); localStorage.setItem('tl_pin_v', '3'); } catch {} });
   if (clipboard) await ctx.grantPermissions(['clipboard-read', 'clipboard-write'], { origin: `http://localhost:${PORT}` });
   const pg = await ctx.newPage(); const errs = []; pg.on('pageerror', e => errs.push(e.message));
   const srvS = fakeServer(); await pg.route('https://script.google.com/**', srvS.route);

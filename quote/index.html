@@ -228,6 +228,7 @@ button{font:inherit;cursor:pointer}
 
     <section>
       <div class="radios" style="margin:0 0 10px"><label><input type="checkbox" id="noVat"> 부가세 빼고 발행 <span class="hint" style="display:inline">— 부가세 줄 없이 공급가액이 합계</span></label></div>
+      <div class="field" id="cashBox" style="margin:0 0 10px"><label for="cashPart">부가세 일부만 적용 — 현금 결제분 (원, 부가세 없음)</label><input type="text" id="cashPart" inputmode="numeric" placeholder="비우면 전액 부가세 적용" autocomplete="off"><span class="hint" id="cashHint">카드·현금 나눠 결제할 때. 넣은 금액은 부가세 없이, 나머지만 부가세 10%가 붙습니다.</span></div>
       <div class="total-box"><span id="totalLbl">합계 (부가세 포함)</span><b id="totalOut">0원</b></div>
       <p class="hint err" id="problems" hidden></p>
       <p class="hint" id="warns" hidden style="color:#9a5b00"></p>
@@ -380,7 +381,7 @@ function freshState() {
   const y = new Date().getFullYear();
   return {
     no: NEXT_NO || `${y}-${String(seq + 1).padStart(3, '0')}`, autoNo: true, date: today(), cust: '', email: '',
-    trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', noVat: false, cut: 0, renew: false, renewPct: store.get('tl-quote-renew-pct', 5), target: '', extraNotes: '',
+    trees: [blankTree()], addons: [], region: '서울', ship: 0, shipLabel: '', phase: autoPhase(), e2Pct: '', multiPct: '', noVat: false, cashPart: '', cut: 0, renew: false, renewPct: store.get('tl-quote-renew-pct', 5), target: '', extraNotes: '',
   };
 }
 function deadlineDate(k) {
@@ -444,14 +445,18 @@ function calc() {
   const addonSum = addons.reduce((a, x) => a + x.amount, 0);
   const ship = +S.ship || 0;
   const supply0 = treeSub + addonSum + ship;
+  // 부가세 일부 적용(나눠 결제): 현금분 C는 부가세 없음, 나머지(카드분)만 부가세 10% (원 미만 절사 — 카드 전표와 같은 금액)
+  const C = cashOf();
+  const vatOf = x => S.noVat ? 0 : C > 0 ? Math.floor(Math.max(0, x - C) * 0.1) : Math.round(x * 0.1);
+  const guess = g => S.noVat ? g : C > 0 ? C + Math.floor((g - C) / 1.1) : Math.floor(g / 1.1);
   // 협의 할인: 부가세 포함 목표 합계에 맞춰 공급가액을 거꾸로 계산 (부가세 = 공급가액×10% 반올림)
   let supply = supply0, adjDisc = 0, target = 0, targetGap = 0;
   if (S.target !== '' && S.target != null && +S.target > 0) {
     target = Math.round(+S.target);
-    const tot = x => x + (S.noVat ? 0 : Math.round(x * 0.1));
+    const tot = x => x + vatOf(x);
     if (target >= tot(supply0)) problems.push('협의 할인 목표 금액이 지금 합계보다 크거나 같습니다. 목표 금액을 확인해 주세요.');
     else {
-      let best = Math.floor(target / (S.noVat ? 1 : 1.1));
+      let best = guess(target);
       for (const x of [best + 2, best + 1, best, best - 1, best - 2]) if (tot(x) <= target) { best = x; break; }
       supply = best; adjDisc = best - supply0; targetGap = target - tot(best);
     }
@@ -460,15 +465,17 @@ function calc() {
   let cutDisc = 0, cutGap = 0;
   const unit = +S.cut || 0;
   if (unit > 0) {
-    const tot = x => x + (S.noVat ? 0 : Math.round(x * 0.1));
+    const tot = x => x + vatOf(x);
     const goal = Math.floor(tot(supply) / unit) * unit;
     if (goal < tot(supply) && goal > 0) {
-      let best = Math.floor(goal / (S.noVat ? 1 : 1.1));
+      let best = guess(goal);
       for (const x of [best + 2, best + 1, best, best - 1, best - 2]) if (tot(x) <= goal) { best = x; break; }
       cutDisc = best - supply; cutGap = goal - tot(best); supply = best;
     }
   }
-  const vat = S.noVat ? 0 : Math.round(supply * 0.1);   // 부가세 빼고 발행: 부가세 0, 합계 = 공급가액
+  const vat = vatOf(supply);   // 부가세 빼고 발행: 부가세 0, 합계 = 공급가액
+  const cash = C > 0 ? C : 0;
+  if (cash && cash >= supply) problems.push('현금 결제분이 공급가액보다 크거나 같습니다. 현금 금액을 확인해 주세요.');
   const used = [...new Set(trees.filter(t => t.tier !== '단일 구성').map(t => t.tier))];
   const e2Own = S.e2Pct !== '' && S.e2Pct != null;
   const earlyLabel = S.phase === 'e2' ? (e2Own ? `2차 얼리버드 할인 (${S.e2Pct}%)`
@@ -478,9 +485,10 @@ function calc() {
     : `1차 얼리버드 할인 (${trees[0].off})`;
   if (S.phase === 'e1' && e1Over()) warns.push(`1차 얼리버드는 ${P.deadline.m}월 ${P.deadline.d}일에 마감됐습니다. 예외로 1차 가격을 드리는 경우만 그대로 두세요.`);
   if (!S.cust.trim()) problems.push('받는 곳 상호를 넣어 주세요.');
-  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, renewPct, renewDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, supply0, adjDisc, target, targetGap, cutDisc, cutGap, earlyLabel, problems, warns };
+  return { trees, listSum, earlySum, earlyDisc: earlySum - listSum, pct, multiDisc, renewPct, renewDisc, treeSub, addons, addonSum, ship, supply, vat, total: supply + vat, cash, card: cash ? supply + vat - cash : 0, supply0, vat0: vatOf(supply0), adjDisc, target, targetGap, cutDisc, cutGap, earlyLabel, problems, warns };
 }
 
+function cashOf() { return S.noVat ? 0 : Math.max(0, Math.round(+S.cashPart || 0)); }   // 부가세 일부 적용: 현금 결제분
 /* ── 견적서 그리기 ── */
 function stampTag() { const s = store.get('tl-quote-stamp', null) || '/quote/stamp.png'; return `<img src="${s}" alt="">`; }
 function renderPaper(R) {
@@ -505,7 +513,8 @@ function renderPaper(R) {
     ...(R.adjDisc ? [['협의 할인', fmt(R.adjDisc), 'grey']] : []),
     ...(R.cutDisc ? [['단수 절사', fmt(R.cutDisc), 'grey']] : []),
     ...(S.noVat ? [['합계금액', '₩' + fmt(R.total), 'total top2']]
-      : [['공급가액', '₩' + fmt(R.supply), 'strong top2'], ['부가가치세 (10%)', '₩' + fmt(R.vat)], ['합계금액', '₩' + fmt(R.total), 'total']]),
+      : [['공급가액', '₩' + fmt(R.supply), 'strong top2'], [R.cash ? '부가가치세 (카드 결제분 10%)' : '부가가치세 (10%)', '₩' + fmt(R.vat)], ['합계금액', '₩' + fmt(R.total), 'total'],
+        ...(R.cash ? [['카드 결제 (부가세 포함)', fmt(R.card), 'grey'], ['현금 결제 (부가세 없음)', fmt(R.cash), 'grey']] : [])]),
   ];
   const dl = P.deadline ? `${P.deadline.m}월 ${P.deadline.d}일` : '', dl2 = P.deadline2 ? `${P.deadline2.m}월 ${P.deadline2.d}일` : '';
   const notes = `<div class="h">&lt;비고&gt;</div>
@@ -620,7 +629,7 @@ function renderForm() {
   $('#ship').value = S.ship; $('#shipLabel').value = S.shipLabel;
   document.querySelectorAll('input[name=phase]').forEach(r => r.checked = r.value === S.phase);
   $('#e2Pct').value = S.e2Pct; $('#multiPct').value = S.multiPct;
-  $('#noVat').checked = !!S.noVat; $('#cut').value = String(+S.cut || 0);
+  $('#noVat').checked = !!S.noVat; $('#cashPart').value = cashOf() ? fmt(cashOf()) : ''; $('#cut').value = String(+S.cut || 0);
   $('#renew').checked = !!S.renew; $('#renewPct').value = S.renewPct ?? 5; $('#target').value = S.target ?? ''; $('#extraNotes').value = S.extraNotes;
   update();
 }
@@ -628,14 +637,16 @@ function update() {
   const R = calc();
   const reg = P.regions.find(r => r.name === S.region);
   $('#shipHint').textContent = reg ? (reg.max ? `홈페이지 기준 ${fmt(reg.min)}~${fmt(reg.max)}원` : '서울은 운임 무료') : '';
-  $('#targetHint').textContent = R.adjDisc ? `협의 할인 ${fmt(R.adjDisc)}원 → 공급가액 ${fmt(R.supply)}원, 합계 ${fmt(R.total)}원${R.targetGap ? ` (부가세 반올림 때문에 목표보다 ${fmt(R.targetGap)}원 적음)` : ''}` : `할인 전 합계 ${fmt(R.supply0 + (S.noVat ? 0 : Math.round(R.supply0 * 0.1)))}원`;
+  $('#targetHint').textContent = R.adjDisc ? `협의 할인 ${fmt(R.adjDisc)}원 → 공급가액 ${fmt(R.supply)}원, 합계 ${fmt(R.total)}원${R.targetGap ? ` (부가세 반올림 때문에 목표보다 ${fmt(R.targetGap)}원 적음)` : ''}` : `할인 전 합계 ${fmt(R.supply0 + R.vat0)}원`;
   const nT = S.trees.length, own = S.multiPct !== '' && S.multiPct != null;
   $('#multiBox').hidden = nT < 2;
   $('#multiPct').placeholder = nT >= 4 ? '직접 입력' : `자동 ${Math.round((P.multi[nT] || 0) * 100)}`;
   $('#multiHint').textContent = nT < 2 ? '' : own ? `${nT}그루 추가 할인 ${R.pct}% 적용 (직접 입력, 비우면 자동)` : nT < 4 ? `${nT}그루 추가 할인 ${R.pct}% 자동 적용` : '';
   $('#totalOut').textContent = fmt(R.total) + '원';
   $('#cutHint').textContent = R.cutDisc ? `단수 절사 ${fmt(R.cutDisc)}원 → 합계 ${fmt(R.total)}원${R.cutGap ? ` (부가세 반올림 때문에 ${fmt(R.cutGap)}원 더 적음)` : ''}` : (+S.cut ? '이미 딱 맞는 금액이라 절삭할 뒷자리가 없습니다.' : '');
-  $('#totalLbl').textContent = S.noVat ? '합계 (부가세 없음)' : '합계 (부가세 포함)'; $('#targetVat').textContent = S.noVat ? '부가세 없는' : '부가세 포함';
+  $('#totalLbl').textContent = S.noVat ? '합계 (부가세 없음)' : R.cash ? '합계 (카드분만 부가세)' : '합계 (부가세 포함)';
+  $('#cashBox').hidden = !!S.noVat;
+  $('#cashHint').textContent = R.cash ? `카드 ${fmt(R.card)}원(부가세 ${fmt(R.vat)}원 포함) + 현금 ${fmt(R.cash)}원(부가세 없음) = ${fmt(R.total)}원` : '카드·현금 나눠 결제할 때. 넣은 금액은 부가세 없이, 나머지만 부가세 10%가 붙습니다.'; $('#targetVat').textContent = S.noVat ? '부가세 없는' : '부가세 포함';
   $('#problems').hidden = !R.problems.length; $('#problems').textContent = R.problems.join(' ');
   $('#warns').hidden = !R.warns.length; $('#warns').textContent = R.warns.join(' ');
   ['#pdfBtn', '#pngBtn', '#copyBtn'].forEach(s => $(s).disabled = !!R.problems.length);
@@ -669,6 +680,7 @@ $('#form').addEventListener('input', e => {
   if (el.name === 'phase') { S.phase = el.value; return update(); }
   if (el.id === 'cut') { S.cut = +el.value || 0; return update(); }
   if (el.id === 'noVat') { S.noVat = el.checked; return update(); }
+  if (el.id === 'cashPart') { const n = el.value.replace(/[^\d]/g, ''); S.cashPart = n ? +n : ''; return update(); }
   if (el.id === 'renew') { S.renew = el.checked; if (S.renewPct === '' || S.renewPct == null) { S.renewPct = store.get('tl-quote-renew-pct', 5); $('#renewPct').value = S.renewPct; } return update(); }
   if (el.id === 'renewPct') { S.renewPct = el.value; if (el.value !== '') { store.set('tl-quote-renew-pct', +el.value); if (!S.renew) { S.renew = true; $('#renew').checked = true; } } return update(); }
 });
@@ -909,6 +921,7 @@ function kakaoText(R) {
   if (R.adjDisc) lines.push(`협의 할인 ${fmt(R.adjDisc)}원`);
   if (R.cutDisc) lines.push(`단수 절사 ${fmt(R.cutDisc)}원`);
   if (S.noVat) lines.push(`합계 ${fmt(R.total)}원`);
+  else if (R.cash) lines.push(`공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원 (카드 결제분만)`, `합계 ${fmt(R.total)}원`, `· 카드 ${fmt(R.card)}원 (부가세 포함)`, `· 현금 ${fmt(R.cash)}원 (부가세 없음)`);
   else lines.push(`공급가액 ${fmt(R.supply)}원 + 부가세 ${fmt(R.vat)}원`, `합계 ${fmt(R.total)}원`);
   if (S.phase === 'e1' && P.deadline && !e1Over()) lines.push('', `${P.deadline.m}월 ${P.deadline.d}일까지 계약 시 1차 얼리버드 가격으로 진행됩니다.`);
   if (S.phase === 'e2' && P.deadline2) lines.push('', `${P.deadline2.m}월 ${P.deadline2.d}일까지 계약 시 2차 얼리버드 가격으로 진행됩니다.`);
